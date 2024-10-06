@@ -9,4 +9,6 @@ import Foundation
 
 enum IxApiClientError: Error {
     case Unknown
+    case Unauthenticated
+    case EmailNotVerified
 }

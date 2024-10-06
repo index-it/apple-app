@@ -10,9 +10,14 @@ import SwiftData
 
 @main
 struct indexApp: App {
+    @StateObject private var navigationManager = NavigationManager()
+    @StateObject private var ixApiClient = IxApiClient()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainView()
+                .environmentObject(navigationManager)
+                .environmentObject(ixApiClient)
         }
     }
 }
