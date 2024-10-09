@@ -8,11 +8,59 @@
 import SwiftUI
 
 struct EmailVerificationScreen: View {
+    @EnvironmentObject var navigationManager: NavigationManager
+    @EnvironmentObject var ixApiClient: IxApiClient
+    
     var email: String
     var password: String
     
+    func isEmailVerified() async {
+        do {
+            let verified = try await ixApiClient.isEmailVerified(email: email, password: password)
+            
+            if (verified) {
+                try await ixApiClient.login(email: email, password: password)
+                // this will auto navigate to home on successful login
+            }
+        } catch IxApiClientError.Unauthenticated {
+            // TODO
+        } catch {
+            // TODO
+        }
+    }
+    
+    func sendVerificationEmail() async {
+        do {
+            let sent = try await ixApiClient.sendVerificationEmail(email: email, password: password)
+            
+            if (!sent) {
+                try await ixApiClient.login(email: email, password: password)
+                // this will auto navigate to home on successful login
+            }
+        } catch IxApiClientError.Unauthenticated {
+            // TODO
+        } catch IxApiClientError.TooManyRequests {
+            // TODO
+        } catch {
+            
+        }
+    }
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            Button("I verified it!") {
+                Task {
+                    await isEmailVerified()
+                }
+            }.buttonStyle(.borderedProminent)
+            
+            Button("Send another") {
+                Task {
+                    await sendVerificationEmail()
+                }
+            }
+        }.padding()
+            .frame(maxHeight: .infinity, alignment: .bottom)
     }
 }
 

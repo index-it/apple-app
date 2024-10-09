@@ -13,6 +13,7 @@ struct EmailLoginScreen: View {
     @EnvironmentObject var ixApiClient: IxApiClient
     
     @State private var email: String = ""
+    @FocusState private var isEmailFocused: Bool
     @State private var loading: Bool = false
     
     private var isEmailValid: Bool {
@@ -45,6 +46,7 @@ struct EmailLoginScreen: View {
                 .textInputAutocapitalization(.never)
                 .textContentType(.emailAddress)
                 .keyboardType(.emailAddress)
+                .focused($isEmailFocused)
                 .onSubmit {
                     if (isEmailValid) {
                         Task {
@@ -69,6 +71,9 @@ struct EmailLoginScreen: View {
                 .buttonStyle(.borderedProminent).disabled(!isEmailValid)
         }.padding()
             .frame(maxHeight: .infinity, alignment: .bottom)
+            .onAppear {
+                isEmailFocused = true
+            }
     }
 }
 

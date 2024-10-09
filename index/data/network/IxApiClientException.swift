@@ -9,6 +9,14 @@ import Foundation
 
 enum IxApiClientError: Error {
     case Unknown
+    case TooManyRequests
+
+    /*
+     AUTHENTICATION
+     */
     case Unauthenticated
+    case EmailOrPasswordFormatInvalid
+    case UnusableEmail
     case EmailNotVerified
+    case UserNotFound
 }

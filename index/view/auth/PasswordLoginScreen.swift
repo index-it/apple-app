@@ -15,6 +15,8 @@ struct PasswordLoginScreen: View {
     var email: String
     
     @State private var password: String = ""
+    @State private var isPasswordSecure: Bool = true
+    @FocusState private var isPasswordFocused: Bool
     @State private var loading = false
     
     func login() async {
@@ -33,10 +35,31 @@ struct PasswordLoginScreen: View {
     
     var body: some View {
         VStack {
-            SecureField("Password", text: $password)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                .textContentType(.password)
+            HStack {
+                if isPasswordSecure {
+                    SecureField("Password", text: $password)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                        .textContentType(.password)
+                        .focused($isPasswordFocused)
+                } else {
+                    TextField("Password", text: $password)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                        .textContentType(.password)
+                        .focused($isPasswordFocused)
+                }
+                
+                Button {
+                    isPasswordSecure.toggle()
+                } label: {
+                    if isPasswordSecure {
+                        Image(systemName: "eye")
+                    } else {
+                        Image(systemName: "eye.slash")
+                    }
+                }
+            }
             
             
             Button {
@@ -55,6 +78,9 @@ struct PasswordLoginScreen: View {
                 .buttonStyle(.borderedProminent)
         }.padding()
             .frame(maxHeight: .infinity, alignment: .bottom)
+            .onAppear {
+                isPasswordFocused = true
+            }
     }
 }
 
