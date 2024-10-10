@@ -14,11 +14,6 @@ class NavigationManager: ObservableObject {
         path.append(navigationRoute)
     }
     
-    func clearPathAndPush(navigationRoute: NavigationRoute) {
-        path.removeAll()
-        path.append(navigationRoute)
-    }
-    
     func pop() {
         _ = path.popLast()
     }

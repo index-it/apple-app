@@ -39,13 +39,17 @@ struct PasswordLoginScreen: View {
                 if isPasswordSecure {
                     SecureField("Password", text: $password)
                         .autocorrectionDisabled()
+                    #if os(iOS)
                         .textInputAutocapitalization(.never)
+                    #endif
                         .textContentType(.password)
                         .focused($isPasswordFocused)
                 } else {
                     TextField("Password", text: $password)
                         .autocorrectionDisabled()
+                    #if os(iOS)
                         .textInputAutocapitalization(.never)
+                    #endif
                         .textContentType(.password)
                         .focused($isPasswordFocused)
                 }

@@ -43,9 +43,13 @@ struct EmailLoginScreen: View {
         VStack {
             TextField("Insert your email", text: $email)
                 .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
+#if os(iOS)
+    .textInputAutocapitalization(.never)
+#endif
                 .textContentType(.emailAddress)
+#if os(iOS)
                 .keyboardType(.emailAddress)
+#endif
                 .focused($isEmailFocused)
                 .onSubmit {
                     if (isEmailValid) {

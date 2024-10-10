@@ -51,12 +51,16 @@ struct PasswordRegisterScreen: View {
                 if isPasswordSecure {
                     SecureField("Password", text: $password)
                         .autocorrectionDisabled()
+                    #if os(iOS)
                         .textInputAutocapitalization(.never)
+                    #endif
                         .textContentType(.password)
                 } else {
                     TextField("Password", text: $password)
                         .autocorrectionDisabled()
+                    #if os(iOS)
                         .textInputAutocapitalization(.never)
+                    #endif
                         .textContentType(.password)
                 }
                 
@@ -75,12 +79,16 @@ struct PasswordRegisterScreen: View {
                 if isPasswordRepeatSecure {
                     SecureField("Password repeat", text: $passwordRepeat)
                         .autocorrectionDisabled()
+                    #if os(iOS)
                         .textInputAutocapitalization(.never)
+                    #endif
                         .textContentType(.password)
                 } else {
                     TextField("Password repeat", text: $passwordRepeat)
                         .autocorrectionDisabled()
+                    #if os(iOS)
                         .textInputAutocapitalization(.never)
+                    #endif
                         .textContentType(.password)
                 }
                 

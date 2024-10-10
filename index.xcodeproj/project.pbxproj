@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0915C1692CB80DA1003CF70B /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 0915C1682CB80DA1003CF70B /* GoogleSignIn */; };
+		0915C16B2CB80DA1003CF70B /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 0915C16A2CB80DA1003CF70B /* GoogleSignInSwift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		093287ED2C9C811300A0717E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -29,9 +34,22 @@
 		093287F62C9C811300A0717E /* indexUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = indexUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		0915C16D2CB80EC5003CF70B /* Exceptions for "index" folder in "index" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 093287D82C9C811200A0717E /* index */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		093287DB2C9C811200A0717E /* index */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				0915C16D2CB80EC5003CF70B /* Exceptions for "index" folder in "index" target */,
+			);
 			path = index;
 			sourceTree = "<group>";
 		};
@@ -52,6 +70,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0915C1692CB80DA1003CF70B /* GoogleSignIn in Frameworks */,
+				0915C16B2CB80DA1003CF70B /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +132,8 @@
 			);
 			name = index;
 			packageProductDependencies = (
+				0915C1682CB80DA1003CF70B /* GoogleSignIn */,
+				0915C16A2CB80DA1003CF70B /* GoogleSignInSwift */,
 			);
 			productName = index;
 			productReference = 093287D92C9C811200A0717E /* index.app */;
@@ -195,6 +217,9 @@
 			);
 			mainGroup = 093287D02C9C811200A0717E;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0915C1672CB80DA1003CF70B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 093287DA2C9C811200A0717E /* Products */;
 			projectDirPath = "";
@@ -395,6 +420,7 @@
 				DEVELOPMENT_TEAM = 79VJQ9DB34;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = index/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -433,6 +459,7 @@
 				DEVELOPMENT_TEAM = 79VJQ9DB34;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = index/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -585,6 +612,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0915C1672CB80DA1003CF70B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0915C1682CB80DA1003CF70B /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0915C1672CB80DA1003CF70B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		0915C16A2CB80DA1003CF70B /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0915C1672CB80DA1003CF70B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 093287D12C9C811200A0717E /* Project object */;
 }

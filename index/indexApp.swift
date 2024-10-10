@@ -8,6 +8,7 @@
 import os
 import SwiftUI
 import SwiftData
+import GoogleSignIn
 
 @main
 struct indexApp: App {
@@ -67,6 +68,8 @@ struct indexApp: App {
                 }
                 .onChange(of: user, initial: true) { _, newValue in
                     handleNewAppStorageUser(user: newValue)
+                }.onOpenURL { url in
+                    GIDSignIn.sharedInstance.handle(url)
                 }
         }
     }
