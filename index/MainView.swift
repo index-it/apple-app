@@ -26,16 +26,8 @@ struct MainView: View {
                     HomeScreen()
                 }
             }.navigationDestination(for: NavigationRoute.self) { destination in
-                switch destination {
-                case .EmailLogin:
-                    EmailLoginScreen()
-                case let .PasswordLogin(email):
-                    PasswordLoginScreen(email: email)
-                case let .PasswordRegister(email):
-                    PasswordRegisterScreen(email: email)
-                case let .EmailVerification(email: email, password: password):
-                    EmailVerificationScreen(email: email, password: password)
-                }
+//                switch destination {
+//                }
             }
         }
     }

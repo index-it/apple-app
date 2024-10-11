@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 struct PasswordRegisterScreen: View {
-    @EnvironmentObject var navigationManager: NavigationManager
+    @EnvironmentObject var authNavigationManager: AuthNavigationManager
     @EnvironmentObject var ixApiClient: IxApiClient
     
     var email: String
@@ -35,7 +35,7 @@ struct PasswordRegisterScreen: View {
                 }
             }
             
-            navigationManager.push(navigationRoute: .EmailVerification(email: email, password: password))
+            authNavigationManager.push(navigationRoute: .EmailVerification(email: email, password: password))
         } catch IxApiClientError.EmailOrPasswordFormatInvalid {
             // TODO
         } catch IxApiClientError.UnusableEmail {
@@ -51,16 +51,12 @@ struct PasswordRegisterScreen: View {
                 if isPasswordSecure {
                     SecureField("Password", text: $password)
                         .autocorrectionDisabled()
-                    #if os(iOS)
                         .textInputAutocapitalization(.never)
-                    #endif
                         .textContentType(.password)
                 } else {
                     TextField("Password", text: $password)
                         .autocorrectionDisabled()
-                    #if os(iOS)
                         .textInputAutocapitalization(.never)
-                    #endif
                         .textContentType(.password)
                 }
                 
@@ -79,16 +75,12 @@ struct PasswordRegisterScreen: View {
                 if isPasswordRepeatSecure {
                     SecureField("Password repeat", text: $passwordRepeat)
                         .autocorrectionDisabled()
-                    #if os(iOS)
                         .textInputAutocapitalization(.never)
-                    #endif
                         .textContentType(.password)
                 } else {
                     TextField("Password repeat", text: $passwordRepeat)
                         .autocorrectionDisabled()
-                    #if os(iOS)
                         .textInputAutocapitalization(.never)
-                    #endif
                         .textContentType(.password)
                 }
                 

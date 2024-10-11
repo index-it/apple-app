@@ -15,6 +15,7 @@ struct indexApp: App {
     private static let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "index-app-entrypoint")
     
     @StateObject private var navigationManager = NavigationManager()
+    @StateObject private var authNavigationManager = AuthNavigationManager()
     @StateObject private var ixApiClient = IxApiClient()
     
     @AppStorage("user") var user: User?
@@ -62,6 +63,7 @@ struct indexApp: App {
         WindowGroup {
             MainView(authStatus: $authStatus)
                 .environmentObject(navigationManager)
+                .environmentObject(authNavigationManager)
                 .environmentObject(ixApiClient)
                 .onReceive(ixApiClient.$authenticationStatus) { newValue in
                     handleNewNetworkAuthStatus(networkAuthStatus: newValue)

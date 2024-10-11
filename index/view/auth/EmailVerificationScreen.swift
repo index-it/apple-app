@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct EmailVerificationScreen: View {
-    @EnvironmentObject var navigationManager: NavigationManager
     @EnvironmentObject var ixApiClient: IxApiClient
     
     var email: String

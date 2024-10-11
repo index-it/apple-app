@@ -9,7 +9,8 @@ import Foundation
 import SwiftUI
 
 struct EmailLoginScreen: View {
-    @EnvironmentObject var navigationManager: NavigationManager
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var authNavigationManager: AuthNavigationManager
     @EnvironmentObject var ixApiClient: IxApiClient
     
     @State private var email: String = ""
@@ -28,9 +29,9 @@ struct EmailLoginScreen: View {
             
             switch welcomeAction {
             case .LOGIN:
-                navigationManager.push(navigationRoute: .PasswordLogin(email: email))
+                authNavigationManager.push(navigationRoute: .PasswordLogin(email: email))
             case .REGISTER:
-                navigationManager.push(navigationRoute: .PasswordRegister(email: email))
+                authNavigationManager.push(navigationRoute: .PasswordRegister(email: email))
             }
         } catch {
             loading = false
@@ -43,14 +44,16 @@ struct EmailLoginScreen: View {
         VStack {
             TextField("Insert your email", text: $email)
                 .autocorrectionDisabled()
-#if os(iOS)
-    .textInputAutocapitalization(.never)
-#endif
+                .textInputAutocapitalization(.never)
                 .textContentType(.emailAddress)
-#if os(iOS)
                 .keyboardType(.emailAddress)
-#endif
                 .focused($isEmailFocused)
+                .padding()
+                .background(isEmailFocused ? .quaternary : .quinary)
+                .clipShape(.buttonBorder)
+                .onTapGesture {
+                    isEmailFocused = true
+                }
                 .onSubmit {
                     if (isEmailValid) {
                         Task {
@@ -58,7 +61,7 @@ struct EmailLoginScreen: View {
                         }
                     }
                 }
-           
+            
             Button {
                 Task {
                     await getWelcomeActionAndNavigateToPasswordScreen()
@@ -67,20 +70,41 @@ struct EmailLoginScreen: View {
                 HStack {
                     if loading {
                         ProgressView()
+                            .controlSize(.regular)
                     }
                     
                     Text("Continue")
+                }.frame(maxWidth: .infinity)
+            }.buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .disabled(!isEmailValid)
+            
+        }.frame(maxHeight: .infinity, alignment: .top)
+            .padding()
+            .navigationTitle("What's your email?")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Close") {
+                        dismiss()
+                    }
                 }
-            }.padding()
-                .buttonStyle(.borderedProminent).disabled(!isEmailValid)
-        }.padding()
-            .frame(maxHeight: .infinity, alignment: .bottom)
+            }
             .onAppear {
-                isEmailFocused = true
+                isEmailFocused =  true
             }
     }
 }
 
 #Preview {
+//    @Previewable @State var show = true
+//    VStack {
+//        
+//    }.sheet(isPresented: $show) {
+//        NavigationStack {
+//            EmailLoginScreen()
+//        }
+//    }
+    
     EmailLoginScreen()
 }

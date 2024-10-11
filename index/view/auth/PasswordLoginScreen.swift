@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 struct PasswordLoginScreen: View {
-    @EnvironmentObject var navigationManager: NavigationManager
+    @EnvironmentObject var authNavigationManager: AuthNavigationManager
     @EnvironmentObject var ixApiClient: IxApiClient
     
     var email: String
@@ -27,7 +27,7 @@ struct PasswordLoginScreen: View {
         } catch IxApiClientError.Unauthenticated {
             // TODO
         } catch IxApiClientError.EmailNotVerified {
-            navigationManager.push(navigationRoute: .EmailVerification(email: email, password: password))
+            authNavigationManager.push(navigationRoute: .EmailVerification(email: email, password: password))
         } catch {
             // TODO
         }
@@ -35,35 +35,38 @@ struct PasswordLoginScreen: View {
     
     var body: some View {
         VStack {
-            HStack {
+//            HStack {
+//                
+//                
+//                TODO: Create text field modifier
+//                Button {
+//                    isPasswordSecure.toggle()
+//                } label: {
+//                    Image(systemName: isPasswordSecure ? "eye" : "eye.slash")
+//                }
+//            }
+            
+            Group {
                 if isPasswordSecure {
-                    SecureField("Password", text: $password)
-                        .autocorrectionDisabled()
-                    #if os(iOS)
-                        .textInputAutocapitalization(.never)
-                    #endif
-                        .textContentType(.password)
-                        .focused($isPasswordFocused)
+                    SecureField("Insert your password", text: $password)
                 } else {
-                    TextField("Password", text: $password)
-                        .autocorrectionDisabled()
-                    #if os(iOS)
-                        .textInputAutocapitalization(.never)
-                    #endif
-                        .textContentType(.password)
-                        .focused($isPasswordFocused)
+                    TextField("Insert your password", text: $password)
                 }
-                
-                Button {
-                    isPasswordSecure.toggle()
-                } label: {
-                    if isPasswordSecure {
-                        Image(systemName: "eye")
-                    } else {
-                        Image(systemName: "eye.slash")
+            }.autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .textContentType(.password)
+                .focused($isPasswordFocused)
+                .padding()
+                .background(isPasswordFocused ? .quaternary : .quinary)
+                .clipShape(.buttonBorder)
+                .onTapGesture {
+                    isPasswordFocused = true
+                }
+                .onSubmit {
+                    Task {
+                        await login()
                     }
                 }
-            }
             
             
             Button {
@@ -74,16 +77,23 @@ struct PasswordLoginScreen: View {
                 HStack {
                     if loading {
                         ProgressView()
+                            .controlSize(.regular)
                     }
                     
                     Text("Login")
-                }
-            }.padding()
-                .buttonStyle(.borderedProminent)
-        }.padding()
-            .frame(maxHeight: .infinity, alignment: .bottom)
+                }.frame(maxWidth: .infinity)
+            }.buttonStyle(.borderedProminent)
+                .controlSize(.large)
+            
+        }.frame(maxHeight: .infinity, alignment: .top)
+            .padding()
+            .navigationTitle("Login with your password")
+            .navigationBarTitleDisplayMode(.large)
             .onAppear {
                 isPasswordFocused = true
+            }
+            .toolbar {
+              ToolbarItem(placement: .principal) { Color.clear }
             }
     }
 }
