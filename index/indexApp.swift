@@ -55,6 +55,7 @@ struct indexApp: App {
         
         DispatchQueue.main.async {
             authStatus = .Authenticated(user: nonNilUser)
+            authNavigationManager.clear()
             navigationManager.clear()
         }
     }

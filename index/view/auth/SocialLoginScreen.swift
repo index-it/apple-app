@@ -96,15 +96,16 @@ struct SocialLoginScreen: View {
             .sheet(isPresented: $showingEmailSheet) {
                 NavigationStack(path: $authNavigationManager.path) {
                     EmailLoginScreen()
-                }.navigationDestination(for: AuthNavigationRoute.self) { destination in
-                    switch destination {
-                    case let .PasswordLogin(email: email):
-                        PasswordLoginScreen(email: email)
-                    case let .PasswordRegister(email: email):
-                        PasswordRegisterScreen(email: email)
-                    case let .EmailVerification(email: email, password: password):
-                        EmailVerificationScreen(email: email, password: password)
-                    }
+                        .navigationDestination(for: AuthNavigationRoute.self) { destination in
+                            switch destination {
+                            case let .PasswordLogin(email: email):
+                                PasswordLoginScreen(email: email)
+                            case let .PasswordRegister(email: email):
+                                PasswordRegisterScreen(email: email)
+                            case let .EmailVerification(email: email, password: password):
+                                EmailVerificationScreen(email: email, password: password)
+                            }
+                        }
                 }
                 
             }

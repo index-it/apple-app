@@ -16,13 +16,18 @@ struct PasswordRegisterScreen: View {
     
     @State private var password: String = ""
     @State private var passwordRepeat: String = ""
-    
+    @FocusState private var isPasswordFocused: Bool
+
     @State private var isPasswordSecure: Bool = true
     @State private var isPasswordRepeatSecure: Bool = true
-    
+    @FocusState private var isPasswordRepeatFocused: Bool
+
     @State private var loading = false
-    private var passwordFieldsValid: Bool {
-        password == passwordRepeat && (8...100).contains(password.count) && password.wholeMatch(of: /(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/) != nil
+    private var passwordValid: Bool {
+        (8...100).contains(password.count) && password.wholeMatch(of: /(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/) != nil
+    }
+    private var passwordsMatch: Bool {
+        password == passwordRepeat
     }
     
     func register() async {
@@ -47,71 +52,110 @@ struct PasswordRegisterScreen: View {
     
     var body: some View {
         VStack {
-            HStack {
-                if isPasswordSecure {
-                    SecureField("Password", text: $password)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-                        .textContentType(.password)
-                } else {
-                    TextField("Password", text: $password)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-                        .textContentType(.password)
-                }
+            ZStack {
+                Group {
+                    if isPasswordSecure {
+                        SecureField("Password", text: $password)
+                    } else {
+                        TextField("Password", text: $password)
+                    }
+                }.autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .textContentType(.password)
+                    .focused($isPasswordFocused)
+                    .padding()
+                    .background(isPasswordFocused ? .quaternary : .quinary)
+                    .clipShape(.buttonBorder)
+                    .onTapGesture {
+                        isPasswordFocused = true
+                    }
+
                 
                 Button {
                     isPasswordSecure.toggle()
                 } label: {
-                    if isPasswordSecure {
-                        Image(systemName: "eye")
-                    } else {
-                        Image(systemName: "eye.slash")
-                    }
-                }
+                    Image(systemName: isPasswordSecure ? "eye" : "eye.slash")
+                }.frame(maxWidth: .infinity, alignment: .trailing).padding()
             }
             
-            HStack {
-                if isPasswordRepeatSecure {
-                    SecureField("Password repeat", text: $passwordRepeat)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-                        .textContentType(.password)
-                } else {
-                    TextField("Password repeat", text: $passwordRepeat)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-                        .textContentType(.password)
-                }
+            ZStack {
+                Group {
+                    if isPasswordRepeatSecure {
+                        SecureField("Repeat the password", text: $passwordRepeat)
+                    } else {
+                        TextField("Repeat the password", text: $passwordRepeat)
+                    }
+                }.autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .textContentType(.password)
+                    .focused($isPasswordRepeatFocused)
+                    .padding()
+                    .background(isPasswordRepeatFocused ? .quaternary : .quinary)
+                    .clipShape(.buttonBorder)
+                    .onTapGesture {
+                        isPasswordRepeatFocused = true
+                    }
+                    .onSubmit {
+                        Task {
+                            if (passwordValid && passwordsMatch) {
+                                await register()
+                            }
+                        }
+                    }
                 
-//                Button {
-//                    isPasswordRepeatSecure.toggle()
-//                } label: {
-//                    if isPasswordRepeatSecure {
-//                        Image(systemName: "eye")
-//                    } else {
-//                        Image(systemName: "eye.slash")
-//                    }
-//                }
+                Button {
+                    isPasswordRepeatSecure.toggle()
+                } label: {
+                    Image(systemName: isPasswordRepeatSecure ? "eye" : "eye.slash")
+                }.frame(maxWidth: .infinity, alignment: .trailing).padding()
             }
-
+            
+            
+            if (passwordValid && !passwordsMatch && !passwordRepeat.isEmpty) {
+                Text("The passwords don't match")
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom)
+            } else if (password.isEmpty || !passwordValid) {
+                Text("Your password must contain an uppercase, a lowercase letter and a number")
+                    .font(.footnote)
+                    .foregroundStyle(passwordValid || password.isEmpty ? .gray : .red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom)
+            }
+            
             
             Button {
                 Task {
-                    await register()
+                    if (passwordValid && passwordsMatch) {
+                        await register()
+                    }
                 }
             } label: {
                 HStack {
                     if loading {
                         ProgressView()
+                            .controlSize(.regular)
                     }
                     
                     Text("Register")
-                }
-            }.padding()
-                .disabled(!passwordFieldsValid)
-                .buttonStyle(.borderedProminent)
-        }.padding()
-            .frame(maxHeight: .infinity, alignment: .bottom)
+                }.frame(maxWidth: .infinity)
+            }.buttonStyle(.borderedProminent)
+                .disabled(!passwordValid || !passwordsMatch)
+                .controlSize(.large)
+            
+        }.frame(maxHeight: .infinity, alignment: .top)
+            .padding()
+            .navigationTitle("Create your password")
+            .onAppear {
+                isPasswordFocused = true
+            }
     }
+}
+
+#Preview {
+    PasswordRegisterScreen(email: "test@gmail.com")
+        .environmentObject(AuthNavigationManager())
+        .environmentObject(IxApiClient())
 }

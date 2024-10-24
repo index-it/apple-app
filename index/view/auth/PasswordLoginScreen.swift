@@ -35,38 +35,36 @@ struct PasswordLoginScreen: View {
     
     var body: some View {
         VStack {
-//            HStack {
-//                
-//                
-//                TODO: Create text field modifier
-//                Button {
-//                    isPasswordSecure.toggle()
-//                } label: {
-//                    Image(systemName: isPasswordSecure ? "eye" : "eye.slash")
-//                }
-//            }
-            
-            Group {
-                if isPasswordSecure {
-                    SecureField("Insert your password", text: $password)
-                } else {
-                    TextField("Insert your password", text: $password)
-                }
-            }.autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                .textContentType(.password)
-                .focused($isPasswordFocused)
-                .padding()
-                .background(isPasswordFocused ? .quaternary : .quinary)
-                .clipShape(.buttonBorder)
-                .onTapGesture {
-                    isPasswordFocused = true
-                }
-                .onSubmit {
-                    Task {
-                        await login()
+            ZStack {
+                Group {
+                    if isPasswordSecure {
+                        SecureField("Insert your password", text: $password)
+                    } else {
+                        TextField("Insert your password", text: $password)
                     }
-                }
+                }.autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .textContentType(.password)
+                    .focused($isPasswordFocused)
+                    .padding()
+                    .background(isPasswordFocused ? .quaternary : .quinary)
+                    .clipShape(.buttonBorder)
+                    .onTapGesture {
+                        isPasswordFocused = true
+                    }
+                    .onSubmit {
+                        Task {
+                            await login()
+                        }
+                    }
+                
+                Button {
+                    isPasswordSecure.toggle()
+                } label: {
+                    Image(systemName: isPasswordSecure ? "eye" : "eye.slash")
+                }.frame(maxWidth: .infinity, alignment: .trailing).padding()
+            }
+                
             
             
             Button {
@@ -87,19 +85,15 @@ struct PasswordLoginScreen: View {
             
         }.frame(maxHeight: .infinity, alignment: .top)
             .padding()
-            .navigationTitle("Login with your password")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationTitle("Login with password")
             .onAppear {
                 isPasswordFocused = true
-            }
-            .toolbar {
-              ToolbarItem(placement: .principal) { Color.clear }
             }
     }
 }
 
 #Preview {
     PasswordLoginScreen(email: "test@gmail.com")
-        .environmentObject(NavigationManager())
+        .environmentObject(AuthNavigationManager())
         .environmentObject(IxApiClient())
 }
