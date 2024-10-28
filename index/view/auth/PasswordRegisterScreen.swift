@@ -32,7 +32,9 @@ struct PasswordRegisterScreen: View {
     
     func register() async {
         do {
+            loading = true
             let emailSent = try await ixApiClient.register(email: email, password: password)
+            loading = false
             
             if (!emailSent) {
                 Task {
@@ -42,10 +44,13 @@ struct PasswordRegisterScreen: View {
             
             authNavigationManager.push(navigationRoute: .EmailVerification(email: email, password: password))
         } catch IxApiClientError.EmailOrPasswordFormatInvalid {
+            loading = false
             // TODO
         } catch IxApiClientError.UnusableEmail {
+            loading = false
             // TODO
         } catch {
+            loading = false
             // TODO
         }
     }

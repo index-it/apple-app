@@ -21,14 +21,19 @@ struct PasswordLoginScreen: View {
     
     func login() async {
         do {
+            loading = true
             try await ixApiClient.login(email: email, password: password)
+            loading = false
             // app will automatically navigate to the authenticated screens
             // thanks to the auth status stored in the IxApiClient
         } catch IxApiClientError.Unauthenticated {
+            loading = false
             // TODO
         } catch IxApiClientError.EmailNotVerified {
+            loading = false
             authNavigationManager.push(navigationRoute: .EmailVerification(email: email, password: password))
         } catch {
+            loading = false
             // TODO
         }
     }
