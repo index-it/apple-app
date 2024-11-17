@@ -9,7 +9,14 @@ import Foundation
 
 enum IxApiClientError: Error {
     case Unknown
+    
+    case InvalidData
+    case NetworkError
     case TooManyRequests
+    
+    case NotFound
+    case MissingPermission
+    case ProRequired
 
     /*
      AUTHENTICATION

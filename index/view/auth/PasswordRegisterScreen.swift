@@ -11,7 +11,8 @@ import SwiftUI
 struct PasswordRegisterScreen: View {
     @EnvironmentObject var authNavigationManager: AuthNavigationManager
     @EnvironmentObject var ixApiClient: IxApiClient
-    
+    @EnvironmentObject private var errorService: ErrorStateService
+
     var email: String
     
     @State private var password: String = ""
@@ -42,16 +43,16 @@ struct PasswordRegisterScreen: View {
                 }
             }
             
-            authNavigationManager.push(navigationRoute: .EmailVerification(email: email, password: password))
+            authNavigationManager.push(navigationRoute: .EmailVerification(email: email, password: password, verificationEmailSent: true))
         } catch IxApiClientError.EmailOrPasswordFormatInvalid {
             loading = false
-            // TODO
+            errorService.insert(.customMessage(message: "Email or password formats are invalid, please make sure you provided a valid email and that your password contains at least an uppercase character, a lowercase one and a number. Additionally, the length must be between 8-100 characters!"))
         } catch IxApiClientError.UnusableEmail {
             loading = false
-            // TODO
+            errorService.insert(.customMessage(message: "The email you provided is not allowed to register, please use another email."))
         } catch {
             loading = false
-            // TODO
+            errorService.insert(.customMessage())
         }
     }
     
@@ -74,12 +75,17 @@ struct PasswordRegisterScreen: View {
                     .onTapGesture {
                         isPasswordFocused = true
                     }
+                    .onSubmit {
+                        isPasswordRepeatFocused = true
+                    }
 
                 
                 Button {
                     isPasswordSecure.toggle()
                 } label: {
-                    Image(systemName: isPasswordSecure ? "eye" : "eye.slash")
+                    Image(systemName: isPasswordSecure ? "eye.circle.fill" : "eye.slash.circle.fill")
+                        .foregroundStyle(.gray)
+                        .font(.title2)
                 }.frame(maxWidth: .infinity, alignment: .trailing).padding()
             }
             
@@ -111,7 +117,9 @@ struct PasswordRegisterScreen: View {
                 Button {
                     isPasswordRepeatSecure.toggle()
                 } label: {
-                    Image(systemName: isPasswordRepeatSecure ? "eye" : "eye.slash")
+                    Image(systemName: isPasswordRepeatSecure ? "eye.circle.fill" : "eye.slash.circle.fill")
+                        .foregroundStyle(.gray)
+                        .font(.title2)
                 }.frame(maxWidth: .infinity, alignment: .trailing).padding()
             }
             

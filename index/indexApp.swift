@@ -17,6 +17,7 @@ struct indexApp: App {
     @StateObject private var navigationManager = NavigationManager()
     @StateObject private var authNavigationManager = AuthNavigationManager()
     @StateObject private var ixApiClient = IxApiClient()
+    @StateObject var errorService = ErrorStateService()
     
     @AppStorage("user") var user: User?
     
@@ -66,6 +67,7 @@ struct indexApp: App {
                 .environmentObject(navigationManager)
                 .environmentObject(authNavigationManager)
                 .environmentObject(ixApiClient)
+                .environmentObject(errorService)
                 .onReceive(ixApiClient.$authenticationStatus) { newValue in
                     handleNewNetworkAuthStatus(networkAuthStatus: newValue)
                 }
@@ -74,6 +76,7 @@ struct indexApp: App {
                 }.onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
                 }
+                .alertPresentationWindow(service: errorService)
         }
     }
 }

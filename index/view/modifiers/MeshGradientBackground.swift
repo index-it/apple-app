@@ -64,7 +64,7 @@ struct MeshGradientBackground: ViewModifier {
             content
         }.onAppear {
             timer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { _ in
-                t += 0.02
+                t += 0.04
             }
         }
     }

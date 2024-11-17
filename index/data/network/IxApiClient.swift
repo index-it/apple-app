@@ -167,12 +167,18 @@ class IxApiClient: ObservableObject {
     /// - `IxApiClientError.TooManyRequests`: If too many password reset requests have been sent.
     /// - `IxApiClientError.Unknown`: If an unknown error occurs.
     func passwordForgotten(email: String) async throws {
-        let url = Self.baseUrl.appendingPathComponent("/password-forgotten")
+        let url = Self.baseUrl
+            .appendingPathComponent("/password-forgotten")
+            .appending(queryItems: [URLQueryItem(name: "email", value: email)])
         var req = URLRequest(url: url)
         req.httpMethod = "GET"
         
         let (_, urlRes) = try await URLSession.shared.data(for: req)
         let res = urlRes as! HTTPURLResponse
+        
+        if (res.statusCode == 200) {
+            return
+        }
         
         switch res.statusCode {
         case 404:
@@ -217,6 +223,65 @@ class IxApiClient: ObservableObject {
             throw IxApiClientError.Unknown
         }
     }
+    
+    /// logs in the user via google
+    ///
+    /// ### Throws
+    /// - `IxApiClientError.Unauthenticated` idToken invalid
+    /// - `IxApiClientError.EmailNotVerifieid` user hasn't verified its email yet, required to login
+    /// - `IxApiClientError.Unknown`
+    func loginWithGoogle(idToken: String) async throws {
+        let url = Self.baseUrl.appendingPathComponent("login-with-google")
+            .appending(queryItems: [URLQueryItem(name: "token_id", value: idToken)])
+        let req = URLRequest(url: url)
+        
+        let (data, urlRes) = try await URLSession.shared.data(for: req)
+        let res = urlRes as! HTTPURLResponse
+        
+        switch res.statusCode {
+        case 200:
+            let user = User(from: try JSONDecoder().decode(NetworkUser.self, from: data))
+            await setAuthenticationStatus(authenticationStatus: .Authenticated(user: user))
+        case 401:
+            await setAuthenticationStatus(authenticationStatus: .Unauthenticated)
+            throw IxApiClientError.Unauthenticated
+        case 405:
+            throw IxApiClientError.EmailNotVerified
+        default:
+            Self.log.error("received unexpected status code from server: \(res)")
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// logs in the user via apple
+    ///
+    /// ### Throws
+    /// - `IxApiClientError.Unauthenticated` idToken invalid
+    /// - `IxApiClientError.EmailNotVerifieid` user hasn't verified its email yet, required to login
+    /// - `IxApiClientError.Unknown`
+    func loginWithApple(idToken: String) async throws {
+        let url = Self.baseUrl.appendingPathComponent("login-with-apple")
+            .appending(queryItems: [URLQueryItem(name: "token_id", value: idToken)])
+        let req = URLRequest(url: url)
+        
+        let (data, urlRes) = try await URLSession.shared.data(for: req)
+        let res = urlRes as! HTTPURLResponse
+        
+        switch res.statusCode {
+        case 200:
+            let user = User(from: try JSONDecoder().decode(NetworkUser.self, from: data))
+            await setAuthenticationStatus(authenticationStatus: .Authenticated(user: user))
+        case 401:
+            await setAuthenticationStatus(authenticationStatus: .Unauthenticated)
+            throw IxApiClientError.Unauthenticated
+        case 405:
+            throw IxApiClientError.EmailNotVerified
+        default:
+            Self.log.error("received unexpected status code from server: \(res)")
+            throw IxApiClientError.Unknown
+        }
+    }
+    
     
     /// logs out the currently logged in user (if any)
     ///

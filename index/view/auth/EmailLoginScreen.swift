@@ -12,7 +12,8 @@ struct EmailLoginScreen: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var authNavigationManager: AuthNavigationManager
     @EnvironmentObject var ixApiClient: IxApiClient
-    
+    @EnvironmentObject private var errorService: ErrorStateService
+
     @State private var email: String = ""
     @FocusState private var isEmailFocused: Bool
     @State private var loading: Bool = false
@@ -35,8 +36,7 @@ struct EmailLoginScreen: View {
             }
         } catch {
             loading = false
-            print("error: \(error)")
-            // TODO: global error handling
+            errorService.insert(.customMessage(message: "Something went wrong, please use another authentication method or try again later"))
         }
     }
     
