@@ -16,7 +16,7 @@ enum IxApiClientError: Error {
     
     case NotFound
     case MissingPermission
-    case ProRequired
+    case ProRequired(ProFeature)
 
     /*
      AUTHENTICATION

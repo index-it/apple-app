@@ -8,8 +8,22 @@
 import SwiftUI
 
 struct SettingsTabView: View {
+    @EnvironmentObject private var ixApiClient: IxApiClient
+    @EnvironmentObject private var errorService: ErrorStateService
+    
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Button {
+            Task {
+                do {
+                    try await ixApiClient.logout()
+                } catch {
+                    errorService.insert(.customMessage())
+                }
+            }
+        } label: {
+            Text("Logout")
+        }
     }
 }
 

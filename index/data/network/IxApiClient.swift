@@ -70,7 +70,7 @@ class IxApiClient: ObservableObject {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let body = try JSONEncoder().encode(EmailAndPasswordRequestBody(email: email, password: password))
+        let body = try JSONEncoder().encode(EmailAndPasswordReqBody(email: email, password: password))
         req.httpBody = body
         
         let (_, urlRes) = try await URLSession.shared.data(for: req)
@@ -202,7 +202,7 @@ class IxApiClient: ObservableObject {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let body = try JSONEncoder().encode(EmailAndPasswordRequestBody(email: email, password: password))
+        let body = try JSONEncoder().encode(EmailAndPasswordReqBody(email: email, password: password))
         req.httpBody = body
         
         let (data, urlRes) = try await URLSession.shared.data(for: req)
@@ -282,6 +282,86 @@ class IxApiClient: ObservableObject {
         }
     }
     
+    /// Changes the password of the currently logged-in user.
+    ///
+    /// This does not invalidate the current session but invalidates all other active sessions.
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.InvalidData`: If the new password does not meet the required format.
+    /// - `IxApiClientError.NotFound`: If the user is not found.
+    /// - `IxApiClientError.Unknown`: For unexpected errors.
+    func changePassword(newPassword: String) async throws {
+        let url = Self.baseUrl.appendingPathComponent("/me/password")
+        
+        var request = URLRequest(url: url)
+        
+        let body = ["password": newPassword]
+        request.httpMethod = "PUT"
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return // Password successfully changed.
+        case 400:
+            throw IxApiClientError.EmailOrPasswordFormatInvalid
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Deletes the currently logged-in account.
+    ///
+    /// **All data will be completely erased from the server.**
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.Unknown`: For unexpected errors.
+    func deleteLoggedInUser() async throws {
+        let url = Self.baseUrl.appendingPathComponent("/me")
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        let (_, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200, 401:
+            // Successful deletion or already unauthenticated; proceed as unauthenticated.
+            await setAuthenticationStatus(authenticationStatus: .Unauthenticated)
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Sends the notification token of Firebase Cloud Messaging to the server.
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.Unknown`: For unexpected errors.
+    func sendNotificationRegistrationToken(token: String) async throws {
+        let url = Self.baseUrl.appendingPathComponent("/me/notifications/register")
+        let body = ["token": token]
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let (_, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return // Successfully sent the token.
+        case 401:
+            await setAuthenticationStatus(authenticationStatus: .Unauthenticated)
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
     
     /// logs out the currently logged in user (if any)
     ///
@@ -334,6 +414,808 @@ class IxApiClient: ObservableObject {
             throw IxApiClientError.Unauthenticated
         default:
             Self.log.error("unexpected api response: \(res)")
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    
+    /*
+     LISTS
+     */
+    
+    /// Gets all the user lists
+    /// - Returns: an array of `IxList`
+    ///
+    /// ### Throws
+    /// - `IxApiClientError.Unknown`
+    func getLists() async throws -> [IxList] {
+        let url = Self.baseUrl.appendingPathComponent("/lists")
+        
+        let (data, urlRes) = try await URLSession.shared.data(from: url)
+        
+        let res = urlRes as! HTTPURLResponse
+        
+        switch res.statusCode {
+        case 200:
+            let lists = try JSONDecoder().decode([NetworkList].self, from: data).map { networList in IxList(networkList: networList) }
+            return lists
+        case 401:
+            await setAuthenticationStatus(authenticationStatus: .Unauthenticated)
+            throw IxApiClientError.Unauthenticated
+        default:
+            Self.log.error("unexpected api response: \(res)")
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Creates a new list with the given name, emoji, and color.
+    ///
+    /// The user needs a Pro subscription to create a public list.
+    ///
+    /// - Returns: The newly created list as an `IxList`.
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.InvalidData`: If the parameters are invalid
+    /// - `IxApiClientError.ProRequired`
+    /// - `IxApiClientError.Unknown`
+    func createList(name: String, icon: String, color: String, is_public: Bool) async throws -> IxList {
+        let url = Self.baseUrl.appendingPathComponent("/lists")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body = ListCreateOrEditReqBody(name: name, icon: icon, color: color, is_public: is_public)
+        request.httpBody = try JSONEncoder().encode(body)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            let networkList = try JSONDecoder().decode(NetworkList.self, from: data)
+            return IxList(networkList: networkList)
+        case 400:
+            throw IxApiClientError.InvalidData
+        case 401:
+            await setAuthenticationStatus(authenticationStatus: .Unauthenticated)
+            throw IxApiClientError.Unauthenticated
+        case 402:
+            if is_public {
+                throw IxApiClientError.ProRequired(.public_list)
+            } else {
+                throw IxApiClientError.ProRequired(.unlimited_lists)
+            }
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Retrieves a single list by its identifier.
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermissions`: If the user does not have access to the list.
+    /// - `IxApiClientError.NotFound`: If the list with the specified ID is not found.
+    /// - `IxApiClientError.Unknown`: For unexpected errors.
+    func getList(id: String) async throws -> IxList {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(id)")
+        let (data, response) = try await URLSession.shared.data(from: url)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            let networkList = try JSONDecoder().decode(NetworkList.self, from: data)
+            return IxList(networkList: networkList)
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Edits a list by its identifier with the provided name, emoji, color, and public status.
+    ///
+    /// The user needs pro to make the list public.
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.InvalidData`: If the request body is invalid.
+    /// - `IxApiClientError.Unauthenticated`: If the user is not authenticated.
+    /// - `IxApiClientError.ProRequired`: If the user needs a Pro feature to make the list public.
+    /// - `IxApiClientError.MissingPermission`: If the user lacks permission to edit the list.
+    /// - `IxApiClientError.NotFound`: If the list with the specified ID is not found.
+    /// - `IxApiClientError.Unknown`: For unexpected errors.
+    func editList(id: String, name: String, icon: String, color: String, is_public: Bool) async throws -> IxList {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(id)")
+        let requestBody = ListCreateOrEditReqBody(name: name, icon: icon, color: color, is_public: is_public)
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.httpBody = try JSONEncoder().encode(requestBody)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            let networkList = try JSONDecoder().decode(NetworkList.self, from: data)
+            return IxList(networkList: networkList)
+        case 400:
+            throw IxApiClientError.InvalidData
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 402:
+            throw IxApiClientError.ProRequired(.public_list)
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Deletes a list via its id
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.NotFound` List not found
+    /// - `IxApiClientError.MissingPermission` List owner required
+    /// - `IxApiClientError.Unknown` Unknown error
+    ///
+    func deleteList(id: String) async throws {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(id)")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    
+    /*
+     LIST ACCESS
+     */
+    
+    /// Gets all the users that have access to the list with the specified id
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.NotFound` List not found
+    /// - `IxApiClientError.MissingPermission` List owner required
+    /// - `IxApiClientError.Unknown` Unknown error
+    ///
+    func getListUsersWithAccess(id: String) async throws -> [NetworkListSingleUserAccessInfo] {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(id)/access/users")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode([NetworkListSingleUserAccessInfo].self, from: data)
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Leaves a list with the specified id if the logged in user is either a viewer or editor
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.InvalidData` Bad request
+    /// - `IxApiClientError.NotFound` List not found
+    /// - `IxApiClientError.Unknown` Unknown error
+    ///
+    func leaveList(id: String) async throws {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(id)/access/leave")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 404:
+            throw IxApiClientError.NotFound
+        case 405:
+            throw IxApiClientError.InvalidData
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Gives a user access to a list
+    ///
+    /// - Returns: `null` if the user was invited, the list if they already accepted a previous invitation and their permissions are not changed
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.InvalidData` Cannot invite self
+    /// - `IxApiClientError.MissingPermission` Owner required
+    /// - `IxApiClientError.NotFound` List not found
+    /// - `IxApiClientError.Unknown` Unknown error
+    ///
+    func inviteUserToList(listId: String, email: String, editor: Bool) async throws -> NetworkList? {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access")
+        let requestBody = ListGiveUserAccessReqBody(email: email, editor: editor)
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = try JSONEncoder().encode(requestBody)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode(NetworkList.self, from: data)
+        case 201:
+            return nil
+        case 400:
+            throw IxApiClientError.InvalidData
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Removes access to the list from a user
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermission` Owner required
+    /// - `IxApiClientError.NotFound` List not found
+    /// - `IxApiClientError.Unknown` Unknown error
+    ///
+    func removeListAccessFromUser(listId: String, userId: String) async throws -> NetworkList {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access")
+        let requestBody = ListRemoveUserAccessReqBody(user_id: userId)
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.httpBody = try JSONEncoder().encode(requestBody)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode(NetworkList.self, from: data)
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    
+    /*
+     LIST CATEGORIES
+     */
+    
+    /// Gets all the categories of a list
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermission` Viewer required
+    /// - `IxApiClientError.NotFound` List not found
+    /// - `IxApiClientError.Unknown` Unknown error
+    ///
+    func getListCategories(listId: String) async throws -> [NetworkListCategory] {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode([NetworkListCategory].self, from: data)
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Gets a specific category via the list and category id
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermission` Owner required
+    /// - `IxApiClientError.NotFound` Category or list not found
+    /// - `IxApiClientError.Unknown` Unknown error
+    ///
+    func getCategory(listId: String, categoryId: String) async throws -> NetworkListCategory {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories/\(categoryId)")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode(NetworkListCategory.self, from: data)
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Edits a list category
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.InvalidData` Invalid name or color
+    /// - `IxApiClientError.MissingPermission` Editor required
+    /// - `IxApiClientError.NotFound` List or category not found
+    /// - `IxApiClientError.Unknown` Unknown error
+    ///
+    func updateListCategory(listId: String, categoryId: String, name: String, color: String) async throws -> NetworkListCategory {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories/\(categoryId)")
+        let requestBody = ListCategoryCreateOrEditReqBody(name: name, color: color)
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.httpBody = try JSONEncoder().encode(requestBody)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode(NetworkListCategory.self, from: data)
+        case 400:
+            throw IxApiClientError.InvalidData
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Deletes a list category
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermission` Editor required
+    /// - `IxApiClientError.Unknown` Unknown error
+    ///
+    func deleteListCategory(listId: String, categoryId: String) async throws {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories/\(categoryId)")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        let (_, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            break // Deletion successful, no content to return
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            break // Ignore this error
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    
+    /*
+     LIST ITEMS
+     */
+    
+    /// Gets all the items of a list
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermission` Permission required
+    /// - `IxApiClientError.Unknown` Unknown error
+    ///
+    func getListItems(listId: String, completed: Bool? = nil) async throws -> [NetworkListItem] {
+        var urlComponents = URLComponents(string: "\(Self.baseUrl)/lists/\(listId)/items")!
+        var queryItems = [URLQueryItem]()
+        
+        if let completed = completed {
+            queryItems.append(URLQueryItem(name: "completed", value: "\(completed)"))
+        }
+        urlComponents.queryItems = queryItems
+        
+        let url = urlComponents.url!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode([NetworkListItem].self, from: data)
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 403:
+            throw IxApiClientError.MissingPermission
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Gets a single list item via the [itemId]
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermission` Permission required
+    /// - `IxApiClientError.NotFound` The list or item doesn't exist
+    /// - `IxApiClientError.Unknown` Unknown error
+    ///
+    func getListItem(listId: String, itemId: String) async throws -> NetworkListItem {
+        let url = URL(string: "\(Self.baseUrl)/lists/\(listId)/items/\(itemId)")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode(NetworkListItem.self, from: data)
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Creates a new list item
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.InvalidData`
+    /// - `IxApiClientError.MissingPermission` List editor permissions required
+    /// - `IxApiClientError.Unknown` Unknown error
+    func createListItem(listId: String, categoryId: String?, name: String, link: String?) async throws -> NetworkListItem {
+        let url = URL(string: "\(Self.baseUrl)/lists/\(listId)/items")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        let body = ListItemCreateOrEditReqBody(name: name, category_id: categoryId, link: link)
+        let encoder = JSONEncoder()
+        request.httpBody = try encoder.encode(body)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode(NetworkListItem.self, from: data)
+        case 400:
+            throw IxApiClientError.InvalidData
+        case 403:
+            throw IxApiClientError.MissingPermission
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Edits a list item
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.InvalidData` Invalid `name`
+    /// - `IxApiClientError.MissingPermission` List editor permissions required
+    /// - `IxApiClientError.NotFound` List or item not found
+    /// - `IxApiClientError.Unknown` Unknown error
+    func updateListItem(listId: String, itemId: String, name: String, categoryId: String?, link: String?) async throws -> NetworkListItem {
+        let url = URL(string: "\(Self.baseUrl)/lists/\(listId)/items/\(itemId)")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        
+        // Setting the body for the request
+        let body = ListItemCreateOrEditReqBody(name: name, category_id: categoryId, link: link)
+        let encoder = JSONEncoder()
+        request.httpBody = try encoder.encode(body)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode(NetworkListItem.self, from: data)
+        case 400:
+            throw IxApiClientError.InvalidData
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Completes or un-completes an item
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermission` List editor permissions required
+    /// - `IxApiClientError.NotFound` List or item not found
+    /// - `IxApiClientError.Unknown` Unknown error
+    ///
+    func setListItemCompletion(listId: String, itemId: String, completed: Bool) async throws -> NetworkListItem {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/items/\(itemId)/completion")
+            .appending(queryItems: [URLQueryItem(name: "completed", value: "\(completed)")])
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode(NetworkListItem.self, from: data)
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Deletes a list item
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermission` List editor permissions required
+    /// - `IxApiClientError.Unknown` Unknown error
+    func deleteListItem(listId: String, itemId: String) async throws {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/items/\(itemId)")
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            break // Item successfully deleted
+        case 403:
+            throw IxApiClientError.MissingPermission
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /*
+     LIST ITEM CONTENT
+     */
+    
+    /// Gets the content of an item
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermission` List viewer permissions required
+    /// - `IxApiClientError.NotFound` Item not found
+    /// - `IxApiClientError.Unknown` Unknown error
+    func getItemContent(listId: String, itemId: String) async throws -> NetworkListItemContent {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/items/\(itemId)/content")
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            let decoder = JSONDecoder()
+            return try decoder.decode(NetworkListItemContent.self, from: data)
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Updates the content of an item
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.InvalidData` Item content is invalid
+    /// - `IxApiClientError.MissingPermission` List editor permissions required
+    /// - `IxApiClientError.NotFound` Item content not found
+    /// - `IxApiClientError.Unknown` Unknown error
+    func updateItemContent(listId: String, itemId: String, content: String) async throws -> NetworkListItemContent {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/items/\(itemId)/content")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        let body = try JSONEncoder().encode(ListContentUpdateReqBody(content: content))
+        request.httpBody = body
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            let decoder = JSONDecoder()
+            return try decoder.decode(NetworkListItemContent.self, from: data)
+        case 400:
+            throw IxApiClientError.InvalidData
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    // TODO: Tasks
+    
+    /*
+     SUGGESTIONS
+     */
+    
+    /// Retrieves a list of default colors usable in lists.
+    ///
+    /// - Returns: A list of color strings.
+    /// ### Throws:
+    /// - `IxApiClientError.Unknown`
+    func getColorsSuggestion() async throws -> [String] {
+        let url = Self.baseUrl.appendingPathComponent("/suggestions/colors")
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            let colorsSuggestion = try JSONDecoder().decode(NetworkColorsSuggestion.self, from: data)
+            return colorsSuggestion.colors
+        case 401:
+            await setAuthenticationStatus(authenticationStatus: .Unauthenticated)
+            throw IxApiClientError.Unauthenticated
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+
+    /// Retrieves a template for creating a new list.
+    ///
+    /// - Returns: A `NetworkListTemplateSuggestion` object.
+    /// ### Throws:
+    /// - `IxApiClientError.Unknown`
+    func getListTemplateSuggestion() async throws -> NetworkListTemplateSuggestion {
+        let url = Self.baseUrl.appendingPathComponent("/suggestions/templates/list")
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode(NetworkListTemplateSuggestion.self, from: data)
+        case 401:
+            await setAuthenticationStatus(authenticationStatus: .Unauthenticated)
+            throw IxApiClientError.Unauthenticated
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+
+    /// Retrieves a template for creating a new category.
+    ///
+    /// - Returns: A `NetworkCategoryTemplateSuggestion` object.
+    /// ### Throws:
+    /// - `IxApiClientError.Unknown` unknown errors.
+    func getCategoryTemplateSuggestion() async throws -> NetworkCategoryTemplateSuggestion {
+        let url = Self.baseUrl.appendingPathComponent("/suggestions/templates/category")
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode(NetworkCategoryTemplateSuggestion.self, from: data)
+        case 401:
+            await setAuthenticationStatus(authenticationStatus: .Unauthenticated)
+            throw IxApiClientError.Unauthenticated
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+
+    /// Retrieves a template for creating a new item.
+    ///
+    /// - Returns: A `NetworkItemTemplateSuggestion` object.
+    /// ### Throws:
+    /// - `IxApiClientError.Unknown` for authentication or unknown errors.
+    func getItemTemplateSuggestion() async throws -> NetworkItemTemplateSuggestion {
+        let url = Self.baseUrl.appendingPathComponent("/suggestions/templates/item")
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode(NetworkItemTemplateSuggestion.self, from: data)
+        case 401:
+            await setAuthenticationStatus(authenticationStatus: .Unauthenticated)
+            throw IxApiClientError.Unauthenticated
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+
+    /// Retrieves a template for creating a new task.
+    ///
+    /// - Returns: A `NetworkTaskTemplateSuggestion` object.
+    /// ### Throws:
+    /// - `IxApiClientError.Unknown`
+    func getTaskTemplateSuggestion() async throws -> NetworkTaskTemplateSuggestion {
+        let url = Self.baseUrl.appendingPathComponent("/suggestions/templates/task")
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode(NetworkTaskTemplateSuggestion.self, from: data)
+        case 401:
+            await setAuthenticationStatus(authenticationStatus: .Unauthenticated)
+            throw IxApiClientError.Unauthenticated
+        default:
             throw IxApiClientError.Unknown
         }
     }

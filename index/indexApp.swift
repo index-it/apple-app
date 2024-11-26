@@ -17,7 +17,7 @@ struct indexApp: App {
     @StateObject private var navigationManager = NavigationManager()
     @StateObject private var authNavigationManager = AuthNavigationManager()
     @StateObject private var ixApiClient = IxApiClient()
-    @StateObject var errorService = ErrorStateService()
+    @StateObject private var errorService = ErrorStateService()
     
     @AppStorage("user") var user: User?
     
@@ -68,6 +68,7 @@ struct indexApp: App {
                 .environmentObject(authNavigationManager)
                 .environmentObject(ixApiClient)
                 .environmentObject(errorService)
+                .modelContainer(for: IxList.self, isAutosaveEnabled: false)
                 .onReceive(ixApiClient.$authenticationStatus) { newValue in
                     handleNewNetworkAuthStatus(networkAuthStatus: newValue)
                 }

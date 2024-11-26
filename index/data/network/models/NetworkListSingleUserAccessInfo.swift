@@ -6,3 +6,9 @@
 //
 
 import Foundation
+
+struct NetworkListSingleUserAccessInfo: Codable {
+    let user_id: String
+    let email: String
+    let editor: Bool
+}

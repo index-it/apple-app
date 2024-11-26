@@ -15,18 +15,18 @@ struct HomeScreen: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            Tab("Tasks", systemImage: "rectangle.grid.1x2.fill", value: 0) {
+            Tab("Your tasks", systemImage: "rectangle.grid.1x2.fill", value: 0) {
                 TasksTabView()
             }
             
-            Tab("Lists", systemImage: "square.grid.2x2.fill", value: 1) {
+            Tab("Your lists", systemImage: "square.grid.2x2.fill", value: 1) {
                 ListsTabView()
             }
             
-            Tab("Account", systemImage: "gearshape.fill", value: 2) {
-                AccountTabView()
+            Tab("Settings", systemImage: "gearshape.fill", value: 2) {
+                SettingsTabView()
             }
-        }.navigationTitle(selectedTab == 0 ? "Tasks" : (selectedTab == 1 ? "Lists" : "Settings"))
+        }
             
     }
 }

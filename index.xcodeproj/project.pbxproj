@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		0915C1692CB80DA1003CF70B /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 0915C1682CB80DA1003CF70B /* GoogleSignIn */; };
 		0915C16B2CB80DA1003CF70B /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 0915C16A2CB80DA1003CF70B /* GoogleSignInSwift */; };
+		0932EB3B2CEB6BBF00321EEE /* DynamicColor in Frameworks */ = {isa = PBXBuildFile; productRef = 0932EB3A2CEB6BBF00321EEE /* DynamicColor */; };
+		099487EA2CEBC59500B3FC57 /* MCEmojiPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 099487E92CEBC59500B3FC57 /* MCEmojiPicker */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,7 +73,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				0915C1692CB80DA1003CF70B /* GoogleSignIn in Frameworks */,
+				0932EB3B2CEB6BBF00321EEE /* DynamicColor in Frameworks */,
 				0915C16B2CB80DA1003CF70B /* GoogleSignInSwift in Frameworks */,
+				099487EA2CEBC59500B3FC57 /* MCEmojiPicker in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -98,6 +102,7 @@
 				093287DB2C9C811200A0717E /* index */,
 				093287EF2C9C811300A0717E /* indexTests */,
 				093287F92C9C811300A0717E /* indexUITests */,
+				09DF7EFB2CEADAAE00D3BDFD /* Frameworks */,
 				093287DA2C9C811200A0717E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -110,6 +115,13 @@
 				093287F62C9C811300A0717E /* indexUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		09DF7EFB2CEADAAE00D3BDFD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -134,6 +146,8 @@
 			packageProductDependencies = (
 				0915C1682CB80DA1003CF70B /* GoogleSignIn */,
 				0915C16A2CB80DA1003CF70B /* GoogleSignInSwift */,
+				0932EB3A2CEB6BBF00321EEE /* DynamicColor */,
+				099487E92CEBC59500B3FC57 /* MCEmojiPicker */,
 			);
 			productName = index;
 			productReference = 093287D92C9C811200A0717E /* index.app */;
@@ -219,6 +233,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				0915C1672CB80DA1003CF70B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				0932EB392CEB6BBF00321EEE /* XCRemoteSwiftPackageReference "DynamicColor" */,
+				099487E82CEBC59500B3FC57 /* XCRemoteSwiftPackageReference "MCEmojiPicker" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 093287DA2C9C811200A0717E /* Products */;
@@ -624,6 +640,22 @@
 				minimumVersion = 8.0.0;
 			};
 		};
+		0932EB392CEB6BBF00321EEE /* XCRemoteSwiftPackageReference "DynamicColor" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/yannickl/DynamicColor.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.1;
+			};
+		};
+		099487E82CEBC59500B3FC57 /* XCRemoteSwiftPackageReference "MCEmojiPicker" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/izyumkin/MCEmojiPicker";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.3;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -636,6 +668,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0915C1672CB80DA1003CF70B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignInSwift;
+		};
+		0932EB3A2CEB6BBF00321EEE /* DynamicColor */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0932EB392CEB6BBF00321EEE /* XCRemoteSwiftPackageReference "DynamicColor" */;
+			productName = DynamicColor;
+		};
+		099487E92CEBC59500B3FC57 /* MCEmojiPicker */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 099487E82CEBC59500B3FC57 /* XCRemoteSwiftPackageReference "MCEmojiPicker" */;
+			productName = MCEmojiPicker;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
