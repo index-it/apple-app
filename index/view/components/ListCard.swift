@@ -11,10 +11,10 @@ import DynamicColor
 struct ListCard: View {
     var list: IxList
     var onTap: () -> Void
-    var onSharing: () -> Void
+    var onShare: () -> Void
     var onEdit: () -> Void
     var onDelete: () -> Void
-    var showActionsButton: Bool = true
+    var withInteractions: Bool = true
 
     var body: some View {
         VStack {
@@ -24,9 +24,9 @@ struct ListCard: View {
                 
                 Spacer()
                 
-                if (showActionsButton) {
+                if withInteractions {
                     Menu {
-                        Button("Sharing", systemImage: "person.2.badge.gearshape", action: onSharing)
+                        Button("Sharing", systemImage: "person.2.badge.gearshape", action: onShare)
                         
                         Button("Edit", systemImage: "pencil", action: onEdit)
                         
@@ -53,7 +53,7 @@ struct ListCard: View {
                     Image(systemName: "person.2.fill")
                         .font(.title3)
                         .foregroundStyle(list.color.toColor(fallback: .white).contrastColor())
-                        .onTapGesture(perform: onSharing)
+                        .onTapGesture(perform: onShare)
                 }
                 
                 Text(list.name)
@@ -81,6 +81,28 @@ struct ListCard: View {
         )
         .frame(height: 120)
         .onTapGesture(perform: onTap)
+        .if(withInteractions) { view in
+            // TODO: Fix white edges on context menu
+            view.contextMenu {
+                Button{
+                    onShare()
+                } label: {
+                    Label("Share", systemImage: "person.2.badge.gearshape")
+                }
+                
+                Button {
+                    onEdit()
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                }
+                
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+            }
+        }
     }
 }
 
@@ -98,7 +120,7 @@ struct ListCard: View {
         editedAt: nil
     )
     
-    ListCard(list: sampleList, onTap: {}, onSharing: {}, onEdit: {}, onDelete: {})
+    ListCard(list: sampleList, onTap: {}, onShare: {}, onEdit: {}, onDelete: {})
         .padding()
         .frame(width: 250)
 }

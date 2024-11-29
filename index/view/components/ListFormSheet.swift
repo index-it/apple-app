@@ -20,32 +20,33 @@ struct ListFormSheet: View {
     @State private var emoji: String
     @State private var isPublic: Bool
 
-    private var saveCallback: (String, Color, String, Bool) -> Void
+    private var onSave: (_ name: String, _ color: Color, _ icon: String, _ isPublic: Bool) -> Void
     
     init(
         showSheet: Binding<Bool>,
-        saveCallback: @escaping (String, Color, String, Bool) -> Void,
-        name: String? = nil,
-        color: Color? = nil,
-        emoji: String? = nil,
-        isPublic: Bool? = nil,
-        namePlaceholder: String? = nil
+        name: String,
+        color: Color,
+        emoji: String,
+        isPublic: Bool,
+        namePlaceholder: String,
+        onSave: @escaping (_ name: String, _ color: Color, _ icon: String, _ isPublic: Bool) -> Void
     ) {
         self._showSheet = showSheet
-        self.saveCallback = saveCallback
         
-        self.name = name ?? ""
-        self.color = color ?? Color.cyan
-        self.emoji = emoji ?? String.randomEmoji()
-        self.isPublic = isPublic ?? false
-        self.namePlaceholder = namePlaceholder ?? "List name"
+        self.name = name
+        self.color = color
+        self.emoji = emoji
+        self.isPublic = isPublic
+        self.namePlaceholder = namePlaceholder
+        
+        self.onSave = onSave
     }
 
     var body: some View {
         NavigationView {
             VStack {
                 VStack {
-                    ListCard(list: IxList.loading(name: name.isEmpty ? namePlaceholder : name, emoji: emoji, color: color.hexString()), onTap: {}, onSharing: {}, onEdit: {}, onDelete: {}, showActionsButton: false)
+                    ListCard(list: IxList.loading(name: name.isEmpty ? namePlaceholder : name, emoji: emoji, color: color.hexString()), onTap: {}, onShare: {}, onEdit: {}, onDelete: {}, withInteractions: false)
                         .frame(maxWidth: 200)
                         .padding()
                     
@@ -109,7 +110,7 @@ struct ListFormSheet: View {
                     
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
-                            saveCallback(name, color, emoji, isPublic)
+                            onSave(name, color, emoji, isPublic)
                             showSheet = false
                         } label: {
                             Text("Save")
@@ -126,7 +127,14 @@ struct ListFormSheet: View {
 #Preview {
     @Previewable @State var show = true
 
-    ListFormSheet(showSheet: $show) { name, color, emoji, isPublic in
+    ListFormSheet(
+        showSheet: $show,
+        name: "",
+        color: Color.cyan,
+        emoji: String.randomEmoji(),
+        isPublic: false,
+        namePlaceholder: "List name"
+    ) { name, color, emoji, isPublic in
         
     }
 }

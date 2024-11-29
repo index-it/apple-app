@@ -532,6 +532,7 @@ class IxApiClient: ObservableObject {
         
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(requestBody)
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -569,7 +570,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await URLSession.shared.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -598,7 +599,7 @@ class IxApiClient: ObservableObject {
     /// - `IxApiClientError.MissingPermission` List owner required
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    func getListUsersWithAccess(id: String) async throws -> [NetworkListSingleUserAccessInfo] {
+    func getListUsersWithAccess(id: String) async throws -> [IxListSingleUserAccessInfo] {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(id)/access/users")
         
         var request = URLRequest(url: url)
@@ -609,7 +610,7 @@ class IxApiClient: ObservableObject {
         
         switch httpResponse.statusCode {
         case 200:
-            return try JSONDecoder().decode([NetworkListSingleUserAccessInfo].self, from: data)
+            return try JSONDecoder().decode([IxListSingleUserAccessInfo].self, from: data)
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
@@ -634,7 +635,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await URLSession.shared.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -667,6 +668,7 @@ class IxApiClient: ObservableObject {
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(requestBody)
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -703,6 +705,7 @@ class IxApiClient: ObservableObject {
         
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(requestBody)
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -801,6 +804,7 @@ class IxApiClient: ObservableObject {
         
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(requestBody)
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -929,10 +933,10 @@ class IxApiClient: ObservableObject {
         let url = URL(string: "\(Self.baseUrl)/lists/\(listId)/items")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let body = ListItemCreateOrEditReqBody(name: name, category_id: categoryId, link: link)
-        let encoder = JSONEncoder()
-        request.httpBody = try encoder.encode(body)
+        request.httpBody = try JSONEncoder().encode(body)
         
         let (data, response) = try await URLSession.shared.data(for: request)
         let httpResponse = response as! HTTPURLResponse
@@ -960,11 +964,11 @@ class IxApiClient: ObservableObject {
         let url = URL(string: "\(Self.baseUrl)/lists/\(listId)/items/\(itemId)")!
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         // Setting the body for the request
         let body = ListItemCreateOrEditReqBody(name: name, category_id: categoryId, link: link)
-        let encoder = JSONEncoder()
-        request.httpBody = try encoder.encode(body)
+        request.httpBody = try JSONEncoder().encode(body)
         
         let (data, response) = try await URLSession.shared.data(for: request)
         let httpResponse = response as! HTTPURLResponse
@@ -1022,7 +1026,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await URLSession.shared.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -1080,6 +1084,7 @@ class IxApiClient: ObservableObject {
         
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let body = try JSONEncoder().encode(ListContentUpdateReqBody(content: content))
         request.httpBody = body
         

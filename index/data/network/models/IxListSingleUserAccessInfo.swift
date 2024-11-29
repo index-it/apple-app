@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct NetworkListSingleUserAccessInfo: Codable {
+struct IxListSingleUserAccessInfo: Codable {
     let user_id: String
     let email: String
     let editor: Bool

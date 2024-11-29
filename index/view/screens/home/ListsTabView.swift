@@ -22,6 +22,8 @@ struct ListsTabView: View {
     @State private var newListColor: Color? = nil
     
     @State private var selectedList: IxList? = nil
+    @State private var selectedListUsersWithAccess: [IxListSingleUserAccessInfo] = []
+    @State private var showShareSheet = false
     @State private var showEditSheet = false
     @State private var showDeleteConfirmationDialog = false
     
@@ -99,7 +101,14 @@ struct ListsTabView: View {
                 try context.save()
             }
         } catch {
-            
+        }
+    }
+    
+    func fetchListUsersWthAccess(id: String) async {
+        do {
+            selectedListUsersWithAccess = try await ixApiClient.getListUsersWithAccess(id: id)
+        } catch {
+            // TODO
         }
     }
     
@@ -119,71 +128,10 @@ struct ListsTabView: View {
     var body: some View {
         NavigationView {
             Group {
-                if (lists.isEmpty) {
-                    VStack {
-                        Spacer()
-                        
-                        ContentUnavailableView {
-                            Label("No lists", systemImage: "binoculars")
-                        } description: {
-                            Text("You don't have any list yet!")
-                        } actions: {
-                            Button {
-                                showCreationSheet = true
-                            } label: {
-                                Label("Create a list", systemImage: "plus")
-                            }.buttonStyle(.borderedProminent)
-                        }
-                        
-                        Spacer()
-                    }.frame(maxHeight: .infinity)
+                if lists.isEmpty {
+                    EmptyView
                 } else {
-                    ScrollView {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
-                            ForEach(lists.sorted(by: { first, second in
-                                first.name < second.name
-                            })) { list in
-                                ListCard(
-                                    list: list,
-                                    onTap: {
-                                        
-                                    },
-                                    onSharing: {
-                                        selectedList = list
-                                    },
-                                    onEdit: {
-                                        selectedList = list
-                                    },
-                                    onDelete: {
-                                        selectedList = list
-                                        showDeleteConfirmationDialog = true
-                                    }
-                                )
-                                    .contextMenu {
-                                        Button{
-                                            // TODO: copy from above
-                                        } label: {
-                                            Label("Share", systemImage: "person.2.badge.gearshape")
-                                        }
-                                        
-                                        Button {
-                                            
-                                        } label: {
-                                            Label("Edit", systemImage: "pencil")
-                                        }
-                                        
-                                        Button(role: .destructive) {
-                                            selectedList = list
-                                            showDeleteConfirmationDialog = true
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
-                                        }
-                                    }
-                                
-                                // TODO: Fix white edges on context menu
-                            }
-                        }.padding()
-                    }
+                    ListsGridView
                 }
             }.navigationTitle("Your lists")
                 .toolbar {
@@ -195,34 +143,47 @@ struct ListsTabView: View {
                         }
                     }
                 }
+                .sheet(isPresented: $showShareSheet) {
+                    // TODO: Loading indicator
+                    ListSharingSheet(
+                        showSheet: $showShareSheet,
+                        isPublic: selectedList?.is_public ?? false,
+                        usersWithAccess: $selectedListUsersWithAccess,
+                        onPublicChange: { isPublic in
+                            
+                        }
+                    ).presentationDetents([.large])
+                }
                 .sheet(isPresented: $showCreationSheet) {
                     ListFormSheet(
                         showSheet: $showCreationSheet,
-                        saveCallback: { name, color, emoji, isPublic in
-                            Task {
-                                await createList(name: name, color: color, emoji: emoji, isPublic: isPublic)
-                            }
-                        },
-                        color: newListColor,
-                        namePlaceholder: newListNamePlaceholder
-                    )
+                        name: "",
+                        color: newListColor ?? Color.green,
+                        emoji: String.randomEmoji(),
+                        isPublic: false,
+                        namePlaceholder: newListNamePlaceholder ?? "List name"
+                    ) { name, color, emoji, isPublic in
+                        Task {
+                            await createList(name: name, color: color, emoji: emoji, isPublic: isPublic)
+                        }
+                    }
                         .presentationDetents([.large])
                 }
                 .sheet(isPresented: $showEditSheet) {
                     ListFormSheet(
                         showSheet: $showEditSheet,
-                        saveCallback: { name, color, emoji, isPublic in
-                            if let selectedList {
-                                Task {
-                                    await editList(id: selectedList.id, name: name, color: color, emoji: emoji, isPublic: isPublic)
-                                }
+                        name: selectedList?.name ?? "",
+                        color: selectedList?.color.toColor(fallback: .green) ?? Color.green,
+                        emoji: selectedList?.icon ?? String.randomEmoji(),
+                        isPublic: selectedList?.is_public ?? false,
+                        namePlaceholder: newListNamePlaceholder ?? "List name"
+                    ) { name, color, emoji, isPublic in
+                        if let selectedList {
+                            Task {
+                                await editList(id: selectedList.id, name: name, color: color, emoji: emoji, isPublic: isPublic)
                             }
-                        },
-                        name: selectedList?.name,
-                        color: selectedList?.color,
-                        emoji: selectedList?.icon,
-                        isPublic: selectedList?.is_public
-                    )
+                        }
+                    }.presentationDetents([.large])
                 }
                 .confirmationDialog(
                     Text("Confirm deletion"),
@@ -263,6 +224,58 @@ struct ListsTabView: View {
                     await fetchListTemplateSuggestion()
                 }
             }
+        }
+    }
+    
+    private var EmptyView: some View {
+        VStack {
+            Spacer()
+            
+            ContentUnavailableView {
+                Label("No lists", systemImage: "binoculars")
+            } description: {
+                Text("You don't have any list yet!")
+            } actions: {
+                Button {
+                    showCreationSheet = true
+                } label: {
+                    Label("Create a list", systemImage: "plus")
+                }.buttonStyle(.borderedProminent)
+            }
+            
+            Spacer()
+        }.frame(maxHeight: .infinity)
+    }
+    
+    private var ListsGridView: some View {
+        ScrollView {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
+                ForEach(lists.sorted(by: { first, second in
+                    first.name < second.name
+                })) { list in
+                    ListCard(
+                        list: list,
+                        onTap: {
+                            
+                        },
+                        onShare: {
+                            selectedList = list
+                            Task {
+                                await fetchListUsersWthAccess(id: list.id)
+                            }
+                            showShareSheet = true
+                        },
+                        onEdit: {
+                            selectedList = list
+                            showEditSheet = true
+                        },
+                        onDelete: {
+                            selectedList = list
+                            showDeleteConfirmationDialog = true
+                        }
+                    )
+                }
+            }.padding()
         }
     }
 }
