@@ -22,10 +22,27 @@ struct ListsTabView: View {
     @State private var newListColor: Color? = nil
     
     @State private var selectedList: IxList? = nil
-    @State private var selectedListUsersWithAccess: [IxListSingleUserAccessInfo] = []
-    @State private var showShareSheet = false
     @State private var showEditSheet = false
     @State private var showDeleteConfirmationDialog = false
+    
+    /*
+     SHARE SHEET STATE
+     */
+    @State private var selectedListUsersWithAccess: [IxListSingleUserAccessInfo] = []
+    @State private var showShareSheet = false
+    @State private var showUserInvitationSuccessAlert = false
+    @State private var loadingSelectedListPublic: Bool = false
+    @State private var loadingSelectedListUsers: Bool = false
+    @State private var loadingSelectedListUserInvite: Bool = false
+    @State private var loadingSelectedListUserEditOrRevokePermissions: String? = nil
+    
+    private func saveList(_ list: IxList) async throws {
+        try context.transaction {
+            context.delete(list)
+            context.insert(list)
+            try context.save()
+        }
+    }
     
     func fetchListTemplateSuggestion() async {
         do {
@@ -52,7 +69,6 @@ struct ListsTabView: View {
                 try context.save()
             }
         } catch {
-            print(error)
             errorService.insert(.customMessage(message: "Something went wrong while trying to get your lists!"))
         }
     }
@@ -95,22 +111,11 @@ struct ListsTabView: View {
         do {
             let list = try await ixApiClient.editList(id: id, name: name, icon: emoji, color: color.hexString(), is_public: isPublic)
             
-            try context.transaction {
-                try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
-                context.insert(list)
-                try context.save()
-            }
+            try await saveList(list)
         } catch {
         }
     }
     
-    func fetchListUsersWthAccess(id: String) async {
-        do {
-            selectedListUsersWithAccess = try await ixApiClient.getListUsersWithAccess(id: id)
-        } catch {
-            // TODO
-        }
-    }
     
     func deleteList(id: String) async {
         do {
@@ -124,6 +129,93 @@ struct ListsTabView: View {
             errorService.insert(.customMessage())
         }
     }
+    
+    
+    /*
+     LIST SHARING FUNCTIONS
+     */
+    func editListPublic(isPublic: Bool) async {
+        if let selectedList {
+            do {
+                loadingSelectedListPublic = true
+                let list = try await ixApiClient.editList(id: selectedList.id, name: selectedList.name, icon: selectedList.icon, color: selectedList.color, is_public: isPublic)
+                
+                loadingSelectedListPublic = false
+                
+                try await saveList(list)
+            } catch {
+                loadingSelectedListPublic = false
+            }
+        }
+    }
+    
+    func fetchListUsersWthAccess(listId: String) async {
+        do {
+            loadingSelectedListUsers = true
+            selectedListUsersWithAccess = try await ixApiClient.getListUsersWithAccess(id: listId)
+            loadingSelectedListUsers = false
+        } catch {
+            loadingSelectedListUsers = false
+            // TODO
+        }
+    }
+    
+    func inviteUser(email: String, editor: Bool) async {
+        if let selectedList {
+            do {
+                loadingSelectedListUserInvite = true
+                let list = try await ixApiClient.inviteUserToList(listId: selectedList.id, email: email, editor: editor)
+                
+                if list == nil {
+                    showUserInvitationSuccessAlert = true
+                }
+                
+                loadingSelectedListUserInvite = false
+            } catch {
+                loadingSelectedListUserInvite = false
+            }
+        }
+    }
+
+    func editUserPermissions(email: String, editor: Bool) async {
+        if let selectedList {
+            do {
+                loadingSelectedListUserEditOrRevokePermissions = selectedListUsersWithAccess.first(where: { user in
+                    user.email == email
+                })?.user_id
+                
+                let list = try await ixApiClient.inviteUserToList(listId: selectedList.id, email: email, editor: editor)
+                
+                loadingSelectedListUserEditOrRevokePermissions = nil
+                
+                if let list {
+                    try await saveList(list)
+                }
+                
+                await fetchListUsersWthAccess(listId: selectedList.id)
+            } catch {
+                loadingSelectedListUserEditOrRevokePermissions = nil
+            }
+        }
+    }
+    
+    func revokeUserAccessFromList(userId: String) async {
+        if let selectedList {
+            do {
+                loadingSelectedListUserEditOrRevokePermissions = userId
+                
+                let list = try await ixApiClient.revokeListAccessFromUser(listId: selectedList.id, userId: userId)
+                loadingSelectedListUserEditOrRevokePermissions = nil
+                
+                try await saveList(list)
+                
+                await fetchListUsersWthAccess(listId: selectedList.id)
+            } catch {
+                loadingSelectedListUserEditOrRevokePermissions = nil
+            }
+        }
+    }
+    
     
     var body: some View {
         NavigationView {
@@ -144,15 +236,32 @@ struct ListsTabView: View {
                     }
                 }
                 .sheet(isPresented: $showShareSheet) {
-                    // TODO: Loading indicator
                     ListSharingSheet(
                         showSheet: $showShareSheet,
-                        isPublic: selectedList?.is_public ?? false,
-                        usersWithAccess: $selectedListUsersWithAccess,
-                        onPublicChange: { isPublic in
-                            
+                        showUserInvitationSuccessAlert: $showUserInvitationSuccessAlert,
+                        loadingPublic: $loadingSelectedListPublic,
+                        loadingUsers: $loadingSelectedListUsers,
+                        loadingUserInvite: $loadingSelectedListUserInvite,
+                        loadingUserEditOrDelete: $loadingSelectedListUserEditOrRevokePermissions,
+                        isPublic: $selectedList.wrappedValue?.is_public ?? false,
+                        usersWithAccess: $selectedListUsersWithAccess
+                    ) { isPublic in
+                        Task {
+                            await editListPublic(isPublic: isPublic)
                         }
-                    ).presentationDetents([.large])
+                    } onUserInvite: { email, editor in
+                        Task {
+                            await inviteUser(email: email, editor: editor)
+                        }
+                    } onUserEditEditorPermission: { email, editor in
+                        Task {
+                            await editUserPermissions(email: email, editor: editor)
+                        }
+                    } onUserRevokeAccess: { userId in
+                        Task {
+                            await revokeUserAccessFromList(userId: userId)
+                        }
+                    }.presentationDetents([.large])
                 }
                 .sheet(isPresented: $showCreationSheet) {
                     ListFormSheet(
@@ -256,12 +365,12 @@ struct ListsTabView: View {
                     ListCard(
                         list: list,
                         onTap: {
-                            
+                            navigationManager.push(navigationRoute: .ListRoute(listId: list.id))
                         },
                         onShare: {
                             selectedList = list
                             Task {
-                                await fetchListUsersWthAccess(id: list.id)
+                                await fetchListUsersWthAccess(listId: list.id)
                             }
                             showShareSheet = true
                         },

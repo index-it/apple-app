@@ -26,8 +26,10 @@ struct MainView: View {
                     HomeScreen()
                 }
             }.navigationDestination(for: NavigationRoute.self) { destination in
-//                switch destination {
-//                }
+                switch destination {
+                case let .ListRoute(listId: listId):
+                    ListScreen(listId: listId)
+                }
             }
         }
     }

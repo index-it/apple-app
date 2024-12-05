@@ -654,7 +654,7 @@ class IxApiClient: ObservableObject {
     
     /// Gives a user access to a list
     ///
-    /// - Returns: `null` if the user was invited, the list if they already accepted a previous invitation and their permissions are not changed
+    /// - Returns: `null` if the user was invited, the list if they already accepted a previous invitation and their permissions are changed
     ///
     /// ### Throws:
     /// - `IxApiClientError.InvalidData` Cannot invite self
@@ -662,7 +662,7 @@ class IxApiClient: ObservableObject {
     /// - `IxApiClientError.NotFound` List not found
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    func inviteUserToList(listId: String, email: String, editor: Bool) async throws -> NetworkList? {
+    func inviteUserToList(listId: String, email: String, editor: Bool) async throws -> IxList? {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access")
         let requestBody = ListGiveUserAccessReqBody(email: email, editor: editor)
         
@@ -676,7 +676,7 @@ class IxApiClient: ObservableObject {
         
         switch httpResponse.statusCode {
         case 200:
-            return try JSONDecoder().decode(NetworkList.self, from: data)
+            return IxList(networkList: try JSONDecoder().decode(NetworkList.self, from: data))
         case 201:
             return nil
         case 400:
@@ -699,7 +699,7 @@ class IxApiClient: ObservableObject {
     /// - `IxApiClientError.NotFound` List not found
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    func removeListAccessFromUser(listId: String, userId: String) async throws -> NetworkList {
+    func revokeListAccessFromUser(listId: String, userId: String) async throws -> IxList {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access")
         let requestBody = ListRemoveUserAccessReqBody(user_id: userId)
         
@@ -713,7 +713,7 @@ class IxApiClient: ObservableObject {
         
         switch httpResponse.statusCode {
         case 200:
-            return try JSONDecoder().decode(NetworkList.self, from: data)
+            return IxList(networkList: try JSONDecoder().decode(NetworkList.self, from: data))
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
@@ -737,7 +737,7 @@ class IxApiClient: ObservableObject {
     /// - `IxApiClientError.NotFound` List not found
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    func getListCategories(listId: String) async throws -> [NetworkListCategory] {
+    func getListCategories(listId: String) async throws -> [IxListCategory] {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories")
         
         var request = URLRequest(url: url)
@@ -748,7 +748,7 @@ class IxApiClient: ObservableObject {
         
         switch httpResponse.statusCode {
         case 200:
-            return try JSONDecoder().decode([NetworkListCategory].self, from: data)
+            return try JSONDecoder().decode([NetworkListCategory].self, from: data).map { IxListCategory(networkListCategory: $0) }
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:

@@ -19,6 +19,10 @@ struct ListFormSheet: View {
     @State private var color: Color
     @State private var emoji: String
     @State private var isPublic: Bool
+    
+    private var isNameInvalid: Bool {
+        name.isEmpty || name.count >= 100
+    }
 
     private var onSave: (_ name: String, _ color: Color, _ icon: String, _ isPublic: Bool) -> Void
     
@@ -114,7 +118,7 @@ struct ListFormSheet: View {
                             showSheet = false
                         } label: {
                             Text("Save")
-                        }
+                        }.disabled(isNameInvalid)
                     }
                 }
                 .onAppear {

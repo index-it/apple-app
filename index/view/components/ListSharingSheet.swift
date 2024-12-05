@@ -15,23 +15,52 @@ struct ListSharingSheet: View {
     @State private var selectedUser: IxListSingleUserAccessInfo? = nil
     @State private var showUserActions = false
     
-    @Binding private var showSheet: Bool
+    private var isInviteEmailValid: Bool {
+        addUserEmail.contains("@") && addUserEmail.contains(".") && addUserEmail.count >= 5
+    }
+    
+    
     @State private var isPublic: Bool
+    @Binding private var showSheet: Bool
+    @Binding private var showUserInvitationSuccessAlert: Bool
+    @Binding private var loadingPublic: Bool
+    @Binding private var loadingUsers: Bool
+    @Binding private var loadingUserInvite: Bool
+    @Binding private var loadingUserEditOrDelete: String?
     @Binding private var usersWithAccess: [IxListSingleUserAccessInfo]
     
     private var onPublicChange: (Bool) -> Void
+    private var onUserInvite: (String, Bool) -> Void
+    private var onEditUserPermissions: (String, Bool) -> Void
+    private var onUserRevoke: (String) -> Void
     
 
     init(
         showSheet: Binding<Bool>,
+        showUserInvitationSuccessAlert: Binding<Bool>,
+        loadingPublic: Binding<Bool>,
+        loadingUsers: Binding<Bool>,
+        loadingUserInvite: Binding<Bool>,
+        loadingUserEditOrDelete: Binding<String?>,
         isPublic: Bool,
         usersWithAccess: Binding<[IxListSingleUserAccessInfo]>,
-        onPublicChange: @escaping (Bool) -> Void
+        onPublicChange: @escaping (Bool) -> Void,
+        onUserInvite: @escaping (String, Bool) -> Void,
+        onUserEditEditorPermission: @escaping (String, Bool) -> Void,
+        onUserRevokeAccess: @escaping (String) -> Void
     ) {
         self._showSheet = showSheet
+        self._showUserInvitationSuccessAlert = showUserInvitationSuccessAlert
+        self._loadingPublic = loadingPublic
+        self._loadingUsers = loadingUsers
+        self._loadingUserInvite = loadingUserInvite
+        self._loadingUserEditOrDelete = loadingUserEditOrDelete
         self.isPublic = isPublic
         self._usersWithAccess = usersWithAccess
         self.onPublicChange = onPublicChange
+        self.onUserInvite = onUserInvite
+        self.onEditUserPermissions = onUserEditEditorPermission
+        self.onUserRevoke = onUserRevokeAccess
     }
     
     var body: some View {
@@ -45,14 +74,29 @@ struct ListSharingSheet: View {
                         EditSheet
                     }
                 }
-        }
+        }.alert(
+            "Invitation sent",
+            isPresented: $showUserInvitationSuccessAlert) {
+                Button("Ok", role: .cancel) {}
+            } message: {
+                Text("An invitation email has been sent to \(addUserEmail). He will need to accept the invitation to \(addUserEditor ? "collaborate in " : "view") this list.")
+            }
+
     }
     
     var ShareSheet: some View {
         VStack {
             Form {
                 Section {
-                    Toggle("Public list", isOn: $isPublic)
+                    Toggle(isOn: $isPublic) {
+                        HStack {
+                            if loadingPublic {
+                                ProgressView()
+                            }
+                            
+                            Text("Public list")
+                        }
+                    }.disabled(loadingPublic)
                 } footer: {
                     Text("By making this list public it will be accessible by anyone, but only you will be able to edit it")
                 }
@@ -74,6 +118,7 @@ struct ListSharingSheet: View {
                         
                         Button("Invite", systemImage: "plus") {
                             addUserEditor = true
+                            addUserEmail = ""
                             navPath.append(.InviteUser)
                         }
                     } header: {
@@ -92,13 +137,21 @@ struct ListSharingSheet: View {
                                     selectedUser = user
                                     showUserActions = true
                                 } label: {
-                                    NavigationLink(user.email, destination: EmptyView())
+                                    HStack {
+                                        if loadingUserEditOrDelete == user.user_id {
+                                            ProgressView()
+                                        }
+                                        
+                                        NavigationLink(user.email, destination: EmptyView())
+                                    }
                                 }.foregroundStyle(Color(uiColor: .label))
+                                    .disabled(loadingUserEditOrDelete == user.user_id)
                             }
                         }
                         
                         Button("Invite", systemImage: "plus") {
                             addUserEditor = false
+                            addUserEmail = ""
                             navPath.append(.InviteUser)
                         }
                     } header: {
@@ -110,16 +163,27 @@ struct ListSharingSheet: View {
             }
         }.navigationTitle("Sharing")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem {
+                    if loadingUsers {
+                        ProgressView()
+                    }
+                }
+            }
             .onChange(of: isPublic) { _, new in
                 onPublicChange(new)
             }
             .confirmationDialog("Manage user access", isPresented: $showUserActions) {
                 Button(selectedUser?.editor ?? false ? "Revoke edit permissions" : "Make editor") {
-                    
+                    if let selectedUser {
+                        onEditUserPermissions(selectedUser.email, !selectedUser.editor)
+                    }
                 }
                 
                 Button("Revoke access completely", role: .destructive) {
-                    
+                    if let selectedUser {
+                        onUserRevoke(selectedUser.user_id)
+                    }
                 }
             }
     }
@@ -145,13 +209,17 @@ struct ListSharingSheet: View {
             }.frame(maxHeight: 250)
             
             Button {
+                onUserInvite(addUserEmail, addUserEditor)
+                navPath.removeLast()
             } label: {
                 HStack {
                     Label("Send invite", systemImage: "paperplane")
                 }.frame(maxWidth: .infinity)
+                    
             }.buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .padding()
+                .disabled(loadingUserInvite || !isInviteEmailValid)
             
         }.frame(maxHeight: .infinity, alignment: .top)
             .background(Color(UIColor.systemGroupedBackground))
@@ -166,11 +234,28 @@ struct ListSharingSheet: View {
 
 #Preview {
     @Previewable @State var show = true
+    @Previewable @State var showUserInvitationSuccessAlert = false
+    @Previewable @State var loadingPublic = true
+    @Previewable @State var loadingUsers = true
+    @Previewable @State var loadingUserInvite = true
+    @Previewable @State var loadingUserEditOrDelete: String? = "1"
     @Previewable @State var users: [IxListSingleUserAccessInfo] = [
-        IxListSingleUserAccessInfo(user_id: "1", email: "giuliopime@gmail.com", editor: false)
+        IxListSingleUserAccessInfo(user_id: "1", email: "test@index-it.app", editor: false)
     ]
     
-    ListSharingSheet(showSheet: $show, isPublic: false, usersWithAccess: $users) { _ in
-        
-    }
+    
+    ListSharingSheet(
+        showSheet: $show,
+        showUserInvitationSuccessAlert: $showUserInvitationSuccessAlert,
+        loadingPublic: $loadingPublic,
+        loadingUsers: $loadingUsers,
+        loadingUserInvite: $loadingUserInvite,
+        loadingUserEditOrDelete: $loadingUserEditOrDelete,
+        isPublic: false,
+        usersWithAccess: $users,
+        onPublicChange: { _ in },
+        onUserInvite: { _, _ in },
+        onUserEditEditorPermission: { _,_  in },
+        onUserRevokeAccess: { _ in }
+    )
 }
