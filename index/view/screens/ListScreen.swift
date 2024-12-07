@@ -93,6 +93,7 @@ struct ListScreen: View {
                     }
                     Task {
                         await fetchCategories()
+                        selectedCategoryId = categories.first?.id
                     }
                 }
             }
@@ -110,38 +111,7 @@ struct ListScreen: View {
         VStack {
             Spacer()
             
-            CategoriesIndicator
-        }
-    }
-    
-    private var CategoriesIndicator: some View {
-        VStack {
-            ScrollView(.horizontal) {
-                LazyHStack {
-                    ForEach(categories) { category in
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color(hexString: category.color))
-                            .id(category.id)
-                            .frame(width: 240, height: 52)
-                    }
-                    
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.black)
-                        .id("add")
-                        .frame(width: 240, height: 52)
-                }
-                .scrollTargetLayout()
-                
-            }.scrollPosition(id: $selectedCategoryId)
-                .scrollTargetBehavior(.viewAligned)
-                .safeAreaPadding(.horizontal, 40)
-                .onChange(of: selectedCategoryId) { oldValue, newValue in
-                    if newValue == "add" {
-                        selectedCategoryId = nil
-                    }
-                    
-                    print("Scrolled to \(selectedCategoryId ?? "nil")")
-                }
+            CategorySelector(categories: categories, selectedCategoryId: $selectedCategoryId)
         }
     }
 }

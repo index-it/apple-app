@@ -38,4 +38,15 @@ class IxListCategory {
             edited_at: networkListCategory.edited_at
         )
     }
+    
+    static func loading() -> IxListCategory {
+        return IxListCategory(
+            id: UUID().uuidString,
+            user_id: "",
+            list_id: "",
+            name: "Loading...",
+            color: "#000000",
+            created_at: Date.now.currentTimeMillis()
+        )
+    }
 }
