@@ -19,8 +19,17 @@ struct ListScreen: View {
     @State private var list: IxList = IxList.loading()
     
     @Query private var categories: [IxListCategory]
-    @State private var selectedCategoryId: String? = nil
-    
+    @State private var selectedCategoryId: String? = "none"
+    private var onCreateNewCategory: Bool {
+        selectedCategoryId == "new"
+    }
+    private var selectedCategory: IxListCategory? {
+        if selectedCategoryId == "none" || selectedCategoryId == "new" {
+            nil
+        } else {
+            categories.first { $0.id == selectedCategoryId }
+        }
+    }
     
     init(listId: String) {
         self.listId = listId
@@ -83,6 +92,29 @@ struct ListScreen: View {
         }
     }
     
+    func fetchItems() async {
+        do {
+            let items = try await ixApiClient.getListItems(listId: listId)
+            
+            try context.transaction {
+                try context.delete(
+                    model: IxListItem.self,
+                    where: #Predicate { item in
+                        item.list_id == listId
+                    }
+                )
+                
+                items.forEach { item in
+                    context.insert(item)
+                }
+                
+                try context.save()
+            }
+        } catch {
+            
+        }
+    }
+    
     var body: some View {
         ScreenContent
             .navigationTitle(list.name)
@@ -93,7 +125,10 @@ struct ListScreen: View {
                     }
                     Task {
                         await fetchCategories()
-                        selectedCategoryId = categories.first?.id
+//                        selectedCategoryId = categories.first?.id
+                    }
+                    Task {
+                        await fetchItems()
                     }
                 }
             }
@@ -109,9 +144,16 @@ struct ListScreen: View {
     
     private var ScreenContent: some View {
         VStack {
-            Spacer()
+            ItemsDisplayer(listId: listId, category: selectedCategory, withCompleted: false)
+                .padding(.horizontal)
             
-            CategorySelector(categories: categories, selectedCategoryId: $selectedCategoryId)
+            VStack {
+                CategorySelector(categories: categories, selectedCategoryId: $selectedCategoryId)
+                    .frame(height: CategoryUIDefaults.height + 48)
+                    
+                
+                Text(onCreateNewCategory ? "Create category" : (selectedCategory?.name ?? "Create item"))
+            }
         }
     }
 }

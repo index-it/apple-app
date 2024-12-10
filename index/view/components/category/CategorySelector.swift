@@ -15,32 +15,39 @@ struct CategorySelector: View {
             ScrollViewReader { scrollReader in
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 24) {
+                        NoCategoryIndicator(selected: selectedCategoryId == "none")
+                            .id("none")
+                        
                         ForEach(categories) { category in
                             CategoryIndicator(category: category, selected: category.id == selectedCategoryId)
                                 .id(category.id)
+                                .scrollTransition(axis: .horizontal) { content, phase in
+                                    content
+                                        .scaleEffect(
+                                            x: phase.isIdentity ? 3 : 1,
+                                            y: phase.isIdentity ? 3 : 1
+                                        )
+                                }
                         }
                         
-                        NewCategoryIndicator(selected: selectedCategoryId == nil)
-                            .id("add")
+                        NewCategoryIndicator(selected: selectedCategoryId == "new")
+                            .id("new")
                     }
                     .scrollTargetLayout()
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(height: CategoryUIDefaults.height + 48)
+
                 }.scrollPosition(id: $selectedCategoryId, anchor: .center)
                     .scrollTargetBehavior(.viewAligned)
                     .safeAreaPadding(geoProxy.size.width / 2)
                     .onScrollPhaseChange { oldPhase, newPhase in
                         if !newPhase.isScrolling {
                             withAnimation(.snappy(duration: 0.1)) {
-                                scrollReader.scrollTo(selectedCategoryId ?? "add", anchor: .center)
+                                scrollReader.scrollTo(selectedCategoryId, anchor: .center)
                             }
                         }
                     }
-                    .onChange(of: selectedCategoryId) { oldValue, newValue in
-                        if newValue == "add" {
-                            selectedCategoryId = nil
-                        }
-                        
-                        print("Scrolled to \(selectedCategoryId ?? "nil")")
-                    }
+                    .frame(height: CategoryUIDefaults.height + 48)
             }
         }
     }

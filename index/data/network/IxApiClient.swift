@@ -767,7 +767,7 @@ class IxApiClient: ObservableObject {
     /// - `IxApiClientError.NotFound` Category or list not found
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    func getCategory(listId: String, categoryId: String) async throws -> NetworkListCategory {
+    func getCategory(listId: String, categoryId: String) async throws -> IxListCategory {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories/\(categoryId)")
         
         var request = URLRequest(url: url)
@@ -778,7 +778,7 @@ class IxApiClient: ObservableObject {
         
         switch httpResponse.statusCode {
         case 200:
-            return try JSONDecoder().decode(NetworkListCategory.self, from: data)
+            return IxListCategory(networkListCategory: try JSONDecoder().decode(NetworkListCategory.self, from: data))
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
@@ -798,7 +798,7 @@ class IxApiClient: ObservableObject {
     /// - `IxApiClientError.NotFound` List or category not found
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    func updateListCategory(listId: String, categoryId: String, name: String, color: String) async throws -> NetworkListCategory {
+    func updateListCategory(listId: String, categoryId: String, name: String, color: String) async throws -> IxListCategory {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories/\(categoryId)")
         let requestBody = ListCategoryCreateOrEditReqBody(name: name, color: color)
         
@@ -812,7 +812,7 @@ class IxApiClient: ObservableObject {
         
         switch httpResponse.statusCode {
         case 200:
-            return try JSONDecoder().decode(NetworkListCategory.self, from: data)
+            return IxListCategory(networkListCategory: try JSONDecoder().decode(NetworkListCategory.self, from: data))
         case 400:
             throw IxApiClientError.InvalidData
         case 401:
@@ -866,7 +866,7 @@ class IxApiClient: ObservableObject {
     /// - `IxApiClientError.MissingPermission` Permission required
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    func getListItems(listId: String, completed: Bool? = nil) async throws -> [NetworkListItem] {
+    func getListItems(listId: String, completed: Bool? = nil) async throws -> [IxListItem] {
         var urlComponents = URLComponents(string: "\(Self.baseUrl)/lists/\(listId)/items")!
         var queryItems = [URLQueryItem]()
         
@@ -884,7 +884,7 @@ class IxApiClient: ObservableObject {
         
         switch httpResponse.statusCode {
         case 200:
-            return try JSONDecoder().decode([NetworkListItem].self, from: data)
+            return try JSONDecoder().decode([NetworkListItem].self, from: data).map { IxListItem(networkListItem: $0) }
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
@@ -901,7 +901,7 @@ class IxApiClient: ObservableObject {
     /// - `IxApiClientError.NotFound` The list or item doesn't exist
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    func getListItem(listId: String, itemId: String) async throws -> NetworkListItem {
+    func getListItem(listId: String, itemId: String) async throws -> IxListItem {
         let url = URL(string: "\(Self.baseUrl)/lists/\(listId)/items/\(itemId)")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -911,7 +911,7 @@ class IxApiClient: ObservableObject {
         
         switch httpResponse.statusCode {
         case 200:
-            return try JSONDecoder().decode(NetworkListItem.self, from: data)
+            return IxListItem(networkListItem: try JSONDecoder().decode(NetworkListItem.self, from: data))
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
@@ -929,7 +929,7 @@ class IxApiClient: ObservableObject {
     /// - `IxApiClientError.InvalidData`
     /// - `IxApiClientError.MissingPermission` List editor permissions required
     /// - `IxApiClientError.Unknown` Unknown error
-    func createListItem(listId: String, categoryId: String?, name: String, link: String?) async throws -> NetworkListItem {
+    func createListItem(listId: String, categoryId: String?, name: String, link: String?) async throws -> IxListItem {
         let url = URL(string: "\(Self.baseUrl)/lists/\(listId)/items")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -943,7 +943,7 @@ class IxApiClient: ObservableObject {
         
         switch httpResponse.statusCode {
         case 200:
-            return try JSONDecoder().decode(NetworkListItem.self, from: data)
+            return IxListItem(networkListItem: try JSONDecoder().decode(NetworkListItem.self, from: data))
         case 400:
             throw IxApiClientError.InvalidData
         case 403:
@@ -960,7 +960,7 @@ class IxApiClient: ObservableObject {
     /// - `IxApiClientError.MissingPermission` List editor permissions required
     /// - `IxApiClientError.NotFound` List or item not found
     /// - `IxApiClientError.Unknown` Unknown error
-    func updateListItem(listId: String, itemId: String, name: String, categoryId: String?, link: String?) async throws -> NetworkListItem {
+    func updateListItem(listId: String, itemId: String, name: String, categoryId: String?, link: String?) async throws -> IxListItem {
         let url = URL(string: "\(Self.baseUrl)/lists/\(listId)/items/\(itemId)")!
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
@@ -975,7 +975,7 @@ class IxApiClient: ObservableObject {
         
         switch httpResponse.statusCode {
         case 200:
-            return try JSONDecoder().decode(NetworkListItem.self, from: data)
+            return IxListItem(networkListItem: try JSONDecoder().decode(NetworkListItem.self, from: data))
         case 400:
             throw IxApiClientError.InvalidData
         case 403:
@@ -994,7 +994,7 @@ class IxApiClient: ObservableObject {
     /// - `IxApiClientError.NotFound` List or item not found
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    func setListItemCompletion(listId: String, itemId: String, completed: Bool) async throws -> NetworkListItem {
+    func setListItemCompletion(listId: String, itemId: String, completed: Bool) async throws -> IxListItem {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/items/\(itemId)/completion")
             .appending(queryItems: [URLQueryItem(name: "completed", value: "\(completed)")])
         
@@ -1006,7 +1006,7 @@ class IxApiClient: ObservableObject {
         
         switch httpResponse.statusCode {
         case 200:
-            return try JSONDecoder().decode(NetworkListItem.self, from: data)
+            return IxListItem(networkListItem: try JSONDecoder().decode(NetworkListItem.self, from: data))
         case 403:
             throw IxApiClientError.MissingPermission
         case 404:

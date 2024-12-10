@@ -13,16 +13,14 @@ struct CategoryIndicator: View {
     
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: CategoryUIDefaults.cornerRadius)
                 .fill(Color(hexString: category.color))
-                .id(category.id)
-                .frame(width: 52, height: 52)
-            
+                .frame(width: CategoryUIDefaults.width, height: CategoryUIDefaults.height)
+
             if selected {
                 Image(systemName: "plus")
                     .foregroundStyle(Color(hexString: category.color).contrastColor())
-                    .font(.title)
-                    .fontWeight(.semibold)
+                    .font(CategoryUIDefaults.font)
             }
         }
     }

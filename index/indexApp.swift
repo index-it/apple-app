@@ -68,7 +68,7 @@ struct indexApp: App {
                 .environmentObject(authNavigationManager)
                 .environmentObject(ixApiClient)
                 .environmentObject(errorService)
-                .modelContainer(for: [IxList.self, IxListCategory.self], isAutosaveEnabled: false)
+                .modelContainer(for: [IxList.self, IxListCategory.self, IxListItem.self], isAutosaveEnabled: false)
                 .onReceive(ixApiClient.$authenticationStatus) { newValue in
                     handleNewNetworkAuthStatus(networkAuthStatus: newValue)
                 }

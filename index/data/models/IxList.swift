@@ -59,7 +59,7 @@ class IxList {
         color: String? = nil
     ) -> IxList {
         return IxList(
-            id: "loading",
+            id: UUID().uuidString,
             userId: "loading",
             name: name ?? "",
             emoji: emoji ?? "🏝️",
