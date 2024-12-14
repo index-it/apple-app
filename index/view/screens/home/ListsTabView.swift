@@ -17,6 +17,8 @@ struct ListsTabView: View {
 
     @Query var lists: [IxList]
     
+    @State private var colorsSuggested: [Color] = []
+    
     @State private var showCreationSheet = false
     @State private var newListNamePlaceholder: String? = nil
     @State private var newListColor: Color? = nil
@@ -50,6 +52,14 @@ struct ListsTabView: View {
             
             newListNamePlaceholder = template.name
             newListColor = Color(hexString: template.color)
+        } catch {
+            
+        }
+    }
+    
+    func fetchColorsSuggestion() async {
+        do {
+            colorsSuggested = try await ixApiClient.getColorsSuggestion().map { Color(hexString: $0) }
         } catch {
             
         }
@@ -270,7 +280,8 @@ struct ListsTabView: View {
                         color: newListColor ?? Color.green,
                         emoji: String.randomEmoji(),
                         isPublic: false,
-                        namePlaceholder: newListNamePlaceholder ?? "List name"
+                        namePlaceholder: newListNamePlaceholder ?? "List name",
+                        colors: colorsSuggested
                     ) { name, color, emoji, isPublic in
                         Task {
                             await createList(name: name, color: color, emoji: emoji, isPublic: isPublic)
@@ -285,7 +296,8 @@ struct ListsTabView: View {
                         color: selectedList?.color.toColor(fallback: .green) ?? Color.green,
                         emoji: selectedList?.icon ?? String.randomEmoji(),
                         isPublic: selectedList?.is_public ?? false,
-                        namePlaceholder: newListNamePlaceholder ?? "List name"
+                        namePlaceholder: newListNamePlaceholder ?? "List name",
+                        colors: colorsSuggested
                     ) { name, color, emoji, isPublic in
                         if let selectedList {
                             Task {
@@ -326,6 +338,13 @@ struct ListsTabView: View {
             
             Task {
                 await fetchListTemplateSuggestion()
+            }
+            
+            Task {
+                let shouldSync = SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.SUGGESTION_COLORS)
+                
+                // TODO: Save in AppStorage
+                await fetchColorsSuggestion()
             }
         }.onChange(of: showCreationSheet, initial: true) {
             if showCreationSheet {

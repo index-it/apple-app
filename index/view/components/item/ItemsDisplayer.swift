@@ -12,6 +12,17 @@ struct ItemsDisplayer: View {
     private var listId: String
     private var category: IxListCategory?
     private var withCompleted: Bool
+    private var onNewCategory: Bool
+    
+    private var onCreateItem: () -> ()
+    private var onCreateCategory: () -> ()
+    
+    private var onOpen: (IxListItem) -> ()
+    private var onOpenLink: (IxListItem, String) -> ()
+    private var onCompletionChange: (IxListItem, Bool) -> ()
+    private var onCreateTask: (IxListItem) -> ()
+    private var onEdit: (IxListItem) -> ()
+    private var onDelete: (IxListItem) -> ()
     
     @Query private var items: [IxListItem]
     
@@ -23,10 +34,33 @@ struct ItemsDisplayer: View {
         return Color(hexString: category.color)
     }
     
-    init(listId: String, category: IxListCategory? = nil, withCompleted: Bool) {
+    init(
+        listId: String,
+        category: IxListCategory? = nil,
+        withCompleted: Bool,
+        onNewCategory: Bool,
+        onCreateItem: @escaping () -> (),
+        onCreateCategory: @escaping () -> (),
+        onOpen: @escaping (IxListItem) -> Void,
+        onOpenLink: @escaping (IxListItem, String) -> Void,
+        onCompletionChange: @escaping (IxListItem, Bool) -> Void,
+        onCreateTask: @escaping (IxListItem) -> Void,
+        onEdit: @escaping (IxListItem) -> Void,
+        onDelete: @escaping (IxListItem) -> Void
+    ) {
         self.listId = listId
         self.category = category
         self.withCompleted = withCompleted
+        self.onNewCategory = onNewCategory
+        
+        self.onCreateItem = onCreateItem
+        self.onCreateCategory = onCreateCategory
+        self.onOpen = onOpen
+        self.onOpenLink = onOpenLink
+        self.onCompletionChange = onCompletionChange
+        self.onCreateTask = onCreateTask
+        self.onEdit = onEdit
+        self.onDelete = onDelete
         
         let categoryId = category?.id
         
@@ -45,98 +79,57 @@ struct ItemsDisplayer: View {
         ScrollView(showsIndicators: false) {
             LazyVStack {
                 ForEach(items) { item in
-                    Menu {
-                        ControlGroup {
-                            Button("Open", systemImage: "text.page") {
-                                
-                            }
-                            
-                            if item.link != nil {
-                                Button("Open link", systemImage: "link") {
-                                    
-                                }
-                            }
-                            
-                            Button("complete", systemImage: "checkmark") {
-                                
-                            }
-                        }
-                        
-                        
-                        Button("Create task", systemImage: "rectangle.grid.1x2.fill") {
-                            
-                        }
-                        
-                        Button("Edit", systemImage: "pencil") {
-                            
-                        }
-                        
-                        Section {
-                            Menu {
-                                Button("Delete", systemImage: "trash") {
-                                    
-                                }
-                                
-                                Button("Cancel", role: .cancel) {}
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
-                    } label: {
-                        ItemCard(item: item, color: color)
-                    }
+                    ItemCard(
+                        item: item,
+                        color: color,
+                        onOpen: onOpen,
+                        onOpenLink: onOpenLink,
+                        onCompletionChange: onCompletionChange,
+                        onCreateTask: onCreateTask,
+                        onEdit: onEdit,
+                        onDelete: onDelete
+                    )
                 }
             }
-        }
-    }
-}
-
-struct ItemsDisplayerTest: View {
-    var body: some View {
-        ScrollView {
-            LazyVStack {
-                ForEach([IxListItem.loading(), IxListItem.loading(), IxListItem.loading(), IxListItem.loading(), IxListItem.loading()]) { item in
-                    Menu {
-                        ControlGroup {
-                            Button("Open", systemImage: "text.page") {
-                                
-                            }
-                            
-                            if item.link != nil {
-                                Button("Open link", systemImage: "link") {
-                                    
-                                }
-                            }
-                            
-                            Button("Complete", systemImage: "checkmark") {
-                                
-                            }
-                        }
-                        
-                        
-                        Button("Create task", systemImage: "rectangle.grid.1x2.fill") {
-                            
-                        }
-                        
-                        Button("Edit", systemImage: "pencil") {
-                            
-                        }
-                        
-                        Section {
-                            Menu {
-                                Button("Delete", systemImage: "trash", role: .destructive) {
-                                    
-                                }
-                                
-                                Button("Cancel", role: .cancel) {}
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
-                    } label: {
-                        ItemCard(item: item)
+        }.overlay {
+            if items.isEmpty && !onNewCategory {
+                VStack {
+                    Spacer()
+                    
+                    ContentUnavailableView {
+                        Label("No items", systemImage: "binoculars")
+                    } description: {
+                        Text("There are no items in this category")
+                    } actions: {
+                        Button {
+                            onCreateItem()
+                        } label: {
+                            Label("Create item", systemImage: "plus")
+                        }.buttonStyle(.borderedProminent)
                     }
-                }
+                    
+                    Spacer()
+                }.frame(maxHeight: .infinity)
+            }
+            
+            if onNewCategory {
+                VStack {
+                    Spacer()
+                    
+                    ContentUnavailableView {
+                        Label("Need another category?", systemImage: "square.stack")
+                    } description: {
+                        Text("Create another category for your needs!")
+                    } actions: {
+                        Button {
+                            onCreateCategory()
+                        } label: {
+                            Label("Create category", systemImage: "plus")
+                        }.buttonStyle(.borderedProminent)
+                    }
+                    
+                    Spacer()
+                }.frame(maxHeight: .infinity)
             }
         }
     }
@@ -148,6 +141,4 @@ struct ItemsDisplayerTest: View {
 //        categoryId: nil,
 //        withCompleted: false
 //    )
-    
-    ItemsDisplayerTest()
 }

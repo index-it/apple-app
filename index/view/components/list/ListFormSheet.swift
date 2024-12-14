@@ -17,6 +17,8 @@ struct ListFormSheet: View {
     @State private var namePlaceholder: String
     @State private var name: String
     @State private var color: Color
+    private var colors: [Color]
+    
     @State private var emoji: String
     @State private var isPublic: Bool
     
@@ -33,6 +35,7 @@ struct ListFormSheet: View {
         emoji: String,
         isPublic: Bool,
         namePlaceholder: String,
+        colors: [Color],
         onSave: @escaping (_ name: String, _ color: Color, _ icon: String, _ isPublic: Bool) -> Void
     ) {
         self._showSheet = showSheet
@@ -42,6 +45,7 @@ struct ListFormSheet: View {
         self.emoji = emoji
         self.isPublic = isPublic
         self.namePlaceholder = namePlaceholder
+        self.colors = colors
         
         self.onSave = onSave
     }
@@ -57,44 +61,51 @@ struct ListFormSheet: View {
                     Spacer()
                         .frame(height: 20)
                     
-                    TextField(namePlaceholder, text: $name)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .multilineTextAlignment(.center)
-                        .focused($isNameFocused)
-                        .onTapGesture {
-                            isNameFocused = true
-                        }
-                        .padding()
-                        .background(isNameFocused ? .quaternary : .quinary)
-                        .clipShape(.buttonBorder)
+                    HStack(spacing: 12) {
+                        Button {
+                            showEmojiPicker = true
+                        } label: {
+                            Text(emoji)
+                                .font(.title2)
+                                .padding()
+                                
+                        }.background(.quaternary)
+                            .clipShape(.circle)
+                            .emojiPicker(
+                                isPresented: $showEmojiPicker,
+                                selectedEmoji: $emoji,
+                                arrowDirection: .up
+                            )
+                        
+                        TextField(namePlaceholder, text: $name)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .multilineTextAlignment(.center)
+                            .focused($isNameFocused)
+                            .onTapGesture {
+                                isNameFocused = true
+                            }
+                            .padding()
+                            .background(isNameFocused ? .quaternary : .quinary)
+                            .clipShape(.buttonBorder)
+                    }
                     
                 }.padding()
                     .background(RoundedRectangle(cornerRadius: 12).fill(.background))
                     .padding()
                 
+                Section {
+                    ColorSelector(color: $color, colors: colors)
+                }.background(RoundedRectangle(cornerRadius: 12).fill(.background))
+                    .padding()
+                
                 Form {
-                    Section("Details") {
-                        ColorPicker("Color", selection: $color)
-                        Button {
-                            showEmojiPicker = true
-                        } label: {
-                            HStack {
-                                Text("Emoji")
-                                    .foregroundColor(.primary)
-                                
-                                Spacer()
-                                
-                                Text(emoji)
-                                    .font(.title2)
-                            }
-                        }.emojiPicker(
-                            isPresented: $showEmojiPicker,
-                            selectedEmoji: $emoji,
-                            arrowDirection: .down
-                        )
-                        
+                    Section() {
                         Toggle("Public", isOn: $isPublic)
+                    } header: {
+                        Text("Visibility")
+                    } footer: {
+                        Text("By making the list public anyone with a link to it will be able to see it but not modify it.")
                     }
                 }
                 
@@ -121,9 +132,6 @@ struct ListFormSheet: View {
                         }.disabled(isNameInvalid)
                     }
                 }
-                .onAppear {
-                    isNameFocused = true
-                }
         }
     }
 }
@@ -137,7 +145,8 @@ struct ListFormSheet: View {
         color: Color.cyan,
         emoji: String.randomEmoji(),
         isPublic: false,
-        namePlaceholder: "List name"
+        namePlaceholder: "List name",
+        colors: [.red, .green, .blue, .yellow, .pink, .purple]
     ) { name, color, emoji, isPublic in
         
     }

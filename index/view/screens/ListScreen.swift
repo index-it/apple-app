@@ -12,6 +12,7 @@ struct ListScreen: View {
     @EnvironmentObject private var ixApiClient: IxApiClient
     @EnvironmentObject private var navigationManager: NavigationManager
     @Environment(\.modelContext) private var context
+    @Environment(\.openURL) var openURL
     
     private var listId: String
     
@@ -30,6 +31,17 @@ struct ListScreen: View {
             categories.first { $0.id == selectedCategoryId }
         }
     }
+    
+    @State private var showItemCreationSheet = false
+    @FocusState private var newItemNameFocused
+    @State private var newItemName = ""
+    @State private var newItemLink = ""
+    @State private var newItemCategory: String? = nil
+    private var isNewItemNameInvalid: Bool {
+        newItemName.isEmpty || newItemName.count >= 100
+    }
+    
+    @State private var showCategoryCreationSheet = false
     
     init(listId: String) {
         self.listId = listId
@@ -56,6 +68,14 @@ struct ListScreen: View {
         try context.transaction {
             context.delete(list)
             context.insert(list)
+            try context.save()
+        }
+    }
+    
+    func saveItem(_ item: IxListItem) async throws {
+        try context.transaction {
+            context.delete(item)
+            context.insert(item)
             try context.save()
         }
     }
@@ -115,8 +135,24 @@ struct ListScreen: View {
         }
     }
     
+    func setItemCompletion(listId: String, itemId: String, completed: Bool) async {
+        do {
+            let item = try await ixApiClient.setListItemCompletion(listId: listId, itemId: itemId, completed: completed)
+            
+            try await saveItem(item)
+        } catch {
+            
+        }
+    }
+    
     var body: some View {
         ScreenContent
+            .sheet(isPresented: $showItemCreationSheet, content: {
+                ItemCreationSheet
+            })
+            .sheet(isPresented: $showCategoryCreationSheet, content: {
+                
+            })
             .navigationTitle(list.name)
             .onAppear {
                 if SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.list(listId)) {
@@ -144,7 +180,40 @@ struct ListScreen: View {
     
     private var ScreenContent: some View {
         VStack {
-            ItemsDisplayer(listId: listId, category: selectedCategory, withCompleted: false)
+            ItemsDisplayer(
+                listId: listId,
+                category: selectedCategory,
+                withCompleted: false,
+                onNewCategory: onCreateNewCategory,
+                onCreateItem: {
+                    showItemCreationSheet = true
+                },
+                onCreateCategory: {
+                    showCategoryCreationSheet = true
+                },
+                onOpen: { item in
+                    // TODO
+                },
+                onOpenLink: { item, link in
+                    if let url = URL(string: link) {
+                        openURL(url)
+                    }
+                },
+                onCompletionChange: { item, completed in
+                    Task {
+                        await setItemCompletion(listId: item.list_id, itemId: item.id, completed: completed)
+                    }
+                },
+                onCreateTask: { item in
+                    // TODO
+                },
+                onEdit: { item in
+                    // TODO
+                },
+                onDelete: { item in
+                    // TODO
+                }
+            )
                 .padding(.horizontal)
             
             VStack {
@@ -154,6 +223,40 @@ struct ListScreen: View {
                 
                 Text(onCreateNewCategory ? "Create category" : (selectedCategory?.name ?? "Create item"))
             }
+        }
+    }
+    
+    private var ItemCreationSheet: some View {
+        NavigationView {
+            VStack {
+                Form {
+                    TextField("Item name", text: $newItemName)
+                    
+                    TextField("Link", text: $newItemLink)
+                }
+            }.frame(maxHeight: .infinity, alignment: .top)
+                .navigationTitle("New item")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            showItemCreationSheet = false
+                        } label: {
+                            Text("Cancel")
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showItemCreationSheet = false
+                        } label: {
+                            Text("Save")
+                        }.disabled(isNewItemNameInvalid)
+                    }
+                }
+                .onAppear {
+                    newItemNameFocused = true
+                }
         }
     }
 }
