@@ -37,22 +37,26 @@ struct ColorSelector: View {
                             showColorPicker = true
                         }
                     } label: {
-                        Circle()
-                            .fill(AngularGradient(
-                                gradient: Gradient(colors: gradientColorList),
-                                center: .center
-                            ))
-                            .overlay {
-                                if showColorPicker {
-                                    Circle()
-                                        .fill(.white)
-                                        .padding(.all, 10)
-                                        
-                                }
+                        AngularGradient(
+                            gradient: Gradient(colors: stride(from: 0, through: 1, by: 0.2).map {
+                                Color(hue: $0, saturation: 1, brightness: 1)
+                            }),
+                            center: .center
+                        )
+                        .blur(radius: 4, opaque: true)
+                        .clipShape(Circle())
+                        .scaledToFill()
+                        .overlay {
+                            if showColorPicker {
+                                Circle()
+                                    .fill(.white)
+                                    .padding(.all, 10)
+                                    
                             }
-                            .scrollTransition { content, phase in
-                                content.blur(radius: phase.isIdentity ? 0 : 8)
-                            }
+                        }
+                        .scrollTransition { content, phase in
+                            content.blur(radius: phase.isIdentity ? 0 : 8)
+                        }
                     }
                     
                     RoundedRectangle(cornerRadius: 8)
