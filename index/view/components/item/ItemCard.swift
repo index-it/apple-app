@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ItemCard: View {
+    @Environment(\.colorScheme) var colorScheme
     var item: IxListItem
     var color: Color?
     
@@ -19,47 +20,74 @@ struct ItemCard: View {
     var onDelete: (IxListItem) -> ()
     
     var body: some View {
-        Menu {
-            ControlGroup {
-                Button("Open", systemImage: "text.page") {
-                    onOpen(item)
+        ZStack {
+            Menu {
+                ControlGroup {
+                    Button("Open", systemImage: "text.page") {
+                        onOpen(item)
+                    }
+                    
+                    if item.link != nil {
+                        Button("Open link", systemImage: "link") {
+                            if let link = item.link {
+                                onOpenLink(item, link)
+                            }
+                        }
+                    }
+                    
+                    Button(item.completed ? "Uncomplete" : "Complete", systemImage: "checkmark") {
+                        onCompletionChange(item, !item.completed)
+                    }
                 }
                 
+                
+                Button("Create task", systemImage: "rectangle.grid.1x2.fill") {
+                    onCreateTask(item)
+                }
+                
+                Button("Edit", systemImage: "pencil") {
+                    onEdit(item)
+                }
+                
+                Section {
+                    Menu {
+                        Button("Delete", systemImage: "trash", role: .destructive) {
+                            onDelete(item)
+                        }
+                        
+                        Button("Cancel", role: .cancel) {}
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+            } label: {
+                ItemCardContent
+            }
+            
+            HStack {
+                Button {
+                    onCompletionChange(item, !item.completed)
+                } label: {
+                    Label(item.completed ? "Uncomplete" : "Complete", systemImage: item.completed ? "inset.filled.circle" : "circle")
+                        .labelStyle(.iconOnly)
+                        .font(.title3)
+                        .foregroundStyle(item.completed ? Color.accentColor : color != nil ? (color!.isLight() ? Color.secondary.dark : Color.secondary.light) : (colorScheme == .light ? Color.secondary.light : Color.secondary.dark))
+                }
+                
+                Spacer()
+                
                 if item.link != nil {
-                    Button("Open link", systemImage: "link") {
+                    Button {
                         if let link = item.link {
                             onOpenLink(item, link)
                         }
+                    } label: {
+                        Label("Open link", systemImage: "link")
+                            .labelStyle(.iconOnly)
+                            .foregroundStyle(color?.contrastColor() ?? UIColor.label.toColor())
                     }
                 }
-                
-                Button("Complete", systemImage: "checkmark") {
-                    onCompletionChange(item, !item.completed)
-                }
-            }
-            
-            
-            Button("Create task", systemImage: "rectangle.grid.1x2.fill") {
-                onCreateTask(item)
-            }
-            
-            Button("Edit", systemImage: "pencil") {
-                onEdit(item)
-            }
-            
-            Section {
-                Menu {
-                    Button("Delete", systemImage: "trash", role: .destructive) {
-                        onDelete(item)
-                    }
-                    
-                    Button("Cancel", role: .cancel) {}
-                } label: {
-                    Label("Delete", systemImage: "trash")
-                }
-            }
-        } label: {
-            ItemCardContent
+            }.padding()
         }
         
     }
@@ -67,12 +95,12 @@ struct ItemCard: View {
     var ItemCardContent: some View {
         HStack {
             Button {
-                onCompletionChange(item, !item.completed)
+                
             } label: {
                 Label(item.completed ? "Uncomplete" : "Complete", systemImage: item.completed ? "inset.filled.circle" : "circle")
                     .labelStyle(.iconOnly)
                     .font(.title3)
-                    .foregroundStyle(item.completed ? Color.accentColor : .secondary)
+                    .foregroundStyle(Color.clear)
             }
             
             Text(item.name)
@@ -82,12 +110,11 @@ struct ItemCard: View {
                 Spacer()
                 
                 Button {
-                    if let link = item.link {
-                        onOpenLink(item, link)
-                    }
+                    
                 } label: {
                     Label("Open link", systemImage: "link")
                         .labelStyle(.iconOnly)
+                        .foregroundStyle(Color.clear)
                 }
             }
         }.padding()

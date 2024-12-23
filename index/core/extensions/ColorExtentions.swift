@@ -37,6 +37,35 @@ extension Color {
         }
     }
     
+    var light: Self {
+        var environment = EnvironmentValues()
+        environment.colorScheme = .light
+        return Color(resolve(in: environment))
+    }
+
+    var dark: Self {
+        var environment = EnvironmentValues()
+        environment.colorScheme = .dark
+        return Color(resolve(in: environment))
+    }
+    
+    /// Returns whether a color is considered light, meaning a good contrast color for it would be a dark one
+    func isLight() -> Bool {
+        // Convert the Color to a UIColor to access its RGB components.
+        let uiColor = UIColor(self)
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        // Calculate the perceptive luminance (luma)
+        let luma = (0.299 * red) + (0.587 * green) + (0.114 * blue)
+        
+        return luma <= 0.6
+    }
+    
     /// Returns the best contrast color (black or white) for the given color.
     func contrastColor() -> Color {
         // Convert the Color to a UIColor to access its RGB components.

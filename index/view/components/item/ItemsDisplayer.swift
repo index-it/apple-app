@@ -64,7 +64,9 @@ struct ItemsDisplayer: View {
         
         let categoryId = category?.id
         
-        if withCompleted {
+        if onNewCategory {
+            _items = Query(filter: #Predicate { _ in false })
+        } else if withCompleted {
             _items = Query(filter: #Predicate { item in
                 item.list_id == listId && item.category_id == categoryId
             })

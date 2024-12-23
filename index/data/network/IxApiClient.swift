@@ -790,6 +790,34 @@ class IxApiClient: ObservableObject {
         }
     }
     
+    func createCategory(listId: String, name: String, color: String) async throws -> IxListCategory {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories")
+        let requestBody = ListCategoryCreateOrEditReqBody(name: name, color: color)
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(requestBody)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return IxListCategory(networkListCategory: try JSONDecoder().decode(NetworkListCategory.self, from: data))
+        case 400:
+            throw IxApiClientError.InvalidData
+        case 401:
+            throw IxApiClientError.Unauthenticated
+        case 403:
+            throw IxApiClientError.MissingPermission
+        case 404:
+            throw IxApiClientError.NotFound
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
     /// Edits a list category
     ///
     /// ### Throws:
@@ -940,6 +968,7 @@ class IxApiClient: ObservableObject {
         
         let (data, response) = try await URLSession.shared.data(for: request)
         let httpResponse = response as! HTTPURLResponse
+        
         
         switch httpResponse.statusCode {
         case 200:

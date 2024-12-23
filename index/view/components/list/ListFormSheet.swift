@@ -96,6 +96,7 @@ struct ListFormSheet: View {
                 
                 Section {
                     ColorSelector(color: $color, colors: colors)
+                        .padding()
                 }.background(RoundedRectangle(cornerRadius: 12).fill(.background))
                     .padding()
                 

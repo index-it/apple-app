@@ -16,6 +16,8 @@ struct ListScreen: View {
     
     private var listId: String
     
+    @State private var colorsSuggested: [Color] = []
+    
     @Query private var lists: [IxList]
     @State private var list: IxList = IxList.loading()
     
@@ -32,16 +34,22 @@ struct ListScreen: View {
         }
     }
     
+    @State private var selectedItem: IxListItem? = nil
+    @State private var showItemEditSheet = false
+    
     @State private var showItemCreationSheet = false
-    @FocusState private var newItemNameFocused
     @State private var newItemName = ""
+    @State private var newItemNamePlaceholder = ""
     @State private var newItemLink = ""
     @State private var newItemCategory: String? = nil
-    private var isNewItemNameInvalid: Bool {
-        newItemName.isEmpty || newItemName.count >= 100
-    }
+    
+    @State private var showCategoryEditSheet = false
     
     @State private var showCategoryCreationSheet = false
+    @State private var newCategoryName = ""
+    @State private var newCategoryNamePlaceholder = ""
+    @State private var newCategoryColor = Color.accentColor
+    
     
     init(listId: String) {
         self.listId = listId
@@ -76,6 +84,14 @@ struct ListScreen: View {
         try context.transaction {
             context.delete(item)
             context.insert(item)
+            try context.save()
+        }
+    }
+    
+    func saveCategory(_ category: IxListCategory) async throws {
+        try context.transaction {
+            context.delete(category)
+            context.insert(category)
             try context.save()
         }
     }
@@ -135,6 +151,57 @@ struct ListScreen: View {
         }
     }
     
+    func fetchColorsSuggestion() async {
+        do {
+            colorsSuggested = try await ixApiClient.getColorsSuggestion().map { Color(hexString: $0) }
+            
+            self.colorsSuggested = colorsSuggested
+        } catch {
+            
+        }
+    }
+    
+    func fetchItemTemplateSuggestion() async {
+        do {
+            let template = try await ixApiClient.getItemTemplateSuggestion()
+            newItemNamePlaceholder = template.name
+        } catch {
+            
+        }
+    }
+    
+    func fetchCategoryTemplateSuggestion() async {
+        do {
+            let template = try await ixApiClient.getCategoryTemplateSuggestion()
+            newCategoryNamePlaceholder = template.name
+            newCategoryColor = Color(hexString: template.color)
+        } catch {
+            
+        }
+    }
+    
+    func createItem(listId: String, name: String, categoryId: String?, link: String?) async {
+        do {
+            let item = try await ixApiClient.createListItem(listId: listId, categoryId: categoryId, name: name, link: link)
+            
+            try await saveItem(item)
+        } catch {
+            print(error)
+            // Handle error if needed
+        }
+    }
+    
+    func editItem(listId: String, itemId: String, name: String, categoryId: String?, link: String?) async {
+        do {
+            let item = try await ixApiClient.updateListItem(listId: listId, itemId: itemId, name: name, categoryId: categoryId, link: link)
+            
+            try await saveItem(item)
+        } catch {
+            print(error)
+            // Handle error if needed
+        }
+    }
+    
     func setItemCompletion(listId: String, itemId: String, completed: Bool) async {
         do {
             let item = try await ixApiClient.setListItemCompletion(listId: listId, itemId: itemId, completed: completed)
@@ -145,14 +212,118 @@ struct ListScreen: View {
         }
     }
     
+    func deleteItem(listId: String, itemId: String) async {
+        do {
+            try await ixApiClient.deleteListItem(listId: listId, itemId: itemId)
+            
+            try context.delete(model: IxListItem.self, where: #Predicate { item in item.id == itemId })
+        } catch IxApiClientError.NotFound {
+            do { try context.delete(model: IxListItem.self, where: #Predicate { item in item.id == itemId }) } catch {}
+        } catch {
+            
+        }
+    }
+    
+    func createCategory(listId: String, name: String, color: Color) async {
+        do {
+            let category = try await ixApiClient.createCategory(listId: listId, name: name, color: color.hexString())
+            
+            try await saveCategory(category)
+        } catch {
+            
+        }
+    }
+    
+    func editCategory(listId: String, categoryId: String, name: String, color: String) async {
+        do {
+            let category = try await ixApiClient.updateListCategory(listId: listId, categoryId: categoryId, name: name, color: color)
+            
+            try await saveCategory(category)
+        } catch {
+            
+        }
+    }
+    
+    func deleteCategory(listId: String, categoryId: String) async {
+        do {
+            try await ixApiClient.deleteListCategory(listId: listId, categoryId: categoryId)
+            
+            try context.delete(model: IxListCategory.self, where: #Predicate { category in category.id == categoryId })
+        } catch IxApiClientError.NotFound {
+            do { try context.delete(model: IxListCategory.self, where: #Predicate { category in category.id == categoryId }) } catch {}
+        } catch {
+            
+        }
+    }
+    
     var body: some View {
         ScreenContent
-            .sheet(isPresented: $showItemCreationSheet, content: {
-                ItemCreationSheet
+            .sheet(
+                isPresented: $showItemCreationSheet,
+                content: {
+                    ItemFormSheet(
+                        showSheet: $showItemCreationSheet,
+                        name: "",
+                        category: selectedCategory,
+                        link: nil,
+                        categories: categories,
+                        namePlaceholder: newItemNamePlaceholder
+                    ) { name, category, link in
+                        Task {
+                            await createItem(listId: listId, name: name, categoryId: category?.id, link: link)
+                        }
+                    }
             })
-            .sheet(isPresented: $showCategoryCreationSheet, content: {
-                
+            .sheet(
+                isPresented: $showItemEditSheet,
+                content: {
+                    ItemFormSheet(
+                        showSheet: $showItemEditSheet,
+                        name: selectedItem?.name ?? "",
+                        category: categories.first { c in c.id == selectedItem?.category_id
+                        },
+                        link: selectedItem?.link,
+                        categories: categories,
+                        namePlaceholder: newItemNamePlaceholder) { name, category, link in
+                            Task {
+                                if let selectedItem = selectedItem {
+                                    await editItem(listId: listId, itemId: selectedItem.id, name: name, categoryId: category?.id, link: link)
+                                }
+                            }
+                        }
             })
+            .sheet(
+                isPresented: $showCategoryCreationSheet,
+                content: {
+                    CategoryFormSheet(
+                        showSheet: $showCategoryCreationSheet,
+                        name: newCategoryName,
+                        color: newCategoryColor,
+                        namePlaceholder: newCategoryNamePlaceholder,
+                        colors: colorsSuggested
+                    ) { name, color in
+                        Task {
+                            await createCategory(listId: listId, name: name, color: color)
+                        }
+                    }
+            })
+//            .sheet(
+//                isPresented: $showCategoryEditSheet,
+//                content: {
+//                    CategoryFormSheet(
+//                        showSheet: $showCategoryEditSheet,
+//                        name: selectedCategory?.name ?? "",
+//                        color: selectedCategory.color ?? Color.accentColor,
+//                        namePlaceholder: newCategoryNamePlaceholder,
+//                        colors: $colorsSuggested
+//                    ) { name, color in
+//                        Task {
+//                            if let category = selectedCategory {
+//                                await editCategory(listId: listId, categoryId: category.id, name: name, color: color)
+//                            }
+//                        }
+//                    }
+//            })
             .navigationTitle(list.name)
             .onAppear {
                 if SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.list(listId)) {
@@ -165,6 +336,27 @@ struct ListScreen: View {
                     }
                     Task {
                         await fetchItems()
+                    }
+                    
+                    Task {
+                        let shouldSync = SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.SUGGESTION_COLORS)
+                        
+                        // TODO: Save in AppStorage
+                        await fetchColorsSuggestion()
+                    }
+                }
+            }
+            .onChange(of: showItemCreationSheet, initial: true) { _, new in
+                if new {
+                    Task {
+                        await fetchItemTemplateSuggestion()
+                    }
+                }
+            }
+            .onChange(of: showCategoryCreationSheet, initial: true) { _, new in
+                if new {
+                    Task {
+                        await fetchCategoryTemplateSuggestion()
                     }
                 }
             }
@@ -183,7 +375,7 @@ struct ListScreen: View {
             ItemsDisplayer(
                 listId: listId,
                 category: selectedCategory,
-                withCompleted: false,
+                withCompleted: true,
                 onNewCategory: onCreateNewCategory,
                 onCreateItem: {
                     showItemCreationSheet = true
@@ -208,55 +400,33 @@ struct ListScreen: View {
                     // TODO
                 },
                 onEdit: { item in
-                    // TODO
+                    selectedItem = item
+                    showItemEditSheet = true
                 },
                 onDelete: { item in
-                    // TODO
+                    Task {
+                        await deleteItem(listId: listId, itemId: item.id)
+                    }
                 }
             )
                 .padding(.horizontal)
             
             VStack {
-                CategorySelector(categories: categories, selectedCategoryId: $selectedCategoryId)
+                CategorySelector(
+                    categories: categories,
+                    selectedCategoryId: $selectedCategoryId,
+                    onSelectedTap: { categoryId in
+                        showItemCreationSheet = true
+                    },
+                    onNewCategoryTap: {
+                        showCategoryCreationSheet = true
+                    }
+                )
                     .frame(height: CategoryUIDefaults.height + 48)
                     
                 
                 Text(onCreateNewCategory ? "Create category" : (selectedCategory?.name ?? "Create item"))
             }
-        }
-    }
-    
-    private var ItemCreationSheet: some View {
-        NavigationView {
-            VStack {
-                Form {
-                    TextField("Item name", text: $newItemName)
-                    
-                    TextField("Link", text: $newItemLink)
-                }
-            }.frame(maxHeight: .infinity, alignment: .top)
-                .navigationTitle("New item")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            showItemCreationSheet = false
-                        } label: {
-                            Text("Cancel")
-                        }
-                    }
-                    
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            showItemCreationSheet = false
-                        } label: {
-                            Text("Save")
-                        }.disabled(isNewItemNameInvalid)
-                    }
-                }
-                .onAppear {
-                    newItemNameFocused = true
-                }
         }
     }
 }

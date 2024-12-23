@@ -48,22 +48,10 @@ struct ItemFormSheet: View {
     var body: some View {
         NavigationView {
             VStack {
-                ItemCard(
-                    item: IxListItem(id: UUID().uuidString, user_id: "", list_id: "", category_id: category?.id, name: name.isEmpty ? namePlaceholder : name, completed: false, link: link == "" ? nil : link, created_at: 0, edited_at: 0, completed_at: 0),
-                    color: category?.color != nil ? Color(hexString: category!.color) : nil,
-                    onOpen: { _ in },
-                    onOpenLink: { _, _ in },
-                    onCompletionChange: { _, _ in },
-                    onCreateTask: { _ in },
-                    onEdit: { _ in },
-                    onDelete: { _ in }
-                ).shadow(color: .gray.opacity(0.5), radius: 8)
-                    .padding()
-                    
-                
                 Form {
                     Section {
-                        TextField("Name", text: $name)
+                        TextField(namePlaceholder, text: $name)
+                            .focused($isNameFocused)
                     } header: {
                         Text("Name")
                     }
@@ -82,14 +70,14 @@ struct ItemFormSheet: View {
                             .keyboardType(.URL)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
+                            
                     } header: {
                         Text("Properties")
                     } footer: {
-                        Text("Both the category and link are optional!")
+                        Text("Both the category and link are optional")
                     }
                 }
             }
-            .background(UIColor.systemGroupedBackground.toColor())
             .frame(maxHeight: .infinity, alignment: .top)
             .navigationTitle("New Item")
             .navigationBarTitleDisplayMode(.inline)
@@ -102,11 +90,14 @@ struct ItemFormSheet: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        onSave(name, category, link)
+                        onSave(name, category, link.isEmpty ? nil : link)
                         showSheet = false
                     }
                     .disabled(isNameInvalid)
                 }
+            }
+            .onAppear {
+                isNameFocused = true
             }
         }
     }

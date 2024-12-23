@@ -87,7 +87,6 @@ struct ColorSelector: View {
                     }
                 }.scrollTargetLayout()
                 .frame(height: 42)
-                    .padding()
             }
             
             if showColorPicker {
@@ -104,7 +103,7 @@ struct ColorSelector: View {
                             Color(hue: hue, saturation: 1.0, brightness: 1)
                         ]
                     )
-                }.padding([.bottom, .leading, .trailing], 24)
+                }.padding([.top, .bottom], 24)
             }
         }
         .onChange(of: hue) { _, newValue in
