@@ -50,6 +50,8 @@ struct ListScreen: View {
     @State private var newCategoryNamePlaceholder = ""
     @State private var newCategoryColor = Color.accentColor
     
+ 
+    @State private var itemsFilter: ItemsFilter = .uncompleted
     
     init(listId: String) {
         self.listId = listId
@@ -234,9 +236,9 @@ struct ListScreen: View {
         }
     }
     
-    func editCategory(listId: String, categoryId: String, name: String, color: String) async {
+    func editCategory(listId: String, categoryId: String, name: String, color: Color) async {
         do {
-            let category = try await ixApiClient.updateListCategory(listId: listId, categoryId: categoryId, name: name, color: color)
+            let category = try await ixApiClient.updateListCategory(listId: listId, categoryId: categoryId, name: name, color: color.hexString())
             
             try await saveCategory(category)
         } catch {
@@ -307,24 +309,70 @@ struct ListScreen: View {
                         }
                     }
             })
-//            .sheet(
-//                isPresented: $showCategoryEditSheet,
-//                content: {
-//                    CategoryFormSheet(
-//                        showSheet: $showCategoryEditSheet,
-//                        name: selectedCategory?.name ?? "",
-//                        color: selectedCategory.color ?? Color.accentColor,
-//                        namePlaceholder: newCategoryNamePlaceholder,
-//                        colors: $colorsSuggested
-//                    ) { name, color in
-//                        Task {
-//                            if let category = selectedCategory {
-//                                await editCategory(listId: listId, categoryId: category.id, name: name, color: color)
+            .sheet(
+                isPresented: $showCategoryEditSheet,
+                content: {
+                    CategoryFormSheet(
+                        showSheet: $showCategoryEditSheet,
+                        name: selectedCategory?.name ?? "",
+                        color: Color(hexString: selectedCategory?.color ?? Color.accentColor.hexString()),
+                        namePlaceholder: newCategoryNamePlaceholder,
+                        colors: colorsSuggested
+                    ) { name, color in
+                        Task {
+                            if let category = selectedCategory {
+                                await editCategory(listId: listId, categoryId: category.id, name: name, color: color)
+                            }
+                        }
+                    }
+            })
+            .navigationTitle(list.name)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+//                        Section {
+//                            Menu {
+//                                
+//                            } label: {
+//                                Label("Filter", systemImage: "line.3.horizontal.decrease")
 //                            }
 //                        }
-//                    }
-//            })
-            .navigationTitle(list.name)
+                        
+                        Picker(selection: $itemsFilter) {
+                            ForEach(ItemsFilter.allCases) { filter in
+                                Text(filter.rawValue)
+                                    .tag(filter)
+                            }
+                        } label: {
+                            Label("Filter", systemImage: "line.3.horizontal.decrease")
+                        }.pickerStyle(.menu)
+                        
+                        Section {
+                            if let selectedCategoryId = selectedCategoryId {
+                                Button("Edit category", systemImage: "square.and.pencil") {
+                                    showCategoryEditSheet = true
+                                }
+                                
+                                Menu {
+                                    Button("Delete ", systemImage: "trash", role: .destructive) {
+                                        Task {
+                                            await deleteCategory(listId: listId, categoryId: selectedCategoryId)
+                                        }
+                                    }
+                                    
+                                    Button("Cancel", role: .cancel) {}
+                                } label: {
+                                    Label("Delete category", systemImage: "trash")
+                                }
+                            }
+                        }
+                        
+                    } label: {
+                        Label("Options", systemImage: "ellipsis.circle")
+                            .labelStyle(.iconOnly)
+                    }
+                }
+            }
             .onAppear {
                 if SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.list(listId)) {
                     Task {
@@ -360,6 +408,13 @@ struct ListScreen: View {
                     }
                 }
             }
+            .onChange(of: showCategoryEditSheet, initial: true) { _, new in
+                if new {
+                    Task {
+                        await fetchCategoryTemplateSuggestion()
+                    }
+                }
+            }
             .onChange(of: lists) { _, newLists in
                 guard let newList = newLists.first else {
                     navigationManager.pop()
@@ -375,7 +430,7 @@ struct ListScreen: View {
             ItemsDisplayer(
                 listId: listId,
                 category: selectedCategory,
-                withCompleted: true,
+                itemsFilter: itemsFilter,
                 onNewCategory: onCreateNewCategory,
                 onCreateItem: {
                     showItemCreationSheet = true

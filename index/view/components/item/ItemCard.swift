@@ -35,7 +35,7 @@ struct ItemCard: View {
                         }
                     }
                     
-                    Button(item.completed ? "Uncomplete" : "Complete", systemImage: "checkmark") {
+                    Button(item.completed ? "Uncomplete" : "Complete", systemImage: item.completed ? "xmark" : "checkmark") {
                         onCompletionChange(item, !item.completed)
                     }
                 }

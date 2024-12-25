@@ -11,7 +11,7 @@ import SwiftData
 struct ItemsDisplayer: View {
     private var listId: String
     private var category: IxListCategory?
-    private var withCompleted: Bool
+    private var itemsFilter: ItemsFilter
     private var onNewCategory: Bool
     
     private var onCreateItem: () -> ()
@@ -37,7 +37,7 @@ struct ItemsDisplayer: View {
     init(
         listId: String,
         category: IxListCategory? = nil,
-        withCompleted: Bool,
+        itemsFilter: ItemsFilter,
         onNewCategory: Bool,
         onCreateItem: @escaping () -> (),
         onCreateCategory: @escaping () -> (),
@@ -50,7 +50,7 @@ struct ItemsDisplayer: View {
     ) {
         self.listId = listId
         self.category = category
-        self.withCompleted = withCompleted
+        self.itemsFilter = itemsFilter
         self.onNewCategory = onNewCategory
         
         self.onCreateItem = onCreateItem
@@ -66,13 +66,21 @@ struct ItemsDisplayer: View {
         
         if onNewCategory {
             _items = Query(filter: #Predicate { _ in false })
-        } else if withCompleted {
+        } else if itemsFilter == .uncompleted {
             _items = Query(filter: #Predicate { item in
-                item.list_id == listId && item.category_id == categoryId
+                    item.list_id == listId && item.category_id == categoryId && item.completed == false
             })
-        } else {
+        } else if itemsFilter == .all {
+            _items = Query(
+                filter: #Predicate { item in
+                    item.list_id == listId && item.category_id == categoryId
+                },
+                sort: \.completed,
+                order: .reverse
+            )
+        } else if itemsFilter == .completed {
             _items = Query(filter: #Predicate { item in
-                item.list_id == listId && item.category_id == categoryId && item.completed == false
+                item.list_id == listId && item.category_id == categoryId && item.completed == true
             })
         }
     }
