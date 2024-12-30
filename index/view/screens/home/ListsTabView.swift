@@ -14,22 +14,28 @@ struct ListsTabView: View {
     @EnvironmentObject private var ixApiClient: IxApiClient
     @EnvironmentObject private var errorService: ErrorStateService
     @Environment(\.modelContext) private var context
-
-    @Query var lists: [IxList]
     
-    @State private var colorsSuggested: [Color] = []
+    @AppStorage("user") var user: User?
+    @AppStorage(AppStorageKeys.colors_suggestions) var colorsSuggested: [Color] = AppStorageKeys.Defaults.colors
     
+    @Query private var lists: [IxList]
+    
+    // MARK: List creation
     @State private var showCreationSheet = false
     @State private var newListNamePlaceholder: String? = nil
     @State private var newListColor: Color? = nil
     
+    // MARK: Selected list
     @State private var selectedList: IxList? = nil
     @State private var showEditSheet = false
     @State private var showDeleteConfirmationDialog = false
     
-    /*
-     SHARE SHEET STATE
-     */
+    // MARK: Sorting and filtering
+    @AppStorage(AppStorageKeys.list_sorting) private var sorting: ListSorting = AppStorageKeys.Defaults.list_sorting
+    @AppStorage(AppStorageKeys.list_reverse_sorting) private var reverseSorting = AppStorageKeys.Defaults.list_reverse_sorting
+    @AppStorage(AppStorageKeys.list_filter) private var filter: ListFilter = AppStorageKeys.Defaults.list_filter
+
+    // MARK: Share sheet
     @State private var selectedListUsersWithAccess: [IxListSingleUserAccessInfo] = []
     @State private var showShareSheet = false
     @State private var showUserInvitationSuccessAlert = false
@@ -37,6 +43,7 @@ struct ListsTabView: View {
     @State private var loadingSelectedListUsers: Bool = false
     @State private var loadingSelectedListUserInvite: Bool = false
     @State private var loadingSelectedListUserEditOrRevokePermissions: String? = nil
+    
     
     private func saveList(_ list: IxList) async throws {
         try context.transaction {
@@ -46,6 +53,7 @@ struct ListsTabView: View {
         }
     }
     
+    // MARK: - Suggestions
     func fetchListTemplateSuggestion() async {
         do {
             let template = try await ixApiClient.getListTemplateSuggestion()
@@ -65,6 +73,7 @@ struct ListsTabView: View {
         }
     }
     
+    // MARK: - List CRUD
     func fetchLists() async {
         do {
             let lists = try await ixApiClient.getLists()
@@ -141,9 +150,7 @@ struct ListsTabView: View {
     }
     
     
-    /*
-     LIST SHARING FUNCTIONS
-     */
+    // MARK: - LIST SHARING FUNCTIONS
     func editListPublic(isPublic: Bool) async {
         if let selectedList {
             do {
@@ -229,19 +236,72 @@ struct ListsTabView: View {
     
     var body: some View {
         NavigationView {
-            Group {
-                if lists.isEmpty {
-                    EmptyView
-                } else {
-                    ListsGridView
+            ListsDisplayer(
+                userId: user?.id ?? "",
+                filter: filter,
+                sorting: sorting,
+                reverseSorting: reverseSorting,
+                onFilterClear: {
+                    filter = .all
+                },
+                onCreation: {
+                    showCreationSheet = true
+                },
+                onListCardTap: { list in
+                    navigationManager.push(navigationRoute: .ListRoute(listId: list.id))
+                },
+                onShare: { list in
+                    selectedList = list
+                    Task {
+                        await fetchListUsersWthAccess(listId: list.id)
+                    }
+                    showShareSheet = true
+                },
+                onEdit: { list in
+                    selectedList = list
+                    showEditSheet = true
+                },
+                onDelete: { list in
+                    selectedList = list
+                    showDeleteConfirmationDialog = true
                 }
-            }.navigationTitle("Your lists")
+            ).navigationTitle("Your lists")
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             showCreationSheet = true
                         } label: {
                             Image(systemName: "plus.circle")
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .topBarTrailing) {
+                       
+                        Menu {
+                            Picker(selection: $filter) {
+                                ForEach(ListFilter.allCases) { filter in
+                                    Text(filter.rawValue)
+                                        .tag(filter)
+                                }
+                            } label: {
+                                Label("Filter", systemImage: "line.3.horizontal.decrease")
+                            }.pickerStyle(.menu)
+                            
+                            Section {
+                                Picker(selection: $sorting) {
+                                    ForEach(ListSorting.allCases) { filter in
+                                        Text(filter.rawValue)
+                                            .tag(filter)
+                                    }
+                                } label: {
+                                    Label("Sorting", systemImage: "arrow.up.arrow.down")
+                                }.pickerStyle(.menu)
+                                
+                                Toggle("Reverse", isOn: $reverseSorting)
+                            }
+                        } label: {
+                            Label("Options", systemImage: "ellipsis.circle")
+                                .labelStyle(.iconOnly)
                         }
                     }
                 }
@@ -343,8 +403,9 @@ struct ListsTabView: View {
             Task {
                 let shouldSync = SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.SUGGESTION_COLORS)
                 
-                // TODO: Save in AppStorage
-                await fetchColorsSuggestion()
+                if shouldSync {
+                    await fetchColorsSuggestion()
+                }
             }
         }.onChange(of: showCreationSheet, initial: true) {
             if showCreationSheet {
@@ -355,57 +416,7 @@ struct ListsTabView: View {
         }
     }
     
-    private var EmptyView: some View {
-        VStack {
-            Spacer()
-            
-            ContentUnavailableView {
-                Label("No lists", systemImage: "binoculars")
-            } description: {
-                Text("You don't have any list yet!")
-            } actions: {
-                Button {
-                    showCreationSheet = true
-                } label: {
-                    Label("Create a list", systemImage: "plus")
-                }.buttonStyle(.borderedProminent)
-            }
-            
-            Spacer()
-        }.frame(maxHeight: .infinity)
-    }
     
-    private var ListsGridView: some View {
-        ScrollView {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
-                ForEach(lists.sorted(by: { first, second in
-                    first.name < second.name
-                })) { list in
-                    ListCard(
-                        list: list,
-                        onTap: {
-                            navigationManager.push(navigationRoute: .ListRoute(listId: list.id))
-                        },
-                        onShare: {
-                            selectedList = list
-                            Task {
-                                await fetchListUsersWthAccess(listId: list.id)
-                            }
-                            showShareSheet = true
-                        },
-                        onEdit: {
-                            selectedList = list
-                            showEditSheet = true
-                        },
-                        onDelete: {
-                            selectedList = list
-                            showDeleteConfirmationDialog = true
-                        }
-                    )
-                }
-            }.padding()
-        }
-    }
 }
 
 #Preview {

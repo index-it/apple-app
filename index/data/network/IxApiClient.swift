@@ -29,9 +29,7 @@ class IxApiClient: ObservableObject {
         self.authenticationStatus = authenticationStatus
     }
     
-    /*
-     AUTHENTICATION
-     */
+    // MARK: - Authentication
     
     /// gets the given welcome action for a user email
     ///
@@ -300,7 +298,7 @@ class IxApiClient: ObservableObject {
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await URLSession.shared.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -386,9 +384,7 @@ class IxApiClient: ObservableObject {
     }
     
     
-    /*
-     USER
-     */
+    // MARK: - User
     
     /// get the logged in user, uses the auth cookies stored in the device
     ///
@@ -419,9 +415,7 @@ class IxApiClient: ObservableObject {
     }
     
     
-    /*
-     LISTS
-     */
+    // MARK: - Lists
     
     /// Gets all the user lists
     /// - Returns: an array of `IxList`
@@ -588,9 +582,7 @@ class IxApiClient: ObservableObject {
     }
     
     
-    /*
-     LIST ACCESS
-     */
+    // MARK: - List access
     
     /// Gets all the users that have access to the list with the specified id
     ///
@@ -726,9 +718,7 @@ class IxApiClient: ObservableObject {
     }
     
     
-    /*
-     LIST CATEGORIES
-     */
+    // MARK: - List categories
     
     /// Gets all the categories of a list
     ///
@@ -884,9 +874,7 @@ class IxApiClient: ObservableObject {
     }
     
     
-    /*
-     LIST ITEMS
-     */
+    // MARK: - List items
     
     /// Gets all the items of a list
     ///
@@ -1068,9 +1056,7 @@ class IxApiClient: ObservableObject {
         }
     }
     
-    /*
-     LIST ITEM CONTENT
-     */
+    // MARK: - List item content
     
     /// Gets the content of an item
     ///
@@ -1139,9 +1125,7 @@ class IxApiClient: ObservableObject {
     
     // TODO: Tasks
     
-    /*
-     SUGGESTIONS
-     */
+    // MARK: - Suggestions
     
     /// Retrieves a list of default colors usable in lists.
     ///

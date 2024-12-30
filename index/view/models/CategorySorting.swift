@@ -5,10 +5,10 @@
 //  Created by Giulio Pimenoff Verdolin on 25/12/24.
 //
 
-enum CategoryFilter: String, CaseIterable, Identifiable {
-    case all = "All";
-    case uncompleted = "Uncompleted";
-    case completed = "Completed";
+enum CategorySorting: String, CaseIterable, Identifiable {
+    case name = "Name";
+    case creation = "Creation date";
+    case edit = "Last edit";
     
     var id: Self { self }
 }

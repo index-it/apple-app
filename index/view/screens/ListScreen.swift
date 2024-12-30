@@ -16,47 +16,53 @@ struct ListScreen: View {
     
     private var listId: String
     
-    @State private var colorsSuggested: [Color] = []
+    @AppStorage(AppStorageKeys.colors_suggestions) var colorsSuggested: [Color] = AppStorageKeys.Defaults.colors
     
+    // MARK: List
     @Query private var lists: [IxList]
     @State private var list: IxList = IxList.loading()
     
+    // MARK: Categories and selected category
     @Query private var categories: [IxListCategory]
     @State private var selectedCategoryId: String? = "none"
-    private var onCreateNewCategory: Bool {
-        selectedCategoryId == "new"
-    }
-    private var selectedCategory: IxListCategory? {
-        if selectedCategoryId == "none" || selectedCategoryId == "new" {
-            nil
-        } else {
-            categories.first { $0.id == selectedCategoryId }
-        }
-    }
+    @State private var selectedCategory: IxListCategory? = nil
     
+    private var onCreateNewCategory: Bool { selectedCategoryId == "new" }
+    
+    @State private var showCategoryEditSheet = false
+    
+    // MARK: Category creation
+    @State private var showCategoryCreationSheet = false
+    @State private var newCategoryName = ""
+    @State private var newCategoryNamePlaceholder = ""
+    @State private var newCategoryColor = Color.accentColor
+
+    // MARK: Selected item
     @State private var selectedItem: IxListItem? = nil
     @State private var showItemEditSheet = false
     
+    // MARK: New item
     @State private var showItemCreationSheet = false
     @State private var newItemName = ""
     @State private var newItemNamePlaceholder = ""
     @State private var newItemLink = ""
     @State private var newItemCategory: String? = nil
     
-    @State private var showCategoryEditSheet = false
+    // MARK: Item filters and sorting
+    @AppStorage(AppStorageKeys.item_filter) private var itemFilter = AppStorageKeys.Defaults.item_filter
+    @AppStorage(AppStorageKeys.item_sorting) private var itemSorting = AppStorageKeys.Defaults.item_sorting
+    @AppStorage(AppStorageKeys.item_reverse_sorting) private var itemReverseSorting = AppStorageKeys.Defaults.item_reverse_sorting
     
-    @State private var showCategoryCreationSheet = false
-    @State private var newCategoryName = ""
-    @State private var newCategoryNamePlaceholder = ""
-    @State private var newCategoryColor = Color.accentColor
-    
- 
-    @State private var itemsFilter: ItemsFilter = .uncompleted
-    
+    // MARK: Category filters and sorting
+    @AppStorage private var showUncategorizedItems: Bool
+    @AppStorage(AppStorageKeys.category_sorting) private var categorySorting = AppStorageKeys.Defaults.category_sorting
+    @AppStorage(AppStorageKeys.category_reverse_sorting) private var categoryReverseSorting = AppStorageKeys.Defaults.category_reverse_sorting
+
     init(listId: String) {
         self.listId = listId
+        _showUncategorizedItems = AppStorage(wrappedValue: AppStorageKeys.Defaults.show_uncategorized_items, AppStorageKeys.show_uncategorized_items(listId))
         
-        // List query
+        // MARK: List query
         var listDescriptor = FetchDescriptor<IxList>(
             predicate: #Predicate { list in
                 list.id == listId
@@ -65,7 +71,7 @@ struct ListScreen: View {
         listDescriptor.fetchLimit = 1
         _lists = Query(listDescriptor)
         
-        // Categories query
+        // MARK: Categories query
         let listCategoryDescriptor = FetchDescriptor<IxListCategory>(
             predicate: #Predicate { category in
                 category.list_id == listId
@@ -74,6 +80,7 @@ struct ListScreen: View {
         _categories = Query(listCategoryDescriptor)
     }
     
+    // MARK: - Local storage savers
     func saveList(_ list: IxList) async throws {
         try context.transaction {
             context.delete(list)
@@ -98,6 +105,7 @@ struct ListScreen: View {
         }
     }
     
+    // MARK: - Fetchers
     func fetchList() async {
         do {
             list = try await ixApiClient.getList(id: listId)
@@ -153,11 +161,10 @@ struct ListScreen: View {
         }
     }
     
+    // MARK: - Suggestions
     func fetchColorsSuggestion() async {
         do {
             colorsSuggested = try await ixApiClient.getColorsSuggestion().map { Color(hexString: $0) }
-            
-            self.colorsSuggested = colorsSuggested
         } catch {
             
         }
@@ -182,6 +189,7 @@ struct ListScreen: View {
         }
     }
     
+    // MARK: - Item CRUD
     func createItem(listId: String, name: String, categoryId: String?, link: String?) async {
         do {
             let item = try await ixApiClient.createListItem(listId: listId, categoryId: categoryId, name: name, link: link)
@@ -226,6 +234,7 @@ struct ListScreen: View {
         }
     }
     
+    // MARK: - Category CRUD
     func createCategory(listId: String, name: String, color: Color) async {
         do {
             let category = try await ixApiClient.createCategory(listId: listId, name: name, color: color.hexString())
@@ -328,33 +337,54 @@ struct ListScreen: View {
             })
             .navigationTitle(list.name)
             .toolbar {
+                // MARK: - Toolbar
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-//                        Section {
-//                            Menu {
-//                                
-//                            } label: {
-//                                Label("Filter", systemImage: "line.3.horizontal.decrease")
-//                            }
-//                        }
-                        
-                        Picker(selection: $itemsFilter) {
-                            ForEach(ItemsFilter.allCases) { filter in
-                                Text(filter.rawValue)
-                                    .tag(filter)
-                            }
-                        } label: {
-                            Label("Filter", systemImage: "line.3.horizontal.decrease")
-                        }.pickerStyle(.menu)
+                        Section {
+                            Picker(selection: $itemFilter) {
+                                ForEach(ItemFilter.allCases) { filter in
+                                    Text(filter.rawValue)
+                                        .tag(filter)
+                                }
+                            } label: {
+                                Label("Items filter", systemImage: "line.3.horizontal.decrease")
+                            }.pickerStyle(.menu)
+                            
+                            Picker(selection: $itemSorting) {
+                                ForEach(ItemSorting.allCases) { sort in
+                                    Text(sort.rawValue)
+                                        .tag(sort)
+                                }
+                            } label: {
+                                Label("Items sorting", systemImage: "arrow.up.arrow.down")
+                            }.pickerStyle(.menu)
+                            
+                            Toggle("Items reverse sorting", isOn: $itemReverseSorting)
+                        }
                         
                         Section {
-                            if let selectedCategoryId = selectedCategoryId {
+                            Toggle("Show default category", isOn: $showUncategorizedItems)
+                            
+                            Picker(selection: $categorySorting) {
+                                ForEach(CategorySorting.allCases) { sort in
+                                    Text(sort.rawValue)
+                                        .tag(sort)
+                                }
+                            } label: {
+                                Label("Categories sorting", systemImage: "arrow.up.arrow.down")
+                            }.pickerStyle(.menu)
+                            
+                            Toggle("Categories reverse sorting", isOn: $categoryReverseSorting)
+                        }
+                        
+                        if selectedCategoryId != "none", !onCreateNewCategory, let selectedCategoryId = selectedCategoryId {
+                            Section {
                                 Button("Edit category", systemImage: "square.and.pencil") {
                                     showCategoryEditSheet = true
                                 }
                                 
                                 Menu {
-                                    Button("Delete ", systemImage: "trash", role: .destructive) {
+                                    Button("Delete", systemImage: "trash", role: .destructive) {
                                         Task {
                                             await deleteCategory(listId: listId, categoryId: selectedCategoryId)
                                         }
@@ -366,7 +396,7 @@ struct ListScreen: View {
                                 }
                             }
                         }
-                        
+                    
                     } label: {
                         Label("Options", systemImage: "ellipsis.circle")
                             .labelStyle(.iconOnly)
@@ -380,7 +410,6 @@ struct ListScreen: View {
                     }
                     Task {
                         await fetchCategories()
-//                        selectedCategoryId = categories.first?.id
                     }
                     Task {
                         await fetchItems()
@@ -389,8 +418,9 @@ struct ListScreen: View {
                     Task {
                         let shouldSync = SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.SUGGESTION_COLORS)
                         
-                        // TODO: Save in AppStorage
-                        await fetchColorsSuggestion()
+                        if shouldSync {
+                            await fetchColorsSuggestion()
+                        }
                     }
                 }
             }
@@ -430,7 +460,12 @@ struct ListScreen: View {
             ItemsDisplayer(
                 listId: listId,
                 category: selectedCategory,
-                itemsFilter: itemsFilter,
+                itemFilter: itemFilter,
+                itemSorting: itemSorting,
+                itemReverseSorting: itemReverseSorting,
+                onClearItemFilter: {
+                    itemFilter = .uncompleted
+                },
                 onNewCategory: onCreateNewCategory,
                 onCreateItem: {
                     showItemCreationSheet = true
@@ -468,13 +503,26 @@ struct ListScreen: View {
             
             VStack {
                 CategorySelector(
-                    categories: categories,
+                    listId: listId,
                     selectedCategoryId: $selectedCategoryId,
+                    selectedCategory: $selectedCategory,
+                    showUncategorizedItems: showUncategorizedItems,
+                    categorySorting: categorySorting,
+                    categoryReverseSorting: categoryReverseSorting,
                     onSelectedTap: { categoryId in
                         showItemCreationSheet = true
                     },
                     onNewCategoryTap: {
                         showCategoryCreationSheet = true
+                    },
+                    onEdit: { category in
+                        selectedCategoryId = category.id
+                        showCategoryEditSheet = true
+                    },
+                    onDelete: { category in
+                        Task {
+                            await deleteCategory(listId: listId, categoryId: category.id)
+                        }
                     }
                 )
                     .frame(height: CategoryUIDefaults.height + 48)

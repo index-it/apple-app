@@ -8,6 +8,7 @@
 import SwiftUI
 
 extension Color {
+    // MARK: hex support
     init(hex: String, fallback: Color) {
         do {
             let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
@@ -37,6 +38,11 @@ extension Color {
         }
     }
     
+    func hexString() -> String {
+        return UIColor(self).toHexString()
+    }
+    
+    // MARK: light, dark & contrast
     var light: Self {
         var environment = EnvironmentValues()
         environment.colorScheme = .light
@@ -83,10 +89,11 @@ extension Color {
         // Return black for bright colors, white for dark colors
         return luma > 0.6 ? .black : .white
     }
-    
-    func hexString() -> String {
-        return UIColor(self).toHexString()
-    }
+
+}
+
+extension Color: @retroactive Identifiable {
+    public var id: String { self.hexString() }
 }
 
 extension UIColor {

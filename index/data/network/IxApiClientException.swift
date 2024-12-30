@@ -9,7 +9,6 @@ import Foundation
 
 enum IxApiClientError: Error {
     case Unknown
-    
     case InvalidData
     case NetworkError
     case TooManyRequests
@@ -18,9 +17,7 @@ enum IxApiClientError: Error {
     case MissingPermission
     case ProRequired(ProFeature)
 
-    /*
-     AUTHENTICATION
-     */
+    // MARK: Auth
     case Unauthenticated
     case EmailOrPasswordFormatInvalid
     case UnusableEmail

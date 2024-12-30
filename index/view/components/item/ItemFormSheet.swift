@@ -35,13 +35,11 @@ struct ItemFormSheet: View {
         onSave: @escaping (_ name: String, _ category: IxListCategory?, _ link: String?) -> Void
     ) {
         self._showSheet = showSheet
-        
         self.name = name
         self.category = category
         self.link = link ?? ""
         self.categories = categories
         self.namePlaceholder = namePlaceholder
-        
         self.onSave = onSave
     }
     

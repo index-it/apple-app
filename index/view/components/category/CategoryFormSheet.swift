@@ -11,7 +11,6 @@ struct CategoryFormSheet: View {
     @Binding var showSheet: Bool
     
     @FocusState private var isNameFocused: Bool
-    
     @State private var namePlaceholder: String
     @State private var name: String
     @State private var color: Color
@@ -32,16 +31,12 @@ struct CategoryFormSheet: View {
         onSave: @escaping (_ name: String, _ color: Color) -> Void
     ) {
         self._showSheet = showSheet
-        
         self.name = name
         self.color = color
         self.namePlaceholder = namePlaceholder
         self.colors = colors
-        
         self.onSave = onSave
     }
-        
-        
     
     var body: some View {
         NavigationView {

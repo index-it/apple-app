@@ -21,6 +21,7 @@ struct ItemCard: View {
     
     var body: some View {
         ZStack {
+            // MARK: Clickable menu
             Menu {
                 ControlGroup {
                     Button("Open", systemImage: "text.page") {
@@ -64,6 +65,7 @@ struct ItemCard: View {
                 ItemCardContent
             }
             
+            // MARK: Completion button
             HStack {
                 Button {
                     onCompletionChange(item, !item.completed)
@@ -89,9 +91,9 @@ struct ItemCard: View {
                 }
             }.padding()
         }
-        
     }
     
+    // MARK: Item card
     var ItemCardContent: some View {
         HStack {
             Button {

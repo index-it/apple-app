@@ -11,7 +11,10 @@ import SwiftData
 struct ItemsDisplayer: View {
     private var listId: String
     private var category: IxListCategory?
-    private var itemsFilter: ItemsFilter
+    
+    private var itemFilter: ItemFilter
+    private var onClearItemFilter: () -> ()
+
     private var onNewCategory: Bool
     
     private var onCreateItem: () -> ()
@@ -37,7 +40,10 @@ struct ItemsDisplayer: View {
     init(
         listId: String,
         category: IxListCategory? = nil,
-        itemsFilter: ItemsFilter,
+        itemFilter: ItemFilter,
+        itemSorting: ItemSorting,
+        itemReverseSorting: Bool,
+        onClearItemFilter: @escaping () -> (),
         onNewCategory: Bool,
         onCreateItem: @escaping () -> (),
         onCreateCategory: @escaping () -> (),
@@ -50,7 +56,8 @@ struct ItemsDisplayer: View {
     ) {
         self.listId = listId
         self.category = category
-        self.itemsFilter = itemsFilter
+        self.itemFilter = itemFilter
+        self.onClearItemFilter = onClearItemFilter
         self.onNewCategory = onNewCategory
         
         self.onCreateItem = onCreateItem
@@ -64,64 +71,100 @@ struct ItemsDisplayer: View {
         
         let categoryId = category?.id
         
+        var filterPredicate = #Predicate<IxListItem> { _ in true }
+        
         if onNewCategory {
-            _items = Query(filter: #Predicate { _ in false })
-        } else if itemsFilter == .uncompleted {
-            _items = Query(filter: #Predicate { item in
-                    item.list_id == listId && item.category_id == categoryId && item.completed == false
-            })
-        } else if itemsFilter == .all {
-            _items = Query(
-                filter: #Predicate { item in
-                    item.list_id == listId && item.category_id == categoryId
-                },
-                sort: \.completed,
-                order: .reverse
-            )
-        } else if itemsFilter == .completed {
-            _items = Query(filter: #Predicate { item in
+            filterPredicate = #Predicate<IxListItem> { _ in false }
+        } else if itemFilter == .uncompleted {
+            filterPredicate = #Predicate<IxListItem> { item in
+                item.list_id == listId && item.category_id == categoryId && item.completed == false
+            }
+        } else if itemFilter == .all {
+            filterPredicate = #Predicate<IxListItem> { item in
+                item.list_id == listId && item.category_id == categoryId
+            }
+        } else if itemFilter == .completed {
+            filterPredicate = #Predicate<IxListItem> { item in
                 item.list_id == listId && item.category_id == categoryId && item.completed == true
-            })
+            }
         }
+        
+        let sortOrder = if itemReverseSorting {
+            SortOrder.reverse
+        } else {
+            SortOrder.forward
+        }
+        
+        let sortDescriptor = switch itemSorting {
+        case .name:
+            SortDescriptor(\IxListItem.name, order: sortOrder)
+        case .creation:
+            SortDescriptor(\IxListItem.created_at, order: sortOrder)
+        case .edit:
+            SortDescriptor(\IxListItem.edited_at, order: sortOrder)
+        }
+       
+        _items = Query(filter: filterPredicate, sort: [SortDescriptor(\IxListItem.completed), sortDescriptor])
     }
     
     var body: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack {
                 ForEach(items) { item in
-                    ItemCard(
-                        item: item,
-                        color: color,
-                        onOpen: onOpen,
-                        onOpenLink: onOpenLink,
-                        onCompletionChange: onCompletionChange,
-                        onCreateTask: onCreateTask,
-                        onEdit: onEdit,
-                        onDelete: onDelete
-                    )
+                    SwipeView {
+                        ItemCard(
+                            item: item,
+                            color: color,
+                            onOpen: onOpen,
+                            onOpenLink: onOpenLink,
+                            onCompletionChange: onCompletionChange,
+                            onCreateTask: onCreateTask,
+                            onEdit: onEdit,
+                            onDelete: onDelete
+                        )
+                    } leadingActions: { _ in
+                        SwipeAction("Test") {
+                            // TODO
+                        }
+                    } trailingActions: { _ in
+                        SwipeAction("World") {
+                            // TODO
+                        }
+                    }
+                    
                 }
             }
         }.overlay {
+            // MARK: Empty items overlay
             if items.isEmpty && !onNewCategory {
                 VStack {
                     Spacer()
                     
                     ContentUnavailableView {
-                        Label("No items", systemImage: "binoculars")
+                        Label(itemFilter == .completed ? "No completed items" : "No items", systemImage: "binoculars")
                     } description: {
-                        Text("There are no items in this category")
+                        Text(itemFilter == .completed ? "You didn't complete any item yet" : "There are no items in this category")
                     } actions: {
-                        Button {
-                            onCreateItem()
-                        } label: {
-                            Label("Create item", systemImage: "plus")
-                        }.buttonStyle(.borderedProminent)
+                        if itemFilter == .completed {
+                            Button {
+                                onClearItemFilter()
+                            } label: {
+                                Label("Clear filters", systemImage: "xmark")
+                            }.buttonStyle(.borderedProminent)
+                        } else {
+                            Button {
+                                onCreateItem()
+                            } label: {
+                                Label("Create item", systemImage: "plus")
+                            }.buttonStyle(.borderedProminent)
+                        }
                     }
                     
                     Spacer()
                 }.frame(maxHeight: .infinity)
             }
             
+            // MARK: New category overlay
             if onNewCategory {
                 VStack {
                     Spacer()
