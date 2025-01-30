@@ -17,11 +17,12 @@ class IxListItem {
     var name: String
     var completed: Bool
     var link: String?
+    var note: String?
     var created_at: Int64
     var edited_at: Int64?
     var completed_at: Int64?
     
-    init(id: String, user_id: String, list_id: String, category_id: String?, name: String, completed: Bool, link: String?, created_at: Int64, edited_at: Int64?, completed_at: Int64?) {
+    init(id: String, user_id: String, list_id: String, category_id: String?, name: String, completed: Bool, link: String?, note: String?, created_at: Int64, edited_at: Int64?, completed_at: Int64?) {
         self.id = id
         self.user_id = user_id
         self.list_id = list_id
@@ -29,6 +30,7 @@ class IxListItem {
         self.name = name
         self.completed = completed
         self.link = link
+        self.note = note
         self.created_at = created_at
         self.edited_at = edited_at
         self.completed_at = completed_at
@@ -43,6 +45,7 @@ class IxListItem {
             name: networkListItem.name,
             completed: networkListItem.completed,
             link: networkListItem.link,
+            note: networkListItem.note,
             created_at: networkListItem.created_at,
             edited_at: networkListItem.edited_at,
             completed_at: networkListItem.completed_at
@@ -50,6 +53,6 @@ class IxListItem {
     }
     
     static func loading() -> IxListItem {
-        IxListItem(id: UUID().uuidString, user_id: "", list_id: "", category_id: nil, name: "Loading...", completed: false, link: nil, created_at: 0, edited_at: 0, completed_at: 0)
+        IxListItem(id: UUID().uuidString, user_id: "", list_id: "", category_id: nil, name: "Loading...", completed: false, link: nil, note: nil, created_at: 0, edited_at: 0, completed_at: 0)
     }
 }

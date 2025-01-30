@@ -20,20 +20,19 @@ struct ItemsDisplayer: View {
     private var onCreateItem: () -> ()
     private var onCreateCategory: () -> ()
     
-    private var onOpen: (IxListItem) -> ()
+    private var onOpenNotes: (IxListItem) -> ()
     private var onOpenLink: (IxListItem, String) -> ()
     private var onCompletionChange: (IxListItem, Bool) -> ()
     private var onCreateTask: (IxListItem) -> ()
     private var onEdit: (IxListItem) -> ()
     private var onDelete: (IxListItem) -> ()
+    private var onMoveToPreviousCategory: (_ item: IxListItem, _ completionAction: @escaping () -> ()) -> Void
+    private var onMoveToNextCategory: (_ item: IxListItem, _ completionAction: @escaping () -> ()) -> Void
     
     @Query private var items: [IxListItem]
     
     private var color: Color? {
-        guard let category = category else {
-            return nil
-        }
-        
+        guard let category = category else { return nil }
         return Color(hexString: category.color)
     }
     
@@ -47,12 +46,14 @@ struct ItemsDisplayer: View {
         onNewCategory: Bool,
         onCreateItem: @escaping () -> (),
         onCreateCategory: @escaping () -> (),
-        onOpen: @escaping (IxListItem) -> Void,
+        onOpenNotes: @escaping (IxListItem) -> Void,
         onOpenLink: @escaping (IxListItem, String) -> Void,
         onCompletionChange: @escaping (IxListItem, Bool) -> Void,
         onCreateTask: @escaping (IxListItem) -> Void,
         onEdit: @escaping (IxListItem) -> Void,
-        onDelete: @escaping (IxListItem) -> Void
+        onDelete: @escaping (IxListItem) -> Void,
+        onMoveToPreviousCategory: @escaping (_ item: IxListItem, _ completionAction: @escaping () -> ()) -> Void,
+        onMoveToNextCategory: @escaping (_ item: IxListItem, _ completionAction: @escaping () -> ()) -> Void
     ) {
         self.listId = listId
         self.category = category
@@ -62,12 +63,14 @@ struct ItemsDisplayer: View {
         
         self.onCreateItem = onCreateItem
         self.onCreateCategory = onCreateCategory
-        self.onOpen = onOpen
+        self.onOpenNotes = onOpenNotes
         self.onOpenLink = onOpenLink
         self.onCompletionChange = onCompletionChange
         self.onCreateTask = onCreateTask
         self.onEdit = onEdit
         self.onDelete = onDelete
+        self.onMoveToPreviousCategory = onMoveToPreviousCategory
+        self.onMoveToNextCategory = onMoveToNextCategory
         
         let categoryId = category?.id
         
@@ -109,29 +112,33 @@ struct ItemsDisplayer: View {
     
     var body: some View {
         ScrollView(showsIndicators: false) {
-            LazyVStack {
+            LazyVStack(spacing: 4) {
                 ForEach(items) { item in
                     SwipeView {
                         ItemCard(
                             item: item,
                             color: color,
-                            onOpen: onOpen,
+                            onOpenNotes: onOpenNotes,
                             onOpenLink: onOpenLink,
                             onCompletionChange: onCompletionChange,
                             onCreateTask: onCreateTask,
                             onEdit: onEdit,
                             onDelete: onDelete
                         )
-                    } leadingActions: { _ in
-                        SwipeAction("Test") {
-                            // TODO
-                        }
-                    } trailingActions: { _ in
-                        SwipeAction("World") {
-                            // TODO
-                        }
-                    }
-                    
+                    } leadingActions: { context in
+                        SwipeAction(systemImage: "arrow.right") {
+                            onMoveToNextCategory(item) {
+                                context.state.wrappedValue = .closed
+                            }
+                        }.allowSwipeToTrigger()
+                    } trailingActions: { context in
+                        SwipeAction(systemImage: "arrow.left") {
+                            onMoveToPreviousCategory(item) {
+                                context.state.wrappedValue = .closed
+                            }
+                        }.allowSwipeToTrigger()
+                    }.swipeEnableTriggerHaptics(true)
+                        .swipeMinimumDistance(30) // TODO: play around with this value, this avoids vertical scrolling issues
                 }
             }
         }.overlay {

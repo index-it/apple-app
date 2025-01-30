@@ -15,6 +15,7 @@ struct NetworkListItem: Codable {
     let name: String
     let completed: Bool
     let link: String?
+    let note: String?
     let created_at: Int64
     let edited_at: Int64?
     let completed_at: Int64?

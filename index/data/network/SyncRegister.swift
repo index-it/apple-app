@@ -25,6 +25,10 @@ class SyncRegister {
             return "\(LISTS)/\(listId)/\(itemId)"
         }
         
+        static func listItemContent(_ listId: String, _ itemId: String) -> String {
+            return "\(LISTS)/\(listId)/\(itemId)/content"
+        }
+        
         static func task(_ taskId: String) -> String {
             return "\(TASKS)/\(taskId)"
         }

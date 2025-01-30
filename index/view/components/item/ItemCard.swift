@@ -12,7 +12,7 @@ struct ItemCard: View {
     var item: IxListItem
     var color: Color?
     
-    var onOpen: (IxListItem) -> ()
+    var onOpenNotes: (IxListItem) -> ()
     var onOpenLink: (IxListItem, String) -> ()
     var onCompletionChange: (IxListItem, Bool) -> ()
     var onCreateTask: (IxListItem) -> ()
@@ -21,11 +21,12 @@ struct ItemCard: View {
     
     var body: some View {
         ZStack {
-            // MARK: Clickable menu
             Menu {
                 ControlGroup {
-                    Button("Open", systemImage: "text.page") {
-                        onOpen(item)
+                    if item.note != nil {
+                        Button("See notes", systemImage: "text.page") {
+                            onOpenNotes(item)
+                        }
                     }
                     
                     if item.link != nil {
@@ -65,18 +66,18 @@ struct ItemCard: View {
                 ItemCardContent
             }
             
-            // MARK: Completion button
-            HStack {
-                Button {
-                    onCompletionChange(item, !item.completed)
-                } label: {
-                    Label(item.completed ? "Uncomplete" : "Complete", systemImage: item.completed ? "inset.filled.circle" : "circle")
-                        .labelStyle(.iconOnly)
-                        .font(.title3)
-                        .foregroundStyle(item.completed ? Color.accentColor : color != nil ? (color!.isLight() ? Color.secondary.dark : Color.secondary.light) : (colorScheme == .light ? Color.secondary.light : Color.secondary.dark))
-                }
-                
+            HStack(spacing: 16) {
                 Spacer()
+                
+                if item.note != nil {
+                    Button {
+                        onOpenNotes(item)
+                    } label: {
+                        Label("See notes", systemImage: "text.page")
+                            .labelStyle(.iconOnly)
+                            .foregroundStyle(color?.contrastColor() ?? UIColor.label.toColor())
+                    }
+                }
                 
                 if item.link != nil {
                     Button {
@@ -96,39 +97,42 @@ struct ItemCard: View {
     // MARK: Item card
     var ItemCardContent: some View {
         HStack {
-            Button {
-                
-            } label: {
-                Label(item.completed ? "Uncomplete" : "Complete", systemImage: item.completed ? "inset.filled.circle" : "circle")
-                    .labelStyle(.iconOnly)
-                    .font(.title3)
-                    .foregroundStyle(Color.clear)
-            }
-            
             Text(item.name)
                 .multilineTextAlignment(.leading)
+            
+            Spacer()
+            
+            HStack(spacing: 16) {
+                if item.link != nil {
+                    Button {
+                        
+                    } label: {
+                        Label("Open link", systemImage: "link")
+                            .foregroundStyle(.clear)
+                            .labelStyle(.iconOnly)
+                    }
+                }
                 
-            if item.link != nil {
-                Spacer()
-                
-                Button {
-                    
-                } label: {
-                    Label("Open link", systemImage: "link")
-                        .labelStyle(.iconOnly)
-                        .foregroundStyle(Color.clear)
+                if item.note != nil {
+                    Button {
+                        
+                    } label: {
+                        Label("See notes", systemImage: "text.page")
+                            .foregroundStyle(.clear)
+                            .labelStyle(.iconOnly)
+                    }
                 }
             }
         }.padding()
             .frame(maxWidth: .infinity, alignment: .leading)
             .foregroundStyle(color?.contrastColor() ?? UIColor.label.toColor())
             .background(color ?? UIColor.secondarySystemBackground.toColor())
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 
 #Preview {
-    VStack {
+    VStack(spacing: 3) {
         ItemCard(
             item: IxListItem(
                 id: UUID().uuidString,
@@ -138,11 +142,12 @@ struct ItemCard: View {
                 name: "Test item",
                 completed: false,
                 link: "https://google.com",
+                note: "Hi",
                 created_at: 0,
                 edited_at: 0,
                 completed_at: nil
             ),
-            onOpen: { _ in },
+            onOpenNotes: { _ in },
             onOpenLink: { _, _ in },
             onCompletionChange: { _, _ in },
             onCreateTask: { _ in },
@@ -159,11 +164,56 @@ struct ItemCard: View {
                 name: "Test item",
                 completed: true,
                 link: nil,
+                note: "hello",
                 created_at: 0,
                 edited_at: 0,
                 completed_at: 0
             ),
-            onOpen: { _ in },
+            onOpenNotes: { _ in },
+            onOpenLink: { _, _ in },
+            onCompletionChange: { _, _ in },
+            onCreateTask: { _ in },
+            onEdit: { _ in },
+            onDelete: { _ in }
+        )
+        
+        ItemCard(
+            item: IxListItem(
+                id: UUID().uuidString,
+                user_id: "",
+                list_id: "",
+                category_id: nil,
+                name: "Test item",
+                completed: true,
+                link: "Hii",
+                note: nil,
+                created_at: 0,
+                edited_at: 0,
+                completed_at: 0
+            ),
+            onOpenNotes: { _ in },
+            onOpenLink: { _, _ in },
+            onCompletionChange: { _, _ in },
+            onCreateTask: { _ in },
+            onEdit: { _ in },
+            onDelete: { _ in }
+        )
+        
+        ItemCard(
+            item: IxListItem(
+                id: UUID().uuidString,
+                user_id: "",
+                list_id: "",
+                category_id: nil,
+                name: "Test item",
+                completed: true,
+                link: nil,
+                note: nil,
+                created_at: 0,
+                edited_at: 0,
+                completed_at: 0
+            ),
+            onOpenNotes: { _ in },
             onOpenLink: { _, _ in },
             onCompletionChange: { _, _ in },
             onCreateTask: { _ in },

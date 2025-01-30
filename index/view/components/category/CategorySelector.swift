@@ -12,10 +12,13 @@ struct CategorySelector: View {
     
     @Binding private var selectedCategoryId: String?
     @Binding private var selectedCategory: IxListCategory?
+    @Binding private var previousCategory: IxListCategory?
+    @Binding private var nextCategory: IxListCategory?
     
     private var showUncategorizedItems: Bool
     
     private var onSelectedTap: (_ categoryId: String?) -> ()
+    private var onHideUncategorized: () -> ()
     private var onNewCategoryTap: () -> ()
     private var onEdit: (_ category: IxListCategory) -> ()
     private var onDelete: (_ category: IxListCategory) -> ()
@@ -24,18 +27,24 @@ struct CategorySelector: View {
         listId: String,
         selectedCategoryId: Binding<String?>,
         selectedCategory: Binding<IxListCategory?>,
+        previousCategory: Binding<IxListCategory?>,
+        nextCategory: Binding<IxListCategory?>,
         showUncategorizedItems: Bool,
         categorySorting: CategorySorting,
         categoryReverseSorting: Bool,
         onSelectedTap: @escaping (_: String?) -> Void,
+        onHideUncategorized: @escaping () -> (),
         onNewCategoryTap: @escaping () -> Void,
         onEdit: @escaping (_ category: IxListCategory) -> (),
         onDelete: @escaping (_ category: IxListCategory) -> ()
     ) {
         self._selectedCategoryId = selectedCategoryId
         self._selectedCategory = selectedCategory
+        self._previousCategory = previousCategory
+        self._nextCategory = nextCategory
         self.showUncategorizedItems = showUncategorizedItems
         self.onSelectedTap = onSelectedTap
+        self.onHideUncategorized = onHideUncategorized
         self.onNewCategoryTap = onNewCategoryTap
         self.onEdit = onEdit
         self.onDelete = onDelete
@@ -88,6 +97,12 @@ struct CategorySelector: View {
                                         }
                                     }
                                 }
+//                                .clipShape(RoundedRectangle(cornerRadius: CategoryUIDefaults.cornerRadius))
+                                .contextMenu {
+                                    Button("Hide default category", systemImage: "eye.slash") {
+                                        onHideUncategorized()
+                                    }
+                                }
                         }
                         
                         // MARK: Category indicators
@@ -110,8 +125,17 @@ struct CategorySelector: View {
                                         }
                                     }
                                 }
-                                .clipShape(RoundedRectangle(cornerRadius: CategoryUIDefaults.cornerRadius))
+//                                .clipShape(RoundedRectangle(cornerRadius: CategoryUIDefaults.cornerRadius))
                                 .contextMenu {
+                                    Section {
+                                        Picker(selection: $selectedCategoryId.animation(), label: Text("Select category")) {
+                                            ForEach(categories) { category in
+                                                Text(category.name)
+                                                    .tag(category.id)
+                                            }
+                                        }
+                                    }
+                                    
                                     Button("Edit category", systemImage: "square.and.pencil") {
                                         onEdit(category)
                                     }
@@ -151,7 +175,6 @@ struct CategorySelector: View {
                     .scrollTargetLayout()
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(height: CategoryUIDefaults.height + 48)
-
                 }.scrollPosition(id: $selectedCategoryId, anchor: .center)
                     .scrollTargetBehavior(.viewAligned)
                     .safeAreaPadding(geoProxy.size.width / 2)
@@ -170,13 +193,44 @@ struct CategorySelector: View {
                             }
                         }
                     }
-                    .onChange(of: selectedCategoryId, initial: true) { _, newValue in
-                        if newValue == "none" || newValue == "new" {
-                            selectedCategory = nil
+                    .onChange(of: showUncategorizedItems) { _, _ in
+                        if !showUncategorizedItems && selectedCategoryId == "none" {
+                            withAnimation {
+                                selectedCategoryId = categories.first?.id ?? "new"
+                            }
                         } else {
-                            selectedCategory = categories.first { $0.id == selectedCategoryId }
+                            withAnimation {
+                                scrollReader.scrollTo(selectedCategoryId, anchor: .center)
+                            }
                         }
                     }
+                    .onChange(of: selectedCategoryId, initial: true) { _, newValue in
+                        if newValue == "none" {
+                            selectedCategory = nil
+                            previousCategory = nil
+                            nextCategory = categories.first
+                        } else if newValue == "new" {
+                            selectedCategory = nil
+                            previousCategory = categories.last
+                            nextCategory = nil
+                        } else {
+                            guard let selectedCategoryIndex = categories.firstIndex(where: { $0.id == selectedCategoryId }) else { return }
+                            selectedCategory = categories.first { $0.id == selectedCategoryId }
+                            
+                            if selectedCategoryIndex - 1 >= 0 {
+                                previousCategory = categories[selectedCategoryIndex - 1]
+                            } else {
+                                previousCategory = nil
+                            }
+                            
+                            if selectedCategoryIndex + 1 < categories.count {
+                                nextCategory = categories[selectedCategoryIndex + 1]
+                            } else {
+                                nextCategory = nil
+                            }
+                        }
+                    }
+                    .sensoryFeedback(.selection, trigger: selectedCategoryId)
             }
         }
     }

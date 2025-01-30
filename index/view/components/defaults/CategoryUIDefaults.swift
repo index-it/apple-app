@@ -10,6 +10,6 @@ import SwiftUI
 struct CategoryUIDefaults {
     static var width: CGFloat = 52
     static var height: CGFloat = 52
-    static var cornerRadius: CGFloat = 16
-    static var font: Font = .title
+    static var cornerRadius: CGFloat = 100
+    static var font: Font = .title.weight(.bold)
 }

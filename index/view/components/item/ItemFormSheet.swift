@@ -15,6 +15,7 @@ struct ItemFormSheet: View {
     @State private var name: String
     @State private var category: IxListCategory?
     @State private var link: String
+    @State private var note: String
     
     private var categories: [IxListCategory]
     private var namePlaceholder: String
@@ -23,21 +24,23 @@ struct ItemFormSheet: View {
         name.isEmpty || name.count >= 100
     }
     
-    private var onSave: (_ name: String, _ category: IxListCategory?, _ link: String?) -> Void
+    private var onSave: (_ name: String, _ category: IxListCategory?, _ link: String?, _ note: String?) -> Void
     
     init(
         showSheet: Binding<Bool>,
         name: String,
         category: IxListCategory?,
         link: String?,
+        note: String?,
         categories: [IxListCategory],
         namePlaceholder: String,
-        onSave: @escaping (_ name: String, _ category: IxListCategory?, _ link: String?) -> Void
+        onSave: @escaping (_ name: String, _ category: IxListCategory?, _ link: String?, _ note: String?) -> Void
     ) {
         self._showSheet = showSheet
         self.name = name
         self.category = category
         self.link = link ?? ""
+        self.note = note ?? ""
         self.categories = categories
         self.namePlaceholder = namePlaceholder
         self.onSave = onSave
@@ -69,10 +72,12 @@ struct ItemFormSheet: View {
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                             
+                        TextField("Notes", text: $note,  axis: .vertical)
+                            .lineLimit(3...)
                     } header: {
                         Text("Properties")
                     } footer: {
-                        Text("Both the category and link are optional")
+                        Text("All properties are optional")
                     }
                 }
             }
@@ -88,7 +93,7 @@ struct ItemFormSheet: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        onSave(name, category, link.isEmpty ? nil : link)
+                        onSave(name, category, link.isEmpty ? nil : link, note.isEmpty ? nil : note)
                         showSheet = false
                     }
                     .disabled(isNameInvalid)
@@ -109,13 +114,14 @@ struct ItemFormSheet: View {
         name: "",
         category: nil,
         link: nil,
+        note: nil,
         categories: [
             IxListCategory.loading(),
             IxListCategory.loading(),
             IxListCategory.loading()
         ],
         namePlaceholder: "Item name"
-    ) { name, category, link in
+    ) { name, category, link, note in
         // Handle save action
     }
 }

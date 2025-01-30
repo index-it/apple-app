@@ -15,7 +15,7 @@ struct ListCard: View {
     var onEdit: () -> Void
     var onDelete: () -> Void
     var withInteractions: Bool = true
-
+    
     var body: some View {
         VStack {
             HStack {
@@ -62,8 +62,9 @@ struct ListCard: View {
                     .foregroundStyle(list.color.toColor(fallback: .white).contrastColor())
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-                
+            
         }
+        
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 20)
@@ -79,7 +80,8 @@ struct ListCard: View {
                     )
                 )
         )
-        .frame(height: 120)
+        .frame(height: 110)
+        .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: 20))
         .onTapGesture(perform: onTap)
         .if(withInteractions) { view in
             // TODO: Fix white edges on context menu

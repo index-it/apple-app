@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import AlertToast
 
 struct ListScreen: View {
     @EnvironmentObject private var ixApiClient: IxApiClient
@@ -26,7 +27,14 @@ struct ListScreen: View {
     @Query private var categories: [IxListCategory]
     @State private var selectedCategoryId: String? = "none"
     @State private var selectedCategory: IxListCategory? = nil
+    @State private var nextCategory: IxListCategory? = nil
+    @State private var previousCategory: IxListCategory? = nil
+    @State private var showItemMovedToNextCategoryToast = false
+    @State private var showItemMovedToPreviousCategoryToast = false
     
+    // TODO: imrpove ItemsDisplayer performance
+//    @State private var debouncedSelectedCategory: IxListCategory? = nil
+
     private var onCreateNewCategory: Bool { selectedCategoryId == "new" }
     
     @State private var showCategoryEditSheet = false
@@ -40,12 +48,14 @@ struct ListScreen: View {
     // MARK: Selected item
     @State private var selectedItem: IxListItem? = nil
     @State private var showItemEditSheet = false
+    @State private var showItemNotePopover = false
     
     // MARK: New item
     @State private var showItemCreationSheet = false
     @State private var newItemName = ""
     @State private var newItemNamePlaceholder = ""
     @State private var newItemLink = ""
+    @State private var newItemNote = ""
     @State private var newItemCategory: String? = nil
     
     // MARK: Item filters and sorting
@@ -190,9 +200,9 @@ struct ListScreen: View {
     }
     
     // MARK: - Item CRUD
-    func createItem(listId: String, name: String, categoryId: String?, link: String?) async {
+    func createItem(listId: String, name: String, categoryId: String?, link: String?, note: String?) async {
         do {
-            let item = try await ixApiClient.createListItem(listId: listId, categoryId: categoryId, name: name, link: link)
+            let item = try await ixApiClient.createListItem(listId: listId, categoryId: categoryId, name: name, link: link, note: note)
             
             try await saveItem(item)
         } catch {
@@ -201,9 +211,9 @@ struct ListScreen: View {
         }
     }
     
-    func editItem(listId: String, itemId: String, name: String, categoryId: String?, link: String?) async {
+    func editItem(listId: String, itemId: String, name: String, categoryId: String?, link: String?, note: String?) async {
         do {
-            let item = try await ixApiClient.updateListItem(listId: listId, itemId: itemId, name: name, categoryId: categoryId, link: link)
+            let item = try await ixApiClient.updateListItem(listId: listId, itemId: itemId, name: name, categoryId: categoryId, link: link, note: note)
             
             try await saveItem(item)
         } catch {
@@ -240,6 +250,10 @@ struct ListScreen: View {
             let category = try await ixApiClient.createCategory(listId: listId, name: name, color: color.hexString())
             
             try await saveCategory(category)
+            
+            withAnimation {
+                selectedCategoryId = category.id
+            }
         } catch {
             
         }
@@ -277,11 +291,12 @@ struct ListScreen: View {
                         name: "",
                         category: selectedCategory,
                         link: nil,
+                        note: nil,
                         categories: categories,
                         namePlaceholder: newItemNamePlaceholder
-                    ) { name, category, link in
+                    ) { name, category, link, note in
                         Task {
-                            await createItem(listId: listId, name: name, categoryId: category?.id, link: link)
+                            await createItem(listId: listId, name: name, categoryId: category?.id, link: link, note: note)
                         }
                     }
             })
@@ -294,11 +309,12 @@ struct ListScreen: View {
                         category: categories.first { c in c.id == selectedItem?.category_id
                         },
                         link: selectedItem?.link,
+                        note: selectedItem?.note,
                         categories: categories,
-                        namePlaceholder: newItemNamePlaceholder) { name, category, link in
+                        namePlaceholder: newItemNamePlaceholder) { name, category, link, note in
                             Task {
                                 if let selectedItem = selectedItem {
-                                    await editItem(listId: listId, itemId: selectedItem.id, name: name, categoryId: category?.id, link: link)
+                                    await editItem(listId: listId, itemId: selectedItem.id, name: name, categoryId: category?.id, link: link, note: note)
                                 }
                             }
                         }
@@ -335,6 +351,23 @@ struct ListScreen: View {
                         }
                     }
             })
+            .sheet(isPresented: $showItemNotePopover) {
+                NavigationView {
+                    ScrollView(showsIndicators: false) {
+                        Text(selectedItem?.note ?? "This item has no notes in it")
+                            .navigationTitle("Notes")
+                            .navigationBarTitleDisplayMode(.inline)
+                            .toolbar {
+                                ToolbarItem(placement: .topBarTrailing) {
+                                    Button("Done") {
+                                        showItemNotePopover = false
+                                    }
+                                }
+                            }
+                    }.padding()
+                }.presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.hidden)
+            }
             .navigationTitle(list.name)
             .toolbar {
                 // MARK: - Toolbar
@@ -402,6 +435,13 @@ struct ListScreen: View {
                             .labelStyle(.iconOnly)
                     }
                 }
+            }
+            .toast(isPresenting: $showItemMovedToNextCategoryToast) {
+                // TODO: [UI] background color and toast style
+                AlertToast(displayMode: .hud, type: .regular, title: nil, subTitle: "Item moved to next category!")
+            }
+            .toast(isPresenting: $showItemMovedToPreviousCategoryToast) {
+                AlertToast(displayMode: .hud, type: .regular, title: nil, subTitle: "Item moved to previous category!")
             }
             .onAppear {
                 if SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.list(listId)) {
@@ -473,8 +513,9 @@ struct ListScreen: View {
                 onCreateCategory: {
                     showCategoryCreationSheet = true
                 },
-                onOpen: { item in
-                    // TODO
+                onOpenNotes: { item in
+                    selectedItem = item
+                    showItemNotePopover = true
                 },
                 onOpenLink: { item, link in
                     if let url = URL(string: link) {
@@ -497,6 +538,30 @@ struct ListScreen: View {
                     Task {
                         await deleteItem(listId: listId, itemId: item.id)
                     }
+                },
+                onMoveToPreviousCategory: { item, completionAction in
+                    if previousCategory == nil && item.category_id != nil {
+                        Task {
+                            await editItem(listId: listId, itemId: item.id, name: item.name, categoryId: nil, link: item.link, note: item.note)
+                            showItemMovedToPreviousCategoryToast = true
+                            completionAction()
+                        }
+                    } else if let previousCategory = previousCategory {
+                        Task {
+                            await editItem(listId: listId, itemId: item.id, name: item.name, categoryId: previousCategory.id, link: item.link, note: item.note)
+                            showItemMovedToPreviousCategoryToast = true
+                            completionAction()
+                        }
+                    }
+                },
+                onMoveToNextCategory: { item, completionAction in
+                    if let nextCategory = nextCategory {
+                        Task {
+                            await editItem(listId: listId, itemId: item.id, name: item.name, categoryId: nextCategory.id, link: item.link, note: item.note)
+                            showItemMovedToNextCategoryToast = true
+                            completionAction()
+                        }
+                    }
                 }
             )
                 .padding(.horizontal)
@@ -506,11 +571,16 @@ struct ListScreen: View {
                     listId: listId,
                     selectedCategoryId: $selectedCategoryId,
                     selectedCategory: $selectedCategory,
+                    previousCategory: $previousCategory,
+                    nextCategory: $nextCategory,
                     showUncategorizedItems: showUncategorizedItems,
                     categorySorting: categorySorting,
                     categoryReverseSorting: categoryReverseSorting,
                     onSelectedTap: { categoryId in
                         showItemCreationSheet = true
+                    },
+                    onHideUncategorized: {
+                        showUncategorizedItems = false
                     },
                     onNewCategoryTap: {
                         showCategoryCreationSheet = true
@@ -522,6 +592,12 @@ struct ListScreen: View {
                     onDelete: { category in
                         Task {
                             await deleteCategory(listId: listId, categoryId: category.id)
+                            
+                            if (selectedCategoryId == category.id) {
+                                withAnimation {
+                                    selectedCategoryId = previousCategory?.id ?? (showUncategorizedItems ? "none" : "new")
+                                }
+                            }
                         }
                     }
                 )
