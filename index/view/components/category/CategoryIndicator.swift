@@ -29,8 +29,9 @@ struct CategoryIndicator: View {
                     endPoint: .bottom
                 ))
                 .frame(width: CategoryUIDefaults.width, height: CategoryUIDefaults.height)
-//                .shadow(color: Color(hexString: category.color).opacity(0.2), radius: 8)
-
+                .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 4)
+            //                .shadow(color: Color(hexString: category.color).opacity(0.2), radius: 8)
+            
             if selected {
                 Image(systemName: "plus")
                     .foregroundStyle(Color(hexString: category.color).contrastColor())

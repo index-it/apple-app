@@ -6,16 +6,17 @@
 //
 import SwiftUI
 
-struct CustomButtonStyle: ButtonStyle {
+struct OpacityButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.9 : 1)
+//            .scaleEffect(configuration.isPressed ? 0.9 : 1)
             .animation(.smooth, value: configuration.isPressed)
+            .opacity(configuration.isPressed ? 0.6 : 1)
     }
 }
 
-extension ButtonStyle where Self == CustomButtonStyle {
-    static var customButton: CustomButtonStyle { .init() }
+extension ButtonStyle where Self == OpacityButtonStyle {
+    static var opacity: OpacityButtonStyle { .init() }
 }
 
 #Preview {
@@ -26,7 +27,7 @@ extension ButtonStyle where Self == CustomButtonStyle {
             Text("Hi")
                 .padding()
         }.background(.green)
-    }.buttonStyle(.customButton)
+    }.buttonStyle(.opacity)
     
     
     Button {

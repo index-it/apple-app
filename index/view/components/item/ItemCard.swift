@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import DynamicColor
 
 struct ItemCard: View {
     @Environment(\.colorScheme) var colorScheme
@@ -23,7 +24,7 @@ struct ItemCard: View {
         ZStack {
             Menu {
                 ControlGroup {
-                    if item.note != nil {
+                    if item.note != nil && !item.note!.isEmpty {
                         Button("See notes", systemImage: "text.page") {
                             onOpenNotes(item)
                         }
@@ -36,10 +37,10 @@ struct ItemCard: View {
                             }
                         }
                     }
-                    
-                    Button(item.completed ? "Uncomplete" : "Complete", systemImage: item.completed ? "xmark" : "checkmark") {
-                        onCompletionChange(item, !item.completed)
-                    }
+                }
+                
+                Button(item.completed ? "Uncomplete" : "Complete", systemImage: item.completed ? "xmark" : "checkmark") {
+                    onCompletionChange(item, !item.completed)
                 }
                 
                 
@@ -47,11 +48,11 @@ struct ItemCard: View {
                     onCreateTask(item)
                 }
                 
-                Button("Edit", systemImage: "pencil") {
-                    onEdit(item)
-                }
-                
                 Section {
+                    Button("Edit", systemImage: "pencil") {
+                        onEdit(item)
+                    }
+                    
                     Menu {
                         Button("Delete", systemImage: "trash", role: .destructive) {
                             onDelete(item)
@@ -66,7 +67,7 @@ struct ItemCard: View {
                 ItemCardContent
             }
             
-            HStack(spacing: 16) {
+            HStack(spacing: 8) {
                 Spacer()
                 
                 if item.note != nil {
@@ -75,6 +76,8 @@ struct ItemCard: View {
                     } label: {
                         Label("See notes", systemImage: "text.page")
                             .labelStyle(.iconOnly)
+                            .fontWeight(.bold)
+                            .padding(6)
                             .foregroundStyle(color?.contrastColor() ?? UIColor.label.toColor())
                     }
                 }
@@ -87,38 +90,50 @@ struct ItemCard: View {
                     } label: {
                         Label("Open link", systemImage: "link")
                             .labelStyle(.iconOnly)
+                            .fontWeight(.bold)
+                            .padding(6)
                             .foregroundStyle(color?.contrastColor() ?? UIColor.label.toColor())
                     }
                 }
-            }.padding()
+            }.padding(.horizontal)
         }
     }
     
     // MARK: Item card
     var ItemCardContent: some View {
         HStack {
+            
+            if item.completed {
+                Image(systemName: "checkmark")
+                    .fontWeight(.semibold)
+            }
+            
             Text(item.name)
                 .multilineTextAlignment(.leading)
             
             Spacer()
             
-            HStack(spacing: 16) {
-                if item.link != nil {
-                    Button {
-                        
-                    } label: {
-                        Label("Open link", systemImage: "link")
-                            .foregroundStyle(.clear)
-                            .labelStyle(.iconOnly)
-                    }
-                }
-                
+            HStack(spacing: 8) {
                 if item.note != nil {
                     Button {
                         
                     } label: {
                         Label("See notes", systemImage: "text.page")
                             .foregroundStyle(.clear)
+                            .fontWeight(.bold)
+                            .padding(.horizontal, 6)
+                            .labelStyle(.iconOnly)
+                    }
+                }
+                
+                if item.link != nil {
+                    Button {
+                        
+                    } label: {
+                        Label("Open link", systemImage: "link")
+                            .foregroundStyle(.clear)
+                            .fontWeight(.bold)
+                            .padding(.horizontal, 6)
                             .labelStyle(.iconOnly)
                     }
                 }
@@ -140,13 +155,14 @@ struct ItemCard: View {
                 list_id: "",
                 category_id: nil,
                 name: "Test item",
-                completed: false,
+                completed: true,
                 link: "https://google.com",
                 note: "Hi",
                 created_at: 0,
                 edited_at: 0,
                 completed_at: nil
             ),
+            color: Color.green,
             onOpenNotes: { _ in },
             onOpenLink: { _, _ in },
             onCompletionChange: { _, _ in },
@@ -162,13 +178,14 @@ struct ItemCard: View {
                 list_id: "",
                 category_id: nil,
                 name: "Test item",
-                completed: true,
+                completed: false,
                 link: nil,
                 note: "hello",
                 created_at: 0,
                 edited_at: 0,
                 completed_at: 0
             ),
+            color: .orange,
             onOpenNotes: { _ in },
             onOpenLink: { _, _ in },
             onCompletionChange: { _, _ in },

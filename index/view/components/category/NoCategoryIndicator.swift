@@ -27,6 +27,7 @@ struct NoCategoryIndicator: View {
                     endPoint: .bottom
                 ))
                 .frame(width: CategoryUIDefaults.width, height: CategoryUIDefaults.height)
+                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 4)
 
             if selected {
                 Image(systemName: "plus")

@@ -97,7 +97,6 @@ struct CategorySelector: View {
                                         }
                                     }
                                 }
-//                                .clipShape(RoundedRectangle(cornerRadius: CategoryUIDefaults.cornerRadius))
                                 .contextMenu {
                                     Button("Hide default category", systemImage: "eye.slash") {
                                         onHideUncategorized()
@@ -125,7 +124,6 @@ struct CategorySelector: View {
                                         }
                                     }
                                 }
-//                                .clipShape(RoundedRectangle(cornerRadius: CategoryUIDefaults.cornerRadius))
                                 .contextMenu {
                                     Section {
                                         Picker(selection: $selectedCategoryId.animation(), label: Text("Select category")) {

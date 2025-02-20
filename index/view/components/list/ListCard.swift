@@ -81,6 +81,9 @@ struct ListCard: View {
                 )
         )
         .frame(height: 110)
+        .if(!withInteractions, transform: { view in
+            view.shadow(color: Color(hexString: list.color).opacity(0.5), radius: 10)
+        })
         .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: 20))
         .onTapGesture(perform: onTap)
         .if(withInteractions) { view in
@@ -122,7 +125,7 @@ struct ListCard: View {
         editedAt: nil
     )
     
-    ListCard(list: sampleList, onTap: {}, onShare: {}, onEdit: {}, onDelete: {})
+    ListCard(list: sampleList, onTap: {}, onShare: {}, onEdit: {}, onDelete: {}, withInteractions: false)
         .padding()
         .frame(width: 250)
 }
