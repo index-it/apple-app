@@ -47,21 +47,6 @@ struct OnboardingView: View {
                     .controlSize(.large)
                     .padding()
             }.toolbar {
-//                if selectedPage > 0 {
-//                    ToolbarItem(placement: .navigation) {
-//                        Button {
-//                            if selectedPage > 0 {
-//                                withAnimation {
-//                                    selectedPage -= 1
-//                                }
-//                            }
-//                        } label: {
-//                            Label("Back", systemImage: "chevron.backward")
-//                                .labelStyle(.iconOnly)
-//                        }
-//                    }
-//                }
-                
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
                         onClose()

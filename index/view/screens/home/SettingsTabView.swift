@@ -26,10 +26,8 @@ struct SettingsTabView: View {
     private func changePassword(newPassword: String) async {
         do {
             try await ixApiClient.changePassword(newPassword: newPassword)
-        } catch IxApiClientError.InvalidData {
-            
         } catch {
-            
+            errorService.insert(.localizedError(title: "Error changing password", error: error))
         }
     }
     
@@ -38,7 +36,7 @@ struct SettingsTabView: View {
             // TODO: Uncomment on release
             // try await ixApiClient.deleteLoggedInUser()
         } catch {
-            
+            errorService.insert(.localizedError(title: "Error deleting account", error: error))
         }
     }
     

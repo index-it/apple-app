@@ -88,7 +88,7 @@ struct ListsTabView: View {
                 try context.save()
             }
         } catch {
-            errorService.insert(.customMessage(message: "Something went wrong while trying to get your lists!"))
+            errorService.insert(.localizedError(title: "Error loading lists", error: error))
         }
     }
     
@@ -97,8 +97,6 @@ struct ListsTabView: View {
             let list = try await ixApiClient.createList(name: name, icon: emoji, color: color.hexString(), is_public: isPublic)
             
             context.insert(list)
-        } catch IxApiClientError.InvalidData {
-            errorService.insert(.customMessage(message: "Some list properties are not valid, please make sure to provide a valid name and emoji."))
         } catch IxApiClientError.ProRequired(let proFeature) {
             let message = if (proFeature == .public_list) {
                 "You need Pro in order to create a public list."
@@ -106,6 +104,7 @@ struct ListsTabView: View {
                 "You need Pro to be able to create more than 10 lists."
             }
             
+            // TODO
             let error = ErrorAlert.customMessage(
                 title: "Pro required",
                 message: message,
@@ -122,7 +121,7 @@ struct ListsTabView: View {
             
             errorService.insert(error)
         } catch {
-            errorService.insert(.customMessage())
+            errorService.insert(.localizedError(title: "Error creating list", error: error))
         }
     }
     
@@ -132,6 +131,7 @@ struct ListsTabView: View {
             
             try await saveList(list)
         } catch {
+            errorService.insert(.localizedError(title: "Error editing list", error: error))
         }
     }
     
@@ -142,10 +142,8 @@ struct ListsTabView: View {
             try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
         } catch IxApiClientError.NotFound {
             do { try context.delete(model: IxList.self, where: #Predicate { $0.id == id }) } catch {}
-        } catch IxApiClientError.MissingPermission {
-            // TODO
         } catch {
-            errorService.insert(.customMessage())
+            errorService.insert(.localizedError(title: "Error deleting list", error: error))
         }
     }
     
@@ -162,6 +160,8 @@ struct ListsTabView: View {
                 try await saveList(list)
             } catch {
                 loadingSelectedListPublic = false
+                
+                errorService.insert(.localizedError(title: "Error updating list", error: error))
             }
         }
     }
@@ -173,7 +173,7 @@ struct ListsTabView: View {
             loadingSelectedListUsers = false
         } catch {
             loadingSelectedListUsers = false
-            // TODO
+            errorService.insert(.localizedError(title: "Error fetching users", error: error))
         }
     }
     
@@ -190,6 +190,7 @@ struct ListsTabView: View {
                 loadingSelectedListUserInvite = false
             } catch {
                 loadingSelectedListUserInvite = false
+                errorService.insert(.localizedError(title: "Error inviting user", error: error))
             }
         }
     }
@@ -212,6 +213,7 @@ struct ListsTabView: View {
                 await fetchListUsersWthAccess(listId: selectedList.id)
             } catch {
                 loadingSelectedListUserEditOrRevokePermissions = nil
+                errorService.insert(.localizedError(title: "Error changing user permissions", error: error))
             }
         }
     }
@@ -229,6 +231,7 @@ struct ListsTabView: View {
                 await fetchListUsersWthAccess(listId: selectedList.id)
             } catch {
                 loadingSelectedListUserEditOrRevokePermissions = nil
+                errorService.insert(.localizedError(title: "Error revoking user access", error: error))
             }
         }
     }

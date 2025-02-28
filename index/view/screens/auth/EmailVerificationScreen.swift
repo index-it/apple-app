@@ -33,7 +33,7 @@ struct EmailVerificationScreen: View {
             errorService.insert(.customMessage(message: "Make sure you provided the correct email and password for your account and try again."))
         } catch {
             verificationLoading = false
-            errorService.insert(.customMessage())
+            errorService.insert(.localizedError(title: nil, error: error))
         }
     }
     
@@ -50,12 +50,12 @@ struct EmailVerificationScreen: View {
         } catch IxApiClientError.Unauthenticated {
             sendLoading = false
             errorService.insert(.customMessage(message: "Make sure you provided the correct email and password for your account and try again."))
-        } catch IxApiClientError.TooManyRequests {
+        } catch IxApiClientError.TooManyVerificationEmails {
             sendLoading = false
-            errorService.insert(.customMessage(title: "Too many requests", message: "You have requested too many verification emails, please check your spam folder for any previous email from us, consider checking your spam too!"))
+            errorService.insert(.localizedError(title: "Too many requests", error: error))
         } catch {
             sendLoading = false
-            errorService.insert(.customMessage())
+            errorService.insert(.localizedError(title: nil, error: error))
         }
     }
     

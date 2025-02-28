@@ -77,6 +77,9 @@ struct indexApp: App {
                 }.onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
                 }
+                .environment(\.openURL, OpenURLAction { url in
+                  return .handled
+                })
                 .alertPresentationWindow(service: errorService)
         }
     }

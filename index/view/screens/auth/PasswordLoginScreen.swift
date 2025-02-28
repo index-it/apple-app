@@ -39,7 +39,7 @@ struct PasswordLoginScreen: View {
             authNavigationManager.push(navigationRoute: .EmailVerification(email: email, password: password, verificationEmailSent: false))
         } catch {
             loading = false
-            errorService.insert(.customMessage())
+            errorService.insert(.localizedError(title: nil, error: error))
         }
     }
     
@@ -47,12 +47,12 @@ struct PasswordLoginScreen: View {
         do {
             try await ixApiClient.passwordForgotten(email: email)
             isPasswordResetSentAlertShown = true
-        } catch IxApiClientError.UserNotFound {
+        } catch IxApiClientError.NotFound {
             errorService.insert(.customMessage(message: "User with email \(email) doesn't seem to exist. Are you sure you provided the correct email?"))
-        } catch IxApiClientError.TooManyRequests {
-            errorService.insert(.customMessage(title: "Too many requests", message: "You requested too many password resets, please check the spam folder of your inbox if you can't find the email we sent you previously."))
+        } catch IxApiClientError.TooManyPasswordForgottenEmails {
+            errorService.insert(.customMessage(title: "Too many requests", message: ""))
         } catch {
-            
+            errorService.insert(.localizedError(title: nil, error: error))
         }
     }
     

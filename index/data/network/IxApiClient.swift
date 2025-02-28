@@ -119,7 +119,7 @@ class IxApiClient: ObservableObject {
         case 403:
             throw IxApiClientError.Unauthenticated
         case 429:
-            throw IxApiClientError.TooManyRequests
+            throw IxApiClientError.TooManyVerificationEmails
         default:
             Self.log.error("received unexpected status code from server: \(res)")
             throw IxApiClientError.Unknown
@@ -161,7 +161,7 @@ class IxApiClient: ObservableObject {
     /// Sends an email to reset the password of a user with the specified email.
     ///
     /// ### Throws
-    /// - `IxApiClientError.UserNotFound`: If the email does not exist.
+    /// - `IxApiClientError.NotFound`: If the email does not exist.
     /// - `IxApiClientError.TooManyRequests`: If too many password reset requests have been sent.
     /// - `IxApiClientError.Unknown`: If an unknown error occurs.
     func passwordForgotten(email: String) async throws {
@@ -180,9 +180,9 @@ class IxApiClient: ObservableObject {
         
         switch res.statusCode {
         case 404:
-            throw IxApiClientError.UserNotFound
+            throw IxApiClientError.NotFound(.self_user)
         case 429:
-            throw IxApiClientError.TooManyRequests
+            throw IxApiClientError.TooManyPasswordForgottenEmails
         default:
             Self.log.error("received unexpected status code from server: \(res)")
             throw IxApiClientError.Unknown
@@ -307,7 +307,7 @@ class IxApiClient: ObservableObject {
         case 400:
             throw IxApiClientError.EmailOrPasswordFormatInvalid
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.self_user)
         default:
             throw IxApiClientError.Unknown
         }
@@ -501,9 +501,9 @@ class IxApiClient: ObservableObject {
             let networkList = try JSONDecoder().decode(NetworkList.self, from: data)
             return IxList(networkList: networkList)
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_viewer)
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.list)
         default:
             throw IxApiClientError.Unknown
         }
@@ -543,9 +543,9 @@ class IxApiClient: ObservableObject {
         case 402:
             throw IxApiClientError.ProRequired(.public_list)
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_editor)
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.list)
         default:
             throw IxApiClientError.Unknown
         }
@@ -573,9 +573,9 @@ class IxApiClient: ObservableObject {
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_owner)
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.list)
         default:
             throw IxApiClientError.Unknown
         }
@@ -606,9 +606,9 @@ class IxApiClient: ObservableObject {
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_owner)
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.list)
         default:
             throw IxApiClientError.Unknown
         }
@@ -636,7 +636,7 @@ class IxApiClient: ObservableObject {
         case 401:
             throw IxApiClientError.Unauthenticated
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.list)
         case 405:
             throw IxApiClientError.InvalidData
         default:
@@ -676,9 +676,9 @@ class IxApiClient: ObservableObject {
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_owner)
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.list)
         default:
             throw IxApiClientError.Unknown
         }
@@ -709,9 +709,9 @@ class IxApiClient: ObservableObject {
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_owner)
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.list)
         default:
             throw IxApiClientError.Unknown
         }
@@ -742,9 +742,9 @@ class IxApiClient: ObservableObject {
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_viewer)
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.category)
         default:
             throw IxApiClientError.Unknown
         }
@@ -772,9 +772,9 @@ class IxApiClient: ObservableObject {
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_viewer)
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.category)
         default:
             throw IxApiClientError.Unknown
         }
@@ -800,9 +800,9 @@ class IxApiClient: ObservableObject {
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_editor)
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.list)
         default:
             throw IxApiClientError.Unknown
         }
@@ -836,9 +836,9 @@ class IxApiClient: ObservableObject {
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_editor)
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.category)
         default:
             throw IxApiClientError.Unknown
         }
@@ -865,7 +865,7 @@ class IxApiClient: ObservableObject {
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_editor)
         case 404:
             break // Ignore this error
         default:
@@ -904,7 +904,7 @@ class IxApiClient: ObservableObject {
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_viewer)
         default:
             throw IxApiClientError.Unknown
         }
@@ -931,9 +931,9 @@ class IxApiClient: ObservableObject {
         case 401:
             throw IxApiClientError.Unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_viewer)
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.item)
         default:
             throw IxApiClientError.Unknown
         }
@@ -964,7 +964,7 @@ class IxApiClient: ObservableObject {
         case 400:
             throw IxApiClientError.InvalidData
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_editor)
         default:
             throw IxApiClientError.Unknown
         }
@@ -996,9 +996,9 @@ class IxApiClient: ObservableObject {
         case 400:
             throw IxApiClientError.InvalidData
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_editor)
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.item)
         default:
             throw IxApiClientError.Unknown
         }
@@ -1025,9 +1025,9 @@ class IxApiClient: ObservableObject {
         case 200:
             return IxListItem(networkListItem: try JSONDecoder().decode(NetworkListItem.self, from: data))
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_editor)
         case 404:
-            throw IxApiClientError.NotFound
+            throw IxApiClientError.NotFound(.item)
         default:
             throw IxApiClientError.Unknown
         }
@@ -1050,7 +1050,7 @@ class IxApiClient: ObservableObject {
         case 200:
             break // Item successfully deleted
         case 403:
-            throw IxApiClientError.MissingPermission
+            throw IxApiClientError.MissingPermission(.list_editor)
         default:
             throw IxApiClientError.Unknown
         }

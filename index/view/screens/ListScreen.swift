@@ -12,6 +12,7 @@ import AlertToast
 struct ListScreen: View {
     @EnvironmentObject private var ixApiClient: IxApiClient
     @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var errorService: ErrorStateService
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
     
@@ -121,7 +122,7 @@ struct ListScreen: View {
             list = try await ixApiClient.getList(id: listId)
             try await saveList(list)
         } catch {
-            // TODO
+            errorService.insert(.localizedError(title: "Error loading list", error: error))
         }
     }
     
@@ -145,6 +146,7 @@ struct ListScreen: View {
             }
         } catch {
             
+            errorService.insert(.localizedError(title: "Error loading categories", error: error))
         }
     }
     
@@ -167,7 +169,7 @@ struct ListScreen: View {
                 try context.save()
             }
         } catch {
-            
+            errorService.insert(.localizedError(title: "Error loading list items", error: error))
         }
     }
     
@@ -206,8 +208,7 @@ struct ListScreen: View {
             
             try await saveItem(item)
         } catch {
-            print(error)
-            // Handle error if needed
+            errorService.insert(.localizedError(title: "Error creating item", error: error))
         }
     }
     
@@ -217,8 +218,7 @@ struct ListScreen: View {
             
             try await saveItem(item)
         } catch {
-            print(error)
-            // Handle error if needed
+            errorService.insert(.localizedError(title: "Error editing item", error: error))
         }
     }
     
@@ -228,7 +228,7 @@ struct ListScreen: View {
             
             try await saveItem(item)
         } catch {
-            
+            errorService.insert(.localizedError(title: "Error \(completed ? "completing" : "un-completing") item", error: error))
         }
     }
     
@@ -240,7 +240,7 @@ struct ListScreen: View {
         } catch IxApiClientError.NotFound {
             do { try context.delete(model: IxListItem.self, where: #Predicate { item in item.id == itemId }) } catch {}
         } catch {
-            
+            errorService.insert(.localizedError(title: "Error deleting item", error: error))
         }
     }
     
@@ -255,7 +255,7 @@ struct ListScreen: View {
                 selectedCategoryId = category.id
             }
         } catch {
-            
+            errorService.insert(.localizedError(title: "Error creating category", error: error))
         }
     }
     
@@ -265,7 +265,7 @@ struct ListScreen: View {
             
             try await saveCategory(category)
         } catch {
-            
+            errorService.insert(.localizedError(title: "Error editing category", error: error))
         }
     }
     
@@ -277,7 +277,7 @@ struct ListScreen: View {
         } catch IxApiClientError.NotFound {
             do { try context.delete(model: IxListCategory.self, where: #Predicate { category in category.id == categoryId }) } catch {}
         } catch {
-            
+            errorService.insert(.localizedError(title: "Error deleting category", error: error))
         }
     }
     

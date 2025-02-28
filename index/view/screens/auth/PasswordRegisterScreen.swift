@@ -47,12 +47,9 @@ struct PasswordRegisterScreen: View {
         } catch IxApiClientError.EmailOrPasswordFormatInvalid {
             loading = false
             errorService.insert(.customMessage(message: "Email or password formats are invalid, please make sure you provided a valid email and that your password contains at least an uppercase character, a lowercase one and a number. Additionally, the length must be between 8-100 characters!"))
-        } catch IxApiClientError.UnusableEmail {
-            loading = false
-            errorService.insert(.customMessage(message: "The email you provided is not allowed to register, please use another email."))
         } catch {
             loading = false
-            errorService.insert(.customMessage())
+            errorService.insert(.localizedError(title: nil, error: error))
         }
     }
     

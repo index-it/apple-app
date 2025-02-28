@@ -36,7 +36,7 @@ struct EmailLoginScreen: View {
             }
         } catch {
             loading = false
-            errorService.insert(.customMessage(message: "Something went wrong, please use another authentication method or try again later"))
+            errorService.insert(.localizedError(title: nil, error: error))
         }
     }
     
