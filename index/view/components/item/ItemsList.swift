@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-struct ItemsDisplayer: View {
+struct ItemsList: View {
     private var listId: String
     private var category: IxListCategory?
     

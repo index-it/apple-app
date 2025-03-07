@@ -8,7 +8,7 @@
 import SwiftUI
 import DynamicColor
 
-struct ItemCard: View {
+struct ItemRow: View {
     @Environment(\.colorScheme) var colorScheme
     var item: IxListItem
     var color: Color?
@@ -148,7 +148,7 @@ struct ItemCard: View {
 
 #Preview {
     VStack(spacing: 3) {
-        ItemCard(
+        ItemRow(
             item: IxListItem(
                 id: UUID().uuidString,
                 user_id: "",
@@ -171,7 +171,7 @@ struct ItemCard: View {
             onDelete: { _ in }
         )
         
-        ItemCard(
+        ItemRow(
             item: IxListItem(
                 id: UUID().uuidString,
                 user_id: "",
@@ -194,7 +194,7 @@ struct ItemCard: View {
             onDelete: { _ in }
         )
         
-        ItemCard(
+        ItemRow(
             item: IxListItem(
                 id: UUID().uuidString,
                 user_id: "",
@@ -216,7 +216,7 @@ struct ItemCard: View {
             onDelete: { _ in }
         )
         
-        ItemCard(
+        ItemRow(
             item: IxListItem(
                 id: UUID().uuidString,
                 user_id: "",

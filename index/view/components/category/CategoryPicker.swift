@@ -84,8 +84,30 @@ struct CategoryPicker: View {
             }
             
             ForEach(categories) { category in
-                Button(category.name) {
-                    selectedCategoryId = category.id
+                Button {
+                    selectedCategory = category
+                } label: {
+                    HStack {
+                        if selectedCategory?.id == category.id {
+                            Image(systemName: "checkmark")
+                        }
+                        
+                        Text(category.name)
+                    }
+                }
+            }
+            
+            if !hideDefaultCategory {
+                Button {
+                    selectedCategory = nil
+                } label: {
+                    HStack {
+                        if selectedCategory == nil {
+                            Image(systemName: "checkmark")
+                        }
+                        
+                        Text("Default")
+                    }
                 }
             }
         } label: {
