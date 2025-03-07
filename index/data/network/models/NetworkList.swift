@@ -31,6 +31,4 @@ struct NetworkList: Codable {
         case created_at
         case edited_at
     }
-    
-    
 }

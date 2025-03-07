@@ -10,6 +10,7 @@ import SwiftUI
 enum ProFeature {
     case public_list
     case unlimited_lists
+    case unlimited_task_reminders
     
     var localizedDescription: String {
         switch self {
@@ -17,6 +18,8 @@ enum ProFeature {
             return NSLocalizedString("Public lists", comment: "Pro feature: Public lists")
         case .unlimited_lists:
             return NSLocalizedString("Unlimited lists", comment: "Pro feature: Unlimited lists")
+        case .unlimited_task_reminders:
+            return NSLocalizedString("Unlimited task reminders", comment: "Pro feature: Unlimited task reminders")
         }
     }
 }

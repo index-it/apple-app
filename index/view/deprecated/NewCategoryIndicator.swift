@@ -6,29 +6,29 @@
 //
 import SwiftUI
 
-struct NewCategoryIndicator: View {
-    var selected: Bool
-    
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: CategoryUIDefaults.cornerRadius)
-                .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [6]))
-                .frame(width: CategoryUIDefaults.width, height: CategoryUIDefaults.height)
-
-            if selected {
-                Image(systemName: "plus")
-                    .font(CategoryUIDefaults.font)
-            }
-        }
-    }
-}
-
-#Preview {
-//    @Previewable @State var selected = true
-    var selected = true
-    
-    NewCategoryIndicator(
-        selected: selected
-    )
-}
-
+//struct NewCategoryIndicator: View {
+//    var selected: Bool
+//    
+//    var body: some View {
+//        ZStack {
+//            RoundedRectangle(cornerRadius: CategoryUIDefaults.cornerRadius)
+//                .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [6]))
+//                .frame(width: CategoryUIDefaults.width, height: CategoryUIDefaults.height)
+//
+//            if selected {
+//                Image(systemName: "plus")
+//                    .font(CategoryUIDefaults.font)
+//            }
+//        }
+//    }
+//}
+//
+//#Preview {
+////    @Previewable @State var selected = true
+//    var selected = true
+//    
+//    NewCategoryIndicator(
+//        selected: selected
+//    )
+//}
+//

@@ -12,22 +12,19 @@ struct FloatingActionButton: ViewModifier {
     let action: () -> Void
 
     func body(content: Content) -> some View {
-        ZStack {
+        ZStack(alignment: .bottomTrailing) {
             content
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button(action: action) {
-                        Image(systemName: imageName)
-                            .foregroundColor(Color.accentColor.contrastColor())
-                            .padding()
-                            .background(Color.accentColor)
-                            .clipShape(Circle())
-                    }
+            
+            Button(action: action) {
+                Image(systemName: "plus")
+                    .font(.title.weight(.semibold))
                     .padding()
-                }
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .clipShape(Circle())
+                    .shadow(radius: 4, x: 0, y: 4)
             }
+            .padding()
         }
     }
 }
@@ -41,7 +38,7 @@ extension View {
 #Preview {
     VStack {
         Text("Hi")
-    }.floatingActionButton("plus") {
+    }.frame(maxWidth: .infinity, maxHeight: .infinity).floatingActionButton("plus") {
         
     }
 }

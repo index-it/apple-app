@@ -21,7 +21,7 @@ struct ItemRow: View {
     var onDelete: (IxListItem) -> ()
     
     var body: some View {
-        ZStack {
+        HStack {
             Menu {
                 ControlGroup {
                     if item.note != nil && !item.note!.isEmpty {
@@ -64,12 +64,10 @@ struct ItemRow: View {
                     }
                 }
             } label: {
-                ItemCardContent
+                ItemRowContent
             }
             
             HStack(spacing: 8) {
-                Spacer()
-                
                 if item.note != nil {
                     Button {
                         onOpenNotes(item)
@@ -79,7 +77,7 @@ struct ItemRow: View {
                             .fontWeight(.bold)
                             .padding(6)
                             .foregroundStyle(color?.contrastColor() ?? UIColor.label.toColor())
-                    }
+                    }.background(Color.clear)
                 }
                 
                 if item.link != nil {
@@ -93,16 +91,15 @@ struct ItemRow: View {
                             .fontWeight(.bold)
                             .padding(6)
                             .foregroundStyle(color?.contrastColor() ?? UIColor.label.toColor())
-                    }
+                    }.background(Color.clear)
                 }
-            }.padding(.horizontal)
-        }
+            }.frame(alignment: .trailing)
+        }.listRowBackground(color)
     }
     
     // MARK: Item card
-    var ItemCardContent: some View {
+    var ItemRowContent: some View {
         HStack {
-            
             if item.completed {
                 Image(systemName: "checkmark")
                     .fontWeight(.semibold)
@@ -111,50 +108,20 @@ struct ItemRow: View {
             Text(item.name)
                 .multilineTextAlignment(.leading)
             
-            Spacer()
-            
-            HStack(spacing: 8) {
-                if item.note != nil {
-                    Button {
-                        
-                    } label: {
-                        Label("See notes", systemImage: "text.page")
-                            .foregroundStyle(.clear)
-                            .fontWeight(.bold)
-                            .padding(.horizontal, 6)
-                            .labelStyle(.iconOnly)
-                    }
-                }
-                
-                if item.link != nil {
-                    Button {
-                        
-                    } label: {
-                        Label("Open link", systemImage: "link")
-                            .foregroundStyle(.clear)
-                            .fontWeight(.bold)
-                            .padding(.horizontal, 6)
-                            .labelStyle(.iconOnly)
-                    }
-                }
-            }
-        }.padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
+        }.frame(maxWidth: .infinity, alignment: .leading)
             .foregroundStyle(color?.contrastColor() ?? UIColor.label.toColor())
-            .background(color ?? UIColor.secondarySystemBackground.toColor())
-            .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 
 #Preview {
-    VStack(spacing: 3) {
+    List {
         ItemRow(
             item: IxListItem(
                 id: UUID().uuidString,
                 user_id: "",
                 list_id: "",
                 category_id: nil,
-                name: "Test item",
+                name: "Test item very long nam",
                 completed: true,
                 link: "https://google.com",
                 note: "Hi",

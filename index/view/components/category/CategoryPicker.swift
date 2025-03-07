@@ -10,8 +10,8 @@ import SwiftData
 struct CategoryPicker: View {
     @Query private var categories: [IxListCategory]
     
-    @Binding private var selectedCategoryId: String?
     @Binding private var selectedCategory: IxListCategory?
+    private var hideDefaultCategory: Bool
     
     private var onCreate: () -> Void
     private var onEdit: (_ category: IxListCategory) -> Void
@@ -19,16 +19,16 @@ struct CategoryPicker: View {
     
     init(
         listId: String,
-        selectedCategoryId: Binding<String?>,
         selectedCategory: Binding<IxListCategory?>,
         categorySorting: CategorySorting,
         categoryReverseSorting: Bool,
+        hideDefaultCategory: Bool,
         onCreate: @escaping () -> Void,
         onEdit: @escaping (_ category: IxListCategory) -> Void,
         onDelete: @escaping (_ category: IxListCategory) -> Void
     ) {
-        self._selectedCategoryId = selectedCategoryId
         self._selectedCategory = selectedCategory
+        self.hideDefaultCategory = hideDefaultCategory
         self.onCreate = onCreate
         self.onEdit = onEdit
         self.onDelete = onDelete
@@ -58,29 +58,25 @@ struct CategoryPicker: View {
     var body: some View {
         Menu {
             Section {
-                Button("Create category", systemImage: "plus") {
-                    onCreate()
-                }
-                
                 if let selectedCategory = selectedCategory {
-                    Button("Edit category", systemImage: "square.and.pencil") {
-                        onEdit(selectedCategory)
-                    }
-                    
                     Menu {
+                        Button("Cancel", role: .cancel) {}
+                        
                         Button("Delete", systemImage: "trash", role: .destructive) {
                             onDelete(selectedCategory)
                         }
-                        
-                        Button("Cancel", role: .cancel) {}
                     } label: {
                         Label("Delete category", systemImage: "trash")
                     }
+                    
+                    Button("Edit category", systemImage: "square.and.pencil") {
+                        onEdit(selectedCategory)
+                    }
                 }
-            }
-            
-            Button("Default") {
-                selectedCategoryId = "default"
+                
+                Button("Create category", systemImage: "plus") {
+                    onCreate()
+                }
             }
             
             ForEach(categories) { category in
@@ -112,7 +108,7 @@ struct CategoryPicker: View {
             }
         } label: {
             HStack {
-                Text(selectedCategory?.name ?? "Default")
+                Text(selectedCategory?.name.prefix(20) ?? "Default")
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.footnote)
             }
@@ -121,6 +117,14 @@ struct CategoryPicker: View {
                 .padding(.vertical, 10)
                 .background(UIColor.secondarySystemFill.toColor())
                 .clipShape(RoundedRectangle(cornerRadius: 8))
+        }.onChange(of: categories, initial: true) { _, newCategories in
+            if hideDefaultCategory && selectedCategory == nil {
+                selectedCategory = newCategories.first
+            }
+        }.onChange(of: hideDefaultCategory) { _, newValue in
+            if newValue && selectedCategory == nil {
+                selectedCategory = categories.first
+            }
         }
     }
 }
@@ -128,10 +132,10 @@ struct CategoryPicker: View {
 #Preview {
     CategoryPicker(
         listId: "",
-        selectedCategoryId: .constant("default"),
         selectedCategory: .constant(nil),
         categorySorting: .name,
-        categoryReverseSorting: false
+        categoryReverseSorting: false,
+        hideDefaultCategory: false
     ) {
         
     } onEdit: { category in

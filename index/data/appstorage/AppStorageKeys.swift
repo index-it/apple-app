@@ -23,11 +23,16 @@ struct AppStorageKeys {
     static let item_reverse_sorting = "item_reverse_sorting"
     
     // MARK: category
-    static func show_uncategorized_items(_ listId: String) -> String {
-        return "show_uncategorized_items/\(listId)"
+    static func hide_default_category(_ listId: String) -> String {
+        return "hide_default_category/\(listId)"
     }
     static let category_sorting = "category_sorting"
     static let category_reverse_sorting = "category_reverse_sorting"
+    
+    // MARK: task
+    static let task_filter = "task_filter"
+    static let task_sorting = "task_sorting"
+    static let task_reverse_sorting = "task_reverse_sorting"
     
     struct Defaults {
         static let colors = [Color.green, Color.purple, Color.yellow, Color.orange, Color.cyan, Color.pink, Color.indigo]
@@ -43,8 +48,13 @@ struct AppStorageKeys {
         static let item_reverse_sorting = false
         
         // MARK: category defaults
-        static let show_uncategorized_items = true
+        static let hide_default_category = false
         static let category_sorting = CategorySorting.creation
         static let category_reverse_sorting = false
+        
+        // MARK: task defaults
+        static let task_filter = TaskFilter.uncompleted
+        static let task_sorting = TaskSorting.priority
+        static let task_reverse_sorting = false
     }
 }

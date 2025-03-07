@@ -14,14 +14,14 @@ struct NetworkTask: Codable {
     let name: String
     let description: String?
     let subtasks: [NetworkSubTask]
-    let due_date: Date
+    let due_date: Date?
     let rrule: String?
     let completed: Bool
-    let priority: Int
+    let priority: Int?
     let reminders: [NetworkTaskReminder]
     let created_at: Int64
     let edited_at: Int64?
-    let completed_at: Int64
+    let completed_at: Int64?
 }
 
 struct NetworkSubTask: Codable {

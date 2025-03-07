@@ -26,7 +26,6 @@ struct ListScreen: View {
     
     // MARK: Categories and selected category
     @Query private var categories: [IxListCategory]
-    @State private var selectedCategoryId: String? = "none"
     @State private var selectedCategory: IxListCategory? = nil
     @State private var nextCategory: IxListCategory? = nil
     @State private var previousCategory: IxListCategory? = nil
@@ -36,8 +35,6 @@ struct ListScreen: View {
     // TODO: imrpove ItemsDisplayer performance
 //    @State private var debouncedSelectedCategory: IxListCategory? = nil
 
-    private var onCreateNewCategory: Bool { selectedCategoryId == "new" }
-    
     @State private var showCategoryEditSheet = false
     
     // MARK: Category creation
@@ -65,13 +62,13 @@ struct ListScreen: View {
     @AppStorage(AppStorageKeys.item_reverse_sorting) private var itemReverseSorting = AppStorageKeys.Defaults.item_reverse_sorting
     
     // MARK: Category filters and sorting
-    @AppStorage private var showUncategorizedItems: Bool
+    @AppStorage private var hideDefaultCategory: Bool
     @AppStorage(AppStorageKeys.category_sorting) private var categorySorting = AppStorageKeys.Defaults.category_sorting
     @AppStorage(AppStorageKeys.category_reverse_sorting) private var categoryReverseSorting = AppStorageKeys.Defaults.category_reverse_sorting
 
     init(listId: String) {
         self.listId = listId
-        _showUncategorizedItems = AppStorage(wrappedValue: AppStorageKeys.Defaults.show_uncategorized_items, AppStorageKeys.show_uncategorized_items(listId))
+        _hideDefaultCategory = AppStorage(wrappedValue: AppStorageKeys.Defaults.hide_default_category, AppStorageKeys.hide_default_category(listId))
         
         // MARK: List query
         var listDescriptor = FetchDescriptor<IxList>(
@@ -252,7 +249,7 @@ struct ListScreen: View {
             try await saveCategory(category)
             
             withAnimation {
-                selectedCategoryId = category.id
+                selectedCategory = category
             }
         } catch {
             errorService.insert(.localizedError(title: "Error creating category", error: error))
@@ -396,7 +393,7 @@ struct ListScreen: View {
                         }
                         
                         Section {
-                            Toggle("Show default category", isOn: $showUncategorizedItems)
+                            Toggle("Hide default category", isOn: $hideDefaultCategory)
                             
                             Picker(selection: $categorySorting) {
                                 ForEach(CategorySorting.allCases) { sort in
@@ -409,31 +406,42 @@ struct ListScreen: View {
                             
                             Toggle("Categories reverse sorting", isOn: $categoryReverseSorting)
                         }
-                        
-                        if selectedCategoryId != "none", !onCreateNewCategory, let selectedCategoryId = selectedCategoryId {
-                            Section {
-                                Button("Edit category", systemImage: "square.and.pencil") {
-                                    showCategoryEditSheet = true
-                                }
-                                
-                                Menu {
-                                    Button("Delete", systemImage: "trash", role: .destructive) {
-                                        Task {
-                                            await deleteCategory(listId: listId, categoryId: selectedCategoryId)
-                                        }
-                                    }
-                                    
-                                    Button("Cancel", role: .cancel) {}
-                                } label: {
-                                    Label("Delete category", systemImage: "trash")
-                                }
-                            }
-                        }
                     
                     } label: {
                         Label("Options", systemImage: "ellipsis.circle")
                             .labelStyle(.iconOnly)
                     }
+                }
+                
+                ToolbarItem(placement: .bottomBar) {
+                    HStack {
+                        Button {
+                            showItemCreationSheet = true
+                        } label: {
+                            Label("Create item", systemImage: "plus.circle.fill")
+                                .labelStyle(.titleAndIcon)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(selectedCategory?.color.toColor(fallback: .accentColor) ?? Color.accentColor)
+                        }
+                        
+                        Spacer()
+                        
+                        CategoryPicker(
+                            listId: listId,
+                            selectedCategory: $selectedCategory,
+                            categorySorting: categorySorting,
+                            categoryReverseSorting: categoryReverseSorting,
+                            hideDefaultCategory: hideDefaultCategory) {
+                                showCategoryCreationSheet = true
+                            } onEdit: { category in
+                                selectedCategory = category
+                                showCategoryEditSheet = true
+                            } onDelete: { category in
+                                Task {
+                                    await deleteCategory(listId: listId, categoryId: category.id)
+                                }
+                            }
+                    }.padding(.top)
                 }
             }
             .toast(isPresenting: $showItemMovedToNextCategoryToast) {
@@ -496,117 +504,35 @@ struct ListScreen: View {
     }
     
     private var ScreenContent: some View {
-        VStack {
-            ItemsDisplayer(
-                listId: listId,
-                category: selectedCategory,
-                itemFilter: itemFilter,
-                itemSorting: itemSorting,
-                itemReverseSorting: itemReverseSorting,
-                onClearItemFilter: {
-                    itemFilter = .uncompleted
-                },
-                onNewCategory: onCreateNewCategory,
-                onCreateItem: {
-                    showItemCreationSheet = true
-                },
-                onCreateCategory: {
-                    showCategoryCreationSheet = true
-                },
-                onOpenNotes: { item in
-                    selectedItem = item
-                    showItemNotePopover = true
-                },
-                onOpenLink: { item, link in
-                    if let url = URL(string: link) {
-                        openURL(url)
-                    }
-                },
-                onCompletionChange: { item, completed in
-                    Task {
-                        await setItemCompletion(listId: item.list_id, itemId: item.id, completed: completed)
-                    }
-                },
-                onCreateTask: { item in
-                    // TODO
-                },
-                onEdit: { item in
-                    selectedItem = item
-                    showItemEditSheet = true
-                },
-                onDelete: { item in
-                    Task {
-                        await deleteItem(listId: listId, itemId: item.id)
-                    }
-                },
-                onMoveToPreviousCategory: { item, completionAction in
-                    if previousCategory == nil && item.category_id != nil {
-                        Task {
-                            await editItem(listId: listId, itemId: item.id, name: item.name, categoryId: nil, link: item.link, note: item.note)
-                            showItemMovedToPreviousCategoryToast = true
-                            completionAction()
-                        }
-                    } else if let previousCategory = previousCategory {
-                        Task {
-                            await editItem(listId: listId, itemId: item.id, name: item.name, categoryId: previousCategory.id, link: item.link, note: item.note)
-                            showItemMovedToPreviousCategoryToast = true
-                            completionAction()
-                        }
-                    }
-                },
-                onMoveToNextCategory: { item, completionAction in
-                    if let nextCategory = nextCategory {
-                        Task {
-                            await editItem(listId: listId, itemId: item.id, name: item.name, categoryId: nextCategory.id, link: item.link, note: item.note)
-                            showItemMovedToNextCategoryToast = true
-                            completionAction()
-                        }
-                    }
+        ItemsList(
+            listId: listId,
+            category: selectedCategory,
+            itemFilter: itemFilter,
+            itemSorting: itemSorting,
+            itemReverseSorting: itemReverseSorting) {
+                itemFilter = .uncompleted
+            } onCreateItem: {
+                showItemCreationSheet = true
+            } onOpenNotes: { item in
+                selectedItem = item
+                showItemNotePopover = true
+            } onOpenLink: { _, link in
+                if let url = URL(string: link) {
+                    openURL(url)
                 }
-            )
-                .padding(.horizontal)
-            
-            VStack {
-                CategorySelector(
-                    listId: listId,
-                    selectedCategoryId: $selectedCategoryId,
-                    selectedCategory: $selectedCategory,
-                    previousCategory: $previousCategory,
-                    nextCategory: $nextCategory,
-                    showUncategorizedItems: showUncategorizedItems,
-                    categorySorting: categorySorting,
-                    categoryReverseSorting: categoryReverseSorting,
-                    onSelectedTap: { categoryId in
-                        showItemCreationSheet = true
-                    },
-                    onHideUncategorized: {
-                        showUncategorizedItems = false
-                    },
-                    onNewCategoryTap: {
-                        showCategoryCreationSheet = true
-                    },
-                    onEdit: { category in
-                        selectedCategoryId = category.id
-                        showCategoryEditSheet = true
-                    },
-                    onDelete: { category in
-                        Task {
-                            await deleteCategory(listId: listId, categoryId: category.id)
-                            
-                            if (selectedCategoryId == category.id) {
-                                withAnimation {
-                                    selectedCategoryId = previousCategory?.id ?? (showUncategorizedItems ? "none" : "new")
-                                }
-                            }
-                        }
-                    }
-                )
-                    .frame(height: CategoryUIDefaults.height + 48)
-                    
-                
-                Text(onCreateNewCategory ? "Create category" : (selectedCategory?.name ?? "Create item"))
+            } onCompletionChange: { item, completion in
+                Task {
+                    await setItemCompletion(listId: item.list_id, itemId: item.id, completed: completion)
+                }
+            } onCreateTask: { item in
+            } onEdit: { item in
+                selectedItem = item
+                showItemEditSheet = true
+            } onDelete: { item in
+                Task {
+                    await deleteItem(listId: listId, itemId: item.id)
+                }
             }
-        }
     }
 }
 
@@ -614,4 +540,5 @@ struct ListScreen: View {
     ListScreen(listId: "123")
         .environmentObject(IxApiClient())
         .environmentObject(NavigationManager())
+        .environmentObject(ErrorStateService())
 }

@@ -13,21 +13,16 @@ struct ItemsList: View {
     private var category: IxListCategory?
     
     private var itemFilter: ItemFilter
-    private var onClearItemFilter: () -> ()
+    private var onClearItemFilter: () -> Void
+    
+    private var onCreateItem: () -> Void
 
-    private var onNewCategory: Bool
-    
-    private var onCreateItem: () -> ()
-    private var onCreateCategory: () -> ()
-    
     private var onOpenNotes: (IxListItem) -> ()
     private var onOpenLink: (IxListItem, String) -> ()
     private var onCompletionChange: (IxListItem, Bool) -> ()
     private var onCreateTask: (IxListItem) -> ()
     private var onEdit: (IxListItem) -> ()
     private var onDelete: (IxListItem) -> ()
-    private var onMoveToPreviousCategory: (_ item: IxListItem, _ completionAction: @escaping () -> ()) -> Void
-    private var onMoveToNextCategory: (_ item: IxListItem, _ completionAction: @escaping () -> ()) -> Void
     
     @Query private var items: [IxListItem]
     
@@ -38,47 +33,37 @@ struct ItemsList: View {
     
     init(
         listId: String,
-        category: IxListCategory? = nil,
+        category: IxListCategory?,
         itemFilter: ItemFilter,
         itemSorting: ItemSorting,
         itemReverseSorting: Bool,
-        onClearItemFilter: @escaping () -> (),
-        onNewCategory: Bool,
-        onCreateItem: @escaping () -> (),
-        onCreateCategory: @escaping () -> (),
+        onClearItemFilter: @escaping () -> Void,
+        onCreateItem: @escaping () -> Void,
         onOpenNotes: @escaping (IxListItem) -> Void,
         onOpenLink: @escaping (IxListItem, String) -> Void,
         onCompletionChange: @escaping (IxListItem, Bool) -> Void,
         onCreateTask: @escaping (IxListItem) -> Void,
         onEdit: @escaping (IxListItem) -> Void,
-        onDelete: @escaping (IxListItem) -> Void,
-        onMoveToPreviousCategory: @escaping (_ item: IxListItem, _ completionAction: @escaping () -> ()) -> Void,
-        onMoveToNextCategory: @escaping (_ item: IxListItem, _ completionAction: @escaping () -> ()) -> Void
+        onDelete: @escaping (IxListItem) -> Void
     ) {
         self.listId = listId
         self.category = category
         self.itemFilter = itemFilter
         self.onClearItemFilter = onClearItemFilter
-        self.onNewCategory = onNewCategory
-        
         self.onCreateItem = onCreateItem
-        self.onCreateCategory = onCreateCategory
+        
         self.onOpenNotes = onOpenNotes
         self.onOpenLink = onOpenLink
         self.onCompletionChange = onCompletionChange
         self.onCreateTask = onCreateTask
         self.onEdit = onEdit
         self.onDelete = onDelete
-        self.onMoveToPreviousCategory = onMoveToPreviousCategory
-        self.onMoveToNextCategory = onMoveToNextCategory
         
         let categoryId = category?.id
         
         var filterPredicate = #Predicate<IxListItem> { _ in true }
         
-        if onNewCategory {
-            filterPredicate = #Predicate<IxListItem> { _ in false }
-        } else if itemFilter == .uncompleted {
+        if itemFilter == .uncompleted {
             filterPredicate = #Predicate<IxListItem> { item in
                 item.list_id == listId && item.category_id == categoryId && item.completed == false
             }
@@ -111,39 +96,32 @@ struct ItemsList: View {
     }
     
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: 4) {
-                ForEach(items) { item in
-                    SwipeView {
-                        ItemCard(
-                            item: item,
-                            color: color,
-                            onOpenNotes: onOpenNotes,
-                            onOpenLink: onOpenLink,
-                            onCompletionChange: onCompletionChange,
-                            onCreateTask: onCreateTask,
-                            onEdit: onEdit,
-                            onDelete: onDelete
-                        )
-                    } leadingActions: { context in
-                        SwipeAction(systemImage: "arrow.right") {
-                            onMoveToNextCategory(item) {
-                                context.state.wrappedValue = .closed
-                            }
-                        }.allowSwipeToTrigger()
-                    } trailingActions: { context in
-                        SwipeAction(systemImage: "arrow.left") {
-                            onMoveToPreviousCategory(item) {
-                                context.state.wrappedValue = .closed
-                            }
-                        }.allowSwipeToTrigger()
-                    }.swipeEnableTriggerHaptics(true)
-                        .swipeMinimumDistance(30) // TODO: play around with this value, this avoids vertical scrolling issues
+        List(items) { item in
+            ItemRow(
+                item: item,
+                color: color,
+                onOpenNotes: onOpenNotes,
+                onOpenLink: onOpenLink,
+                onCompletionChange: onCompletionChange,
+                onCreateTask: onCreateTask,
+                onEdit: onEdit,
+                onDelete: onDelete
+            ).swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                Button(role: .destructive) {
+                    onDelete(item)
+                } label: {
+                    Label("Delete", systemImage: "trash.fill")
                 }
+            }.swipeActions(edge: .leading, allowsFullSwipe: true) {
+                Button {
+                    onCompletionChange(item, !item.completed)
+                } label: {
+                    Label(item.completed ? "Uncomplete" : "Complete", systemImage: item.completed ? "xmark" : "checkmark")
+                }.tint(item.completed ? .orange : .accentColor)
             }
         }.overlay {
             // MARK: Empty items overlay
-            if items.isEmpty && !onNewCategory {
+            if items.isEmpty {
                 VStack {
                     Spacer()
                     
@@ -165,27 +143,6 @@ struct ItemsList: View {
                                 Label("Create item", systemImage: "plus")
                             }.buttonStyle(.borderedProminent)
                         }
-                    }
-                    
-                    Spacer()
-                }.frame(maxHeight: .infinity)
-            }
-            
-            // MARK: New category overlay
-            if onNewCategory {
-                VStack {
-                    Spacer()
-                    
-                    ContentUnavailableView {
-                        Label("Need another category?", systemImage: "square.stack")
-                    } description: {
-                        Text("Create another category for your needs!")
-                    } actions: {
-                        Button {
-                            onCreateCategory()
-                        } label: {
-                            Label("Create category", systemImage: "plus")
-                        }.buttonStyle(.borderedProminent)
                     }
                     
                     Spacer()

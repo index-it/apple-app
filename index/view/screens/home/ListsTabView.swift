@@ -98,28 +98,7 @@ struct ListsTabView: View {
             
             context.insert(list)
         } catch IxApiClientError.ProRequired(let proFeature) {
-            let message = if (proFeature == .public_list) {
-                "You need Pro in order to create a public list."
-            } else {
-                "You need Pro to be able to create more than 10 lists."
-            }
-            
-            // TODO
-            let error = ErrorAlert.customMessage(
-                title: "Pro required",
-                message: message,
-                buttons: [
-                    ErrorAlert.Button(
-                        title: "Get Pro",
-                        isDestructive: false
-                    ) {
-                        // TODO
-                        // navigationManager.push(navigationRoute: .GetPro)
-                    }
-                ]
-            )
-            
-            errorService.insert(error)
+            // TODO: Show pro sheet with a global toggle
         } catch {
             errorService.insert(.localizedError(title: "Error creating list", error: error))
         }
@@ -251,7 +230,7 @@ struct ListsTabView: View {
                     showCreationSheet = true
                 },
                 onListCardTap: { list in
-                    navigationManager.push(navigationRoute: .ListRoute(listId: list.id))
+                    navigationManager.push(navigationRoute: .listRoute(listId: list.id))
                 },
                 onShare: { list in
                     selectedList = list

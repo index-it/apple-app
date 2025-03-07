@@ -27,8 +27,10 @@ struct MainView: View {
                 }
             }.navigationDestination(for: NavigationRoute.self) { destination in
                 switch destination {
-                case let .ListRoute(listId: listId):
+                case let .listRoute(listId: listId):
                     ListScreen(listId: listId)
+                case .completedTasks:
+                    CompletedTasksScreen()
                 }
             }
         }

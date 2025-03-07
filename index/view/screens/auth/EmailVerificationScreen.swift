@@ -52,7 +52,7 @@ struct EmailVerificationScreen: View {
             errorService.insert(.customMessage(message: "Make sure you provided the correct email and password for your account and try again."))
         } catch IxApiClientError.TooManyVerificationEmails {
             sendLoading = false
-            errorService.insert(.localizedError(title: "Too many requests", error: error))
+            errorService.insert(.localizedError(title: "Too many requests", error: IxApiClientError.TooManyVerificationEmails))
         } catch {
             sendLoading = false
             errorService.insert(.localizedError(title: nil, error: error))

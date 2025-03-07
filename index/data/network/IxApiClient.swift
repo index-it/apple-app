@@ -24,6 +24,15 @@ class IxApiClient: ObservableObject {
         }
     }
     
+    private static func decoder() -> JSONDecoder {
+        let decoder = JSONDecoder()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        decoder.dateDecodingStrategy = .formatted(formatter)
+        
+        return decoder
+    }
+    
     @MainActor
     private func setAuthenticationStatus(authenticationStatus: AuthStatus) {
         self.authenticationStatus = authenticationStatus
@@ -1056,74 +1065,189 @@ class IxApiClient: ObservableObject {
         }
     }
     
-//    // MARK: - List item content
-//    
-//    /// Gets the content of an item
-//    ///
-//    /// ### Throws:
-//    /// - `IxApiClientError.MissingPermission` List viewer permissions required
-//    /// - `IxApiClientError.NotFound` Item not found
-//    /// - `IxApiClientError.Unknown` Unknown error
-//    func getItemContent(listId: String, itemId: String) async throws -> IxListItemContent {
-//        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/items/\(itemId)/content")
-//        var request = URLRequest(url: url)
-//        request.httpMethod = "GET"
-//        
-//        let (data, response) = try await URLSession.shared.data(for: request)
-//        let httpResponse = response as! HTTPURLResponse
-//        
-//        switch httpResponse.statusCode {
-//        case 200:
-//            let decoder = JSONDecoder()
-//            return IxListItemContent(networkListItemContent: try decoder.decode(NetworkListItemContent.self, from: data))
-//        case 401:
-//            throw IxApiClientError.Unauthenticated
-//        case 403:
-//            throw IxApiClientError.MissingPermission
-//        case 404:
-//            throw IxApiClientError.NotFound
-//        default:
-//            throw IxApiClientError.Unknown
-//        }
-//    }
-//    
-//    /// Updates the content of an item
-//    ///
-//    /// ### Throws:
-//    /// - `IxApiClientError.InvalidData` Item content is invalid
-//    /// - `IxApiClientError.MissingPermission` List editor permissions required
-//    /// - `IxApiClientError.NotFound` Item content not found
-//    /// - `IxApiClientError.Unknown` Unknown error
-//    func updateItemContent(listId: String, itemId: String, content: String) async throws -> IxListItemContent {
-//        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/items/\(itemId)/content")
-//        
-//        var request = URLRequest(url: url)
-//        request.httpMethod = "PUT"
-//        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-//        let body = try JSONEncoder().encode(ListContentUpdateReqBody(content: content))
-//        request.httpBody = body
-//        
-//        let (data, response) = try await URLSession.shared.data(for: request)
-//        let httpResponse = response as! HTTPURLResponse
-//        
-//        switch httpResponse.statusCode {
-//        case 200:
-//            let decoder = JSONDecoder()
-//            return IxListItemContent(networkListItemContent: try decoder.decode(NetworkListItemContent.self, from: data))
-//        case 400:
-//            throw IxApiClientError.InvalidData
-//        case 401:
-//            throw IxApiClientError.Unauthenticated
-//        case 403:
-//            throw IxApiClientError.MissingPermission
-//        case 404:
-//            throw IxApiClientError.NotFound
-//        default:
-//            throw IxApiClientError.Unknown
-//        }
-//    }
+    // MARK: - Tasks
     
-    // TODO: Tasks
+    /// Gets all the tasks of the user
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.Unknown`
+    ///
+    func getTasks(completed: Bool? = nil) async throws -> [IxTask] {
+        var urlComponents = URLComponents(string: "\(Self.baseUrl)/tasks")!
+        var queryItems = [URLQueryItem]()
+        
+        if let completed = completed {
+            queryItems.append(URLQueryItem(name: "completed", value: "\(completed)"))
+        }
+        urlComponents.queryItems = queryItems
+        
+        var request = URLRequest(url: urlComponents.url!)
+        request.httpMethod = "GET"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try Self.decoder().decode([NetworkTask].self, from: data).map { IxTask(networkTask: $0) }
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Gets a single task via the [taskId]
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.NotFound`
+    /// - `IxApiClientError.Unknown`
+    ///
+    func getTask(taskId: String) async throws -> IxTask {
+        let url = Self.baseUrl.appendingPathComponent("/tasks/\(taskId)")
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return IxTask(networkTask: try Self.decoder().decode(NetworkTask.self, from: data))
+        case 404:
+            throw IxApiClientError.NotFound(.task)
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    /// Creates a new task
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.InvalidData`
+    /// - `IxApiClientError.ProRequired`
+    /// - `IxApiClientError.NotFound`
+    /// - `IxApiClientError.Unknown`
+    func createTask(name: String, description: String?, dueDate: Date?, rrule: String?, reminders: [IxTaskReminder], subtasks: [IxSubTask], priority: Int?, itemId: String?) async throws -> IxTask {
+        let url = URL(string: "\(Self.baseUrl)/tasks")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body = TaskCreateOrEditReqBody(
+            name: name,
+            description: description,
+            item_id: itemId,
+            subtasks: subtasks.map({ NetworkSubTask(name: $0.name, completed: $0.completed)}),
+            due_date: dueDate,
+            rrule: rrule,
+            priority: priority,
+            reminders: reminders.map({ NetworkTaskReminder(days_before: $0.days_before, time_offset: $0.time_offset)})
+        )
+        request.httpBody = try JSONEncoder().encode(body)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return IxTask(networkTask: try Self.decoder().decode(NetworkTask.self, from: data))
+        case 400:
+            throw IxApiClientError.InvalidData
+        case 402:
+            throw IxApiClientError.ProRequired(.unlimited_task_reminders)
+        case 404:
+            throw IxApiClientError.NotFound(.item)
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+
+    /// Edits an existing task
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.InvalidData`
+    /// - `IxApiClientError.NotFound`
+    /// - `IxApiClientError.Unknown`
+    func editTask(taskId: String, name: String, description: String?, dueDate: Date?, rrule: String?, reminders: [IxTaskReminder], subtasks: [IxSubTask], priority: Int?, itemId: String?) async throws -> IxTask {
+        let url = Self.baseUrl.appendingPathComponent("/tasks/\(taskId)")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body = TaskCreateOrEditReqBody(
+            name: name,
+            description: description,
+            item_id: itemId,
+            subtasks: subtasks.map({ NetworkSubTask(name: $0.name, completed: $0.completed)}),
+            due_date: dueDate,
+            rrule: rrule,
+            priority: priority,
+            reminders: reminders.map({ NetworkTaskReminder(days_before: $0.days_before, time_offset: $0.time_offset)})
+        )
+        request.httpBody = try JSONEncoder().encode(body)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return IxTask(networkTask: try Self.decoder().decode(NetworkTask.self, from: data))
+        case 400:
+            throw IxApiClientError.InvalidData
+        case 404:
+            throw IxApiClientError.NotFound(.task)
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+
+    /// Sets the completion status of a task
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.NotFound`
+    /// - `IxApiClientError.Unknown`
+    func setTaskCompletion(taskId: String, completed: Bool) async throws -> IxTask {
+        let url = Self.baseUrl.appendingPathComponent("/tasks/\(taskId)/completion")
+            .appending(queryItems: [URLQueryItem(name: "completed", value: "\(completed)")])
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return IxTask(networkTask: try Self.decoder().decode(NetworkTask.self, from: data))
+        case 404:
+            throw IxApiClientError.NotFound(.task)
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
+
+    /// Deletes a task via the [taskId]
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.NotFound`
+    /// - `IxApiClientError.Unknown`
+    func deleteTask(taskId: String) async throws {
+        let url = Self.baseUrl.appendingPathComponent("/tasks/\(taskId)")
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        let (_, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return
+        case 404:
+            throw IxApiClientError.NotFound(.task)
+        default:
+            throw IxApiClientError.Unknown
+        }
+    }
     
     // MARK: - Suggestions
     

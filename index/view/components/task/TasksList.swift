@@ -9,18 +9,22 @@ import SwiftUI
 import SwiftData
 
 struct TasksList: View {
+    private var dateFilter: Date?
+    private var noDateFilter: Bool
+    private var earlierThanDateFilter: Bool
+    private var laterThanDateFilter: Bool
+    
     private var onOpen: (_ task: IxTask) -> ()
     private var onCompletionToggle: (_ task: IxTask) -> ()
     private var onEdit: (_ task: IxTask) -> ()
     private var onDelete: (_ task: IxTask) -> ()
-    private var onSwipeLeft: (_ taks: IxTask, _ completionAction: @escaping () -> ()) -> ()
-    private var onSwipeRight: (_ task: IxTask, _ completionAction: @escaping () -> ()) -> ()
     
     @Query private var tasks: [IxTask]
     
     init(
         dateFilter: Date?,
         noDateFilter: Bool,
+        earlierThanDateFilter: Bool,
         laterThanDateFilter: Bool,
         taskFilter: TaskFilter,
         taskSorting: TaskSorting,
@@ -28,18 +32,31 @@ struct TasksList: View {
         onOpen: @escaping (_: IxTask) -> Void,
         onCompletionToggle: @escaping (_: IxTask) -> Void,
         onEdit: @escaping (_: IxTask) -> Void,
-        onDelete: @escaping (_: IxTask) -> Void,
-        onSwipeLeft: @escaping (_: IxTask, _: @escaping () -> Void) -> Void,
-        onSwipeRight: @escaping (_: IxTask, _: @escaping () -> Void) -> Void
+        onDelete: @escaping (_: IxTask) -> Void
     ) {
+        self.dateFilter = dateFilter
+        self.noDateFilter = noDateFilter
+        self.earlierThanDateFilter = earlierThanDateFilter
+        self.laterThanDateFilter = laterThanDateFilter
+        
         self.onOpen = onOpen
         self.onCompletionToggle = onCompletionToggle
         self.onEdit = onEdit
         self.onDelete = onDelete
-        self.onSwipeLeft = onSwipeLeft
-        self.onSwipeRight = onSwipeRight
+        
+        let completedFilter = taskFilter == .completed
         
         let filterPredicate = #Predicate<IxTask> { task in
+            (completedFilter && task.completed) ||
+            (!completedFilter && !task.completed)
+            // fuck swift compiler
+//            ) &&
+//            (
+//                (dateFilter != nil && task.due_date != nil && task.due_date! == dateFilter!) ||
+//                (noDateFilter && task.due_date == nil) ||
+//                (earlierThanDateFilter && task.due_date != nil && dateFilter != nil && task.due_date! <= dateFilter!)
+//                (laterThanDateFilter && task.due_date != nil && dateFilter != nil && task.due_date! >= dateFilter!)
+//            )
 //            let completionFilterResult: Bool
 //            
 //            if taskFilter == .completed {
@@ -62,27 +79,55 @@ struct TasksList: View {
 //                    dateFilterResult = true
 //                }
 //            }
-            
-            task.completed
         }
         
-//        let sortOrder = taskReverseSorting ? SortOrder.reverse : SortOrder.forward
+        let sortOrder = taskSorting == .priority ? (taskReverseSorting ? SortOrder.forward : SortOrder.reverse) : (taskReverseSorting ? SortOrder.reverse : SortOrder.forward)
         
-//        let sortDescriptor: SortDescriptor<IxTask>
-//        switch taskSorting {
-//        case .name:
-//            sortDescriptor = SortDescriptor(\IxTask.name, order: sortOrder)
-//        case .priority:
-//            sortDescriptor = SortDescriptor(\IxTask.priority, order: sortOrder)
-//        case .creation:
-//            sortDescriptor = SortDescriptor(\IxTask.created_at, order: sortOrder)
-//        }
+        let sortDescriptor: SortDescriptor<IxTask>
+        switch taskSorting {
+        case .name:
+            sortDescriptor = SortDescriptor(\IxTask.name, order: sortOrder)
+        case .priority:
+            sortDescriptor = SortDescriptor(\IxTask.priority, order: sortOrder)
+        case .creation:
+            sortDescriptor = SortDescriptor(\IxTask.created_at, order: sortOrder)
+        }
        
-//        _tasks = Query(filter: filterPredicate, sort: [sortDescriptor])
+        _tasks = Query(filter: filterPredicate, sort: [sortDescriptor])
     }
     
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        ForEach(tasks.filter {
+            (dateFilter != nil && $0.due_date != nil && Calendar.current.isDate($0.due_date!.toLocalDate(), inSameDayAs: dateFilter!)) ||
+            (noDateFilter && $0.due_date == nil) ||
+            (earlierThanDateFilter && $0.due_date != nil && dateFilter != nil && Calendar.current.compare($0.due_date!.toLocalDate(), to: dateFilter!, toGranularity: .day) == .orderedAscending) ||
+            (laterThanDateFilter && $0.due_date != nil && dateFilter != nil && Calendar.current.compare($0.due_date!.toLocalDate(), to: dateFilter!, toGranularity: .day) == .orderedDescending)
+        }) { task in
+            let dateComparison = task.due_date != nil ? Calendar.current.compare(task.due_date!.toLocalDate(), to: dateFilter!, toGranularity: .day) : ComparisonResult.orderedSame
+            
+            TaskRow(
+                task: task,
+                showDate: (task.due_date != nil && dateComparison == .orderedAscending) || (task.due_date != nil && dateFilter != nil && dateComparison == .orderedDescending),
+                redDate: task.due_date != nil && dateComparison == .orderedAscending,
+                onOpen: onOpen,
+                onCompletionToggle: onCompletionToggle,
+                onEdit: onEdit,
+                onDelete: onDelete
+            ).swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                Button {
+                    onDelete(task)
+                } label: {
+                    Label("Delete", systemImage: "trash.fill")
+                        .tint(.red)
+                }
+            }.swipeActions(edge: .leading, allowsFullSwipe: true) {
+                Button {
+                    onCompletionToggle(task)
+                } label: {
+                    Label(task.completed ? "Uncomplete" : "Complete", systemImage: task.completed ? "xmark" : "checkmark")
+                }.tint(task.completed ? .orange : .accentColor)
+            }
+        }
     }
 }
 
@@ -90,6 +135,7 @@ struct TasksList: View {
     TasksList(
         dateFilter: nil,
         noDateFilter: false,
+        earlierThanDateFilter: false,
         laterThanDateFilter: false,
         taskFilter: .uncompleted,
         taskSorting: .name,
@@ -101,10 +147,5 @@ struct TasksList: View {
             
         } onDelete: { task in
             
-        } onSwipeLeft: { task, fun in
-            
-        } onSwipeRight: { task, fun in
-            
         }
-
 }
