@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum Permission {
+enum IxListPermission {
     case list_viewer
     case list_editor
     case list_owner

@@ -10,10 +10,12 @@ import DynamicColor
 
 struct ListCard: View {
     var list: IxList
+    var owner: Bool
     var onTap: () -> Void
     var onShare: () -> Void
     var onEdit: () -> Void
     var onDelete: () -> Void
+    var onLeave: () -> Void
     var withInteractions: Bool = true
     
     var body: some View {
@@ -26,11 +28,17 @@ struct ListCard: View {
                 
                 if withInteractions {
                     Menu {
-                        Button("Sharing", systemImage: "person.2.badge.gearshape", action: onShare)
+                        if owner {
+                            Button("Sharing", systemImage: "person.2.badge.gearshape", action: onShare)
+                        }
                         
                         Button("Edit", systemImage: "pencil", action: onEdit)
                         
-                        Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
+                        if owner {
+                            Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
+                        } else {
+                            Button("Leave", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive, action: onLeave)
+                        }
                     } label: {
                         ZStack {
                             Circle()
@@ -125,7 +133,7 @@ struct ListCard: View {
         editedAt: nil
     )
     
-    ListCard(list: sampleList, onTap: {}, onShare: {}, onEdit: {}, onDelete: {}, withInteractions: false)
+    ListCard(list: sampleList, owner: false, onTap: {}, onShare: {}, onEdit: {}, onDelete: {}, onLeave: {}, withInteractions: false)
         .padding()
         .frame(width: 250)
 }

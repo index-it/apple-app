@@ -11,7 +11,6 @@ import SwiftData
 struct CompletedTasksList: View {
     private var onOpen: (_ task: IxTask) -> ()
     private var onCompletionToggle: (_ task: IxTask) -> ()
-    private var onEdit: (_ task: IxTask) -> ()
     private var onDelete: (_ task: IxTask) -> ()
     
     @Query private var tasks: [IxTask]
@@ -19,12 +18,10 @@ struct CompletedTasksList: View {
     init(
         onOpen: @escaping (_: IxTask) -> Void,
         onCompletionToggle: @escaping (_: IxTask) -> Void,
-        onEdit: @escaping (_: IxTask) -> Void,
         onDelete: @escaping (_: IxTask) -> Void
     ) {
         self.onOpen = onOpen
         self.onCompletionToggle = onCompletionToggle
-        self.onEdit = onEdit
         self.onDelete = onDelete
         
         let filterPredicate = #Predicate<IxTask> { task in
@@ -35,14 +32,16 @@ struct CompletedTasksList: View {
     }
     
     var body: some View {
+        let subtasksMaxWidth = UIScreen.main.bounds.width / 3
+        
         List(tasks) { task in
             TaskRow(
                 task: task,
                 showDate: true,
                 redDate: false,
+                subtasksMaxWidth: subtasksMaxWidth,
                 onOpen: onOpen,
                 onCompletionToggle: onCompletionToggle,
-                onEdit: onEdit,
                 onDelete: onDelete
             ).swipeActions(edge: .trailing, allowsFullSwipe: true) {
                 Button(role: .destructive) {
@@ -50,12 +49,14 @@ struct CompletedTasksList: View {
                 } label: {
                     Label("Delete", systemImage: "trash.fill")
                 }
-            }.swipeActions(edge: .leading, allowsFullSwipe: true) {
-                Button {
-                    onCompletionToggle(task)
-                } label: {
-                    Label(task.completed ? "Uncomplete" : "Complete", systemImage: task.completed ? "xmark" : "checkmark")
-                }.tint(task.completed ? .orange : .accentColor)
+            }.if(task.rrule == nil) { view in
+                view.swipeActions(edge: .leading, allowsFullSwipe: true) {
+                    Button {
+                        onCompletionToggle(task)
+                    } label: {
+                        Label(task.completed ? "Uncomplete" : "Complete", systemImage: task.completed ? "xmark" : "checkmark")
+                    }.tint(task.completed ? .orange : .accentColor)
+                }
             }
         }.overlay {
             if tasks.isEmpty {
@@ -73,8 +74,6 @@ struct CompletedTasksList: View {
     CompletedTasksList { task in
             
         } onCompletionToggle: { task in
-            
-        } onEdit: { task in
             
         } onDelete: { task in
             

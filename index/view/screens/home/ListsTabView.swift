@@ -43,6 +43,7 @@ struct ListsTabView: View {
     @State private var loadingSelectedListUsers: Bool = false
     @State private var loadingSelectedListUserInvite: Bool = false
     @State private var loadingSelectedListUserEditOrRevokePermissions: String? = nil
+    @State private var showLeaveListConfirmation = false
     
     
     private func saveList(_ list: IxList) async throws {
@@ -114,7 +115,6 @@ struct ListsTabView: View {
         }
     }
     
-    
     func deleteList(id: String) async {
         do {
             try await ixApiClient.deleteList(id: id)
@@ -128,6 +128,17 @@ struct ListsTabView: View {
     
     
     // MARK: - LIST SHARING FUNCTIONS
+    func leaveList(id: String) async {
+        do {
+            try await ixApiClient.leaveList(id: id)
+            try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
+        } catch IxApiClientError.NotFound {
+            do { try context.delete(model: IxList.self, where: #Predicate { $0.id == id }) } catch {}
+        } catch {
+            errorService.insert(.localizedError(title: "Error leaving list", error: error))
+        }
+    }
+    
     func editListPublic(isPublic: Bool) async {
         if let selectedList {
             do {
@@ -234,10 +245,15 @@ struct ListsTabView: View {
                 },
                 onShare: { list in
                     selectedList = list
-                    Task {
-                        await fetchListUsersWthAccess(listId: list.id)
+                    if list.user_id == user?.id {
+                        Task {
+                            await fetchListUsersWthAccess(listId: list.id)
+                        }
+                        showShareSheet = true
+                    } else {
+                        showLeaveListConfirmation = true
                     }
-                    showShareSheet = true
+                    
                 },
                 onEdit: { list in
                     selectedList = list
@@ -246,6 +262,10 @@ struct ListsTabView: View {
                 onDelete: { list in
                     selectedList = list
                     showDeleteConfirmationDialog = true
+                },
+                onLeave: { list in
+                    selectedList = list
+                    showLeaveListConfirmation = true
                 }
             ).navigationTitle("Your lists")
                 .toolbar {
@@ -367,6 +387,27 @@ struct ListsTabView: View {
                     },
                     message: {
                         Text("Are you sure you want to delete the list \(selectedList?.name ?? "")? This action is irreversible!")
+                    }
+                )
+                .confirmationDialog(
+                    Text("Leave list"),
+                    isPresented: $showLeaveListConfirmation,
+                    titleVisibility: .visible,
+                    actions: {
+                        Button("Leave", role: .destructive) {
+                            if let selectedList {
+                                Task {
+                                    await leaveList(id: selectedList.id)
+                                }
+                            }
+                        }
+                        
+                        Button("Stay", role: .cancel) {
+                            showLeaveListConfirmation = false
+                        }
+                    },
+                    message: {
+                        Text("The list \(selectedList?.name ?? "") was shared with you! Do you want to leave the list and lose access to it?")
                     }
                 )
         }.onAppear {

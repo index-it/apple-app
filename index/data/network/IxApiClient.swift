@@ -33,6 +33,16 @@ class IxApiClient: ObservableObject {
         return decoder
     }
     
+    private static func encoder() -> JSONEncoder {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .formatted(dateFormatter)
+        
+        return encoder
+    }
+    
     @MainActor
     private func setAuthenticationStatus(authenticationStatus: AuthStatus) {
         self.authenticationStatus = authenticationStatus
@@ -1142,7 +1152,8 @@ class IxApiClient: ObservableObject {
             priority: priority,
             reminders: reminders.map({ NetworkTaskReminder(days_before: $0.days_before, time_offset: $0.time_offset)})
         )
-        request.httpBody = try JSONEncoder().encode(body)
+        
+        request.httpBody = try Self.encoder().encode(body)
         
         let (data, response) = try await URLSession.shared.data(for: request)
         let httpResponse = response as! HTTPURLResponse
@@ -1183,7 +1194,7 @@ class IxApiClient: ObservableObject {
             priority: priority,
             reminders: reminders.map({ NetworkTaskReminder(days_before: $0.days_before, time_offset: $0.time_offset)})
         )
-        request.httpBody = try JSONEncoder().encode(body)
+        request.httpBody = try Self.encoder().encode(body)
         
         let (data, response) = try await URLSession.shared.data(for: request)
         let httpResponse = response as! HTTPURLResponse
@@ -1231,9 +1242,16 @@ class IxApiClient: ObservableObject {
     /// ### Throws:
     /// - `IxApiClientError.NotFound`
     /// - `IxApiClientError.Unknown`
-    func deleteTask(taskId: String) async throws {
-        let url = Self.baseUrl.appendingPathComponent("/tasks/\(taskId)")
-        var request = URLRequest(url: url)
+    func deleteTask(taskId: String, all: Bool? = nil) async throws {
+        var urlComponents = URLComponents(string: "\(Self.baseUrl)/tasks/\(taskId)")!
+        
+        if let all = all {
+            var queryItems = [URLQueryItem]()
+            queryItems.append(URLQueryItem(name: "all", value: "\(all)"))
+            urlComponents.queryItems = queryItems
+        }
+        
+        var request = URLRequest(url: urlComponents.url!)
         request.httpMethod = "DELETE"
         
         let (_, response) = try await URLSession.shared.data(for: request)

@@ -63,7 +63,7 @@ class IxTask {
     
     func dueDateString() -> String {
         if let completed_at = completed_at {
-            let completionDate = Date(timeIntervalSince1970: Double(completed_at))
+            let completionDate = Date(timeIntervalSince1970: Double(completed_at / 1000))
             return "COMPLETED \(IxDateUtils.Formatters.shared.taskDueDate.string(from: completionDate.toLocalDate()))"
         } else {
             guard let dueDate = due_date else { return "" }
@@ -89,5 +89,17 @@ struct IxTaskReminder: Codable, Hashable {
     init(daysBefore: Int64, timeOffset: Int64) {
         self.days_before = daysBefore
         self.time_offset = timeOffset
+    }
+    
+    func hourAndMinuteString() -> String {
+        let startOfDay = Calendar.current.startOfDay(for: Date.now)
+        // Convert milliseconds to seconds and add to start of the day
+        let targetDate = startOfDay.addingTimeInterval(Double(time_offset) / 1000)
+
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.locale = .current
+
+        return formatter.string(from: targetDate)
     }
 }

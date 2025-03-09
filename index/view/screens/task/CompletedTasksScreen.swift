@@ -41,8 +41,6 @@ struct CompletedTasksScreen: View {
                 
             } onCompletionToggle: { task in
                 
-            } onEdit: { task in
-                
             } onDelete: { task in
                 
             }

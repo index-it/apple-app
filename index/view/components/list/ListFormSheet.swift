@@ -54,7 +54,7 @@ struct ListFormSheet: View {
         NavigationView {
             VStack {
                 VStack {
-                    ListCard(list: IxList.loading(name: name.isEmpty ? namePlaceholder : name, emoji: emoji, color: color.hexString()), onTap: {}, onShare: {}, onEdit: {}, onDelete: {}, withInteractions: false)
+                    ListCard(list: IxList.loading(name: name.isEmpty ? namePlaceholder : name, emoji: emoji, color: color.hexString()), owner: false, onTap: {}, onShare: {}, onEdit: {}, onDelete: {}, onLeave: {}, withInteractions: false)
                         .frame(maxWidth: 200)
                         .padding()
                     

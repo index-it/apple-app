@@ -21,7 +21,8 @@ struct TasksTabView: View {
     
     // MARK: Task creation
     @State private var showCreationSheet = false
-    // TODO: All props
+    @State private var taskCreationDueDate: Date? = nil
+    @State private var taskCreationNamePlaceholder = "Task name"
     
     // MARK: Selected task
     @State private var selectedTask: IxTask? = nil
@@ -46,22 +47,20 @@ struct TasksTabView: View {
         do {
             let template = try await ixApiClient.getTaskTemplateSuggestion()
             
-            // TODO: Assign to create props
-        } catch {
-            
-        }
+            taskCreationNamePlaceholder = template.name
+        } catch {}
     }
     
     // MARK: - Task CRUD
-    func fetchTasks() async {
+    func fetchTasks(completion: Bool) async {
         do {
-            let tasks = try await ixApiClient.getTasks(completed: false)
+            let tasks = try await ixApiClient.getTasks(completed: completion)
             
             try context.transaction {
                 try context.delete(
                     model: IxTask.self,
                     where: #Predicate { task in
-                        !task.completed
+                        task.completed == completion
                     }
                 )
                 
@@ -131,9 +130,9 @@ struct TasksTabView: View {
     }
     
     
-    func deleteTask(id: String) async {
+    func deleteTask(id: String, all: Bool? = nil) async {
         do {
-            try await ixApiClient.deleteTask(taskId: id)
+            try await ixApiClient.deleteTask(taskId: id, all: all)
             try context.delete(model: IxTask.self, where: #Predicate { $0.id == id })
         } catch IxApiClientError.NotFound {
             do { try context.delete(model: IxTask.self, where: #Predicate { $0.id == id }) } catch {}
@@ -151,8 +150,30 @@ struct TasksTabView: View {
                 })
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button("Completed tasks", systemImage: "book.closed") {
-                            navigationManager.push(navigationRoute: .completedTasks)
+                        NavigationLink {
+                            CompletedTasksList { task in
+                                selectedTask = task
+                                showEditSheet = true
+                            } onCompletionToggle: { task in
+                                Task {
+                                    await setTaskCompletion(id: task.id, completed: !task.completed)
+                                }
+                            } onDelete: { task in
+                                selectedTask = task
+                                showDeleteConfirmationDialog = true
+                            }
+                            .navigationTitle("Completed tasks")
+                            .onAppear {
+                                let shouldSync = SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.COMPLETED_TASKS)
+                                
+                                if shouldSync {
+                                    Task {
+                                        await fetchTasks(completion: true)
+                                    }
+                                }
+                            }
+                        } label: {
+                            Label("Completed tasks", systemImage: "book.closed")
                         }
                     }
                     
@@ -176,10 +197,18 @@ struct TasksTabView: View {
                     isPresented: $showDeleteConfirmationDialog,
                     titleVisibility: .visible,
                     actions: {
-                        Button("Delete", role: .destructive) {
-                            if let selectedTask {
+                        if let selectedTask = selectedTask {
+                            Button(selectedTask.rrule == nil ? "Delete" : "Delete single", role: .destructive) {
                                 Task {
-                                    await deleteTask(id: selectedTask.id)
+                                    await deleteTask(id: selectedTask.id, all: selectedTask.rrule == nil ? nil : false)
+                                }
+                            }
+                            
+                            if selectedTask.rrule != nil {
+                                Button("Delete all", role: .destructive) {
+                                    Task {
+                                        await deleteTask(id: selectedTask.id, all: true)
+                                    }
                                 }
                             }
                         }
@@ -189,32 +218,59 @@ struct TasksTabView: View {
                         }
                     },
                     message: {
-                        Text("Are you sure you want to delete the task \(selectedTask?.name ?? "")?")
+                        Text("Are you sure you want to delete the\(selectedTask?.rrule != nil ? " **recurring**" : "") task \(selectedTask?.name ?? "")?")
                     }
                 )
-//                .sheet(
-//                    isPresented: $showCreationSheet,
-//                    content: {
-//                        TaskFormSheet(
-//                            showSheet: $showCreationSheet,
-//                            name: "",
-//                            category: selectedCategory,
-//                            link: nil,
-//                            note: nil,
-//                            categories: categories,
-//                            namePlaceholder: newItemNamePlaceholder
-//                        ) { name, category, link, note in
-//                            Task {
-//                                await createItem(listId: listId, name: name, categoryId: category?.id, link: link, note: note)
-//                            }
-//                        }
-//                })
+                .sheet(
+                    isPresented: $showCreationSheet,
+                    content: {
+                        TaskFormSheet(
+                            showSheet: $showCreationSheet,
+                            name: "",
+                            description: nil,
+                            priority: nil,
+                            dueDate: taskCreationDueDate,
+                            rrule: nil,
+                            reminders: [],
+                            itemId: nil,
+                            subtasks: [],
+                            namePlaceholder: "Task name"
+                        ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
+                            Task {
+                                await createTask(name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
+                            }
+                        }
+                    }
+                )
+                .sheet(
+                    isPresented: $showEditSheet,
+                    content: {
+                        TaskFormSheet(
+                            showSheet: $showEditSheet,
+                            name: selectedTask?.name ?? "",
+                            description: selectedTask?.task_description,
+                            priority: selectedTask?.priority,
+                            dueDate: selectedTask?.due_date,
+                            rrule: selectedTask?.rrule,
+                            reminders: selectedTask?.reminders ?? [],
+                            itemId: selectedTask?.item_id,
+                            subtasks: selectedTask?.subtasks ?? [],
+                            namePlaceholder: taskCreationNamePlaceholder
+                        ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
+                            Task {
+                                if let selectedTask = selectedTask {
+                                    await editTask(id: selectedTask.id, name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
+                                }
+                            }
+                        }
+                    }
+                )
         }.onAppear {
             Task {
                 let shouldSync = SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.TASKS)
                 
                 if (shouldSync) {
-                    await fetchTasks()
+                    await fetchTasks(completion: false)
                 }
             }
             
@@ -235,14 +291,12 @@ struct TasksTabView: View {
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
                     taskReverseSorting: reverseSorting) { task in
-                        
+                        selectedTask = task
+                        showEditSheet = true
                     } onCompletionToggle: { task in
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
-                    } onEdit: { task in
-                        selectedTask = task
-                        showEditSheet = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -253,6 +307,10 @@ struct TasksTabView: View {
                     .font(.title2)
                     .foregroundStyle(UIColor.label.toColor())
                     .textCase(nil)
+                    .onTapGesture {
+                        taskCreationDueDate = todayDate
+                        showCreationSheet = true
+                    }
             }
             
             Section {
@@ -264,22 +322,20 @@ struct TasksTabView: View {
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
                     taskReverseSorting: reverseSorting) { task in
-                        
+                        selectedTask = task
+                        showEditSheet = true
                     } onCompletionToggle: { task in
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
-                    } onEdit: { task in
-                        selectedTask = task
-                        showEditSheet = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
                     }
             } header: {
+                let date = todayDate.addingTimeInterval(IxDateUtils.oneDayMillis)
+                
                 VStack(alignment: .leading) {
-                    let date = todayDate.addingTimeInterval(IxDateUtils.oneDayMillis)
-                    
                     Text("Tomorrow")
                         .fontWeight(.semibold)
                         .font(.title2)
@@ -290,6 +346,9 @@ struct TasksTabView: View {
                         .font(.caption)
                         .multilineTextAlignment(.leading)
                         .textCase(nil)
+                }.onTapGesture {
+                    taskCreationDueDate = date
+                    showCreationSheet = true
                 }
             }
             
@@ -302,22 +361,20 @@ struct TasksTabView: View {
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
                     taskReverseSorting: reverseSorting) { task in
-                        
+                        selectedTask = task
+                        showEditSheet = true
                     } onCompletionToggle: { task in
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
-                    } onEdit: { task in
-                        selectedTask = task
-                        showEditSheet = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
                     }
             } header: {
+                let date = todayDate.addingTimeInterval(IxDateUtils.oneDayMillis)
+                
                 VStack(alignment: .leading) {
-                    let date = todayDate.addingTimeInterval(IxDateUtils.twoDayMillis)
-                    
                     Text(IxDateUtils.Formatters.shared.taskSectionHeading.string(from: date))
                         .fontWeight(.semibold)
                         .font(.title2)
@@ -327,6 +384,9 @@ struct TasksTabView: View {
                     Text(IxDateUtils.Formatters.shared.taskSectionSubheading.string(from: date))
                         .font(.caption)
                         .textCase(nil)
+                }.onTapGesture {
+                    taskCreationDueDate = date
+                    showCreationSheet = true
                 }
             }
             
@@ -339,22 +399,20 @@ struct TasksTabView: View {
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
                     taskReverseSorting: reverseSorting) { task in
-                        
+                        selectedTask = task
+                        showEditSheet = true
                     } onCompletionToggle: { task in
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
-                    } onEdit: { task in
-                        selectedTask = task
-                        showEditSheet = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
                     }
             } header: {
+                let date = todayDate.addingTimeInterval(IxDateUtils.threeDayMillis)
+                
                 VStack(alignment: .leading) {
-                    let date = todayDate.addingTimeInterval(IxDateUtils.threeDayMillis)
-                    
                     Text(IxDateUtils.Formatters.shared.taskSectionHeading.string(from: date))
                         .fontWeight(.semibold)
                         .font(.title2)
@@ -364,6 +422,9 @@ struct TasksTabView: View {
                     Text(IxDateUtils.Formatters.shared.taskSectionSubheading.string(from: date))
                         .font(.caption)
                         .textCase(nil)
+                }.onTapGesture {
+                    taskCreationDueDate = date
+                    showCreationSheet = true
                 }
             }
             
@@ -376,22 +437,20 @@ struct TasksTabView: View {
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
                     taskReverseSorting: reverseSorting) { task in
-                        
+                        selectedTask = task
+                        showEditSheet = true
                     } onCompletionToggle: { task in
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
-                    } onEdit: { task in
-                        selectedTask = task
-                        showEditSheet = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
                     }
             } header: {
+                let date = todayDate.addingTimeInterval(IxDateUtils.fourDayMillis)
+                
                 VStack(alignment: .leading) {
-                    let date = todayDate.addingTimeInterval(IxDateUtils.fourDayMillis)
-                    
                     Text(IxDateUtils.Formatters.shared.taskSectionHeading.string(from: date))
                         .fontWeight(.semibold)
                         .font(.title2)
@@ -401,6 +460,9 @@ struct TasksTabView: View {
                     Text(IxDateUtils.Formatters.shared.taskSectionSubheading.string(from: date))
                         .font(.caption)
                         .textCase(nil)
+                }.onTapGesture {
+                    taskCreationDueDate = date
+                    showCreationSheet = true
                 }
             }
             
@@ -413,22 +475,20 @@ struct TasksTabView: View {
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
                     taskReverseSorting: reverseSorting) { task in
-                        
+                        selectedTask = task
+                        showEditSheet = true
                     } onCompletionToggle: { task in
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
-                    } onEdit: { task in
-                        selectedTask = task
-                        showEditSheet = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
                     }
             } header: {
+                let date = todayDate.addingTimeInterval(IxDateUtils.fiveDayMillis)
+                
                 VStack(alignment: .leading) {
-                    let date = todayDate.addingTimeInterval(IxDateUtils.fiveDayMillis)
-                    
                     Text(IxDateUtils.Formatters.shared.taskSectionHeading.string(from: date))
                         .fontWeight(.semibold)
                         .font(.title2)
@@ -438,6 +498,9 @@ struct TasksTabView: View {
                     Text(IxDateUtils.Formatters.shared.taskSectionSubheading.string(from: date))
                         .font(.caption)
                         .textCase(nil)
+                }.onTapGesture {
+                    taskCreationDueDate = date
+                    showCreationSheet = true
                 }
             }
             
@@ -450,22 +513,20 @@ struct TasksTabView: View {
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
                     taskReverseSorting: reverseSorting) { task in
-                        
+                        selectedTask = task
+                        showEditSheet = true
                     } onCompletionToggle: { task in
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
-                    } onEdit: { task in
-                        selectedTask = task
-                        showEditSheet = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
                     }
             } header: {
+                let date = todayDate.addingTimeInterval(IxDateUtils.sixDayMillis)
+                
                 VStack(alignment: .leading) {
-                    let date = todayDate.addingTimeInterval(IxDateUtils.sixDayMillis)
-                    
                     Text(IxDateUtils.Formatters.shared.taskSectionHeading.string(from: date))
                         .fontWeight(.semibold)
                         .font(.title2)
@@ -475,6 +536,9 @@ struct TasksTabView: View {
                     Text(IxDateUtils.Formatters.shared.taskSectionSubheading.string(from: date))
                         .font(.caption)
                         .textCase(nil)
+                }.onTapGesture {
+                    taskCreationDueDate = date
+                    showCreationSheet = true
                 }
             }
             
@@ -487,14 +551,12 @@ struct TasksTabView: View {
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
                     taskReverseSorting: reverseSorting) { task in
-                        
+                        selectedTask = task
+                        showEditSheet = true
                     } onCompletionToggle: { task in
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
-                    } onEdit: { task in
-                        selectedTask = task
-                        showEditSheet = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -505,6 +567,10 @@ struct TasksTabView: View {
                     .font(.title2)
                     .foregroundStyle(UIColor.label.toColor())
                     .textCase(nil)
+                    .onTapGesture {
+                        taskCreationDueDate = todayDate.addingTimeInterval(IxDateUtils.sevenDayMillis)
+                        showCreationSheet = true
+                    }
             }
         }
     }

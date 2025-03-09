@@ -9,13 +9,13 @@ import SwiftUI
 import SwiftData
 
 struct TaskRow: View {
-    var task: IxTask
-    var showDate: Bool
-    var redDate: Bool
+    private var task: IxTask
+    private var showDate: Bool
+    private var redDate: Bool
+    private var subtasksMaxWidth: CGFloat
     
     var onOpen: (IxTask) -> ()
     var onCompletionToggle: (IxTask) -> ()
-    var onEdit: (IxTask) -> ()
     var onDelete: (IxTask) -> ()
     
     @Query var taskItem: [IxListItem]
@@ -24,18 +24,18 @@ struct TaskRow: View {
         task: IxTask,
         showDate: Bool,
         redDate: Bool,
+        subtasksMaxWidth: CGFloat,
         onOpen: @escaping (IxTask) -> Void,
         onCompletionToggle: @escaping (IxTask) -> Void,
-        onEdit: @escaping (IxTask) -> Void,
         onDelete: @escaping (IxTask) -> Void
     ) {
         self.task = task
         self.showDate = showDate
         self.redDate = redDate
+        self.subtasksMaxWidth = subtasksMaxWidth
         
         self.onOpen = onOpen
         self.onCompletionToggle = onCompletionToggle
-        self.onEdit = onEdit
         self.onDelete = onDelete
         
         let itemId = task.item_id
@@ -62,9 +62,9 @@ struct TaskRow: View {
             item: taskItem.first,
             showDate: showDate,
             redDate: redDate,
+            subtasksMaxWidth: subtasksMaxWidth,
             onOpen: onOpen,
             onCompletionToggle: onCompletionToggle,
-            onEdit: onEdit,
             onDelete: onDelete
         )
     }
@@ -75,10 +75,10 @@ struct TaskRowContentView: View {
     var item: IxListItem?
     var showDate: Bool
     var redDate: Bool
+    var subtasksMaxWidth: CGFloat
     
     var onOpen: (IxTask) -> ()
     var onCompletionToggle: (IxTask) -> ()
-    var onEdit: (IxTask) -> ()
     var onDelete: (IxTask) -> ()
     
     var priorityColor: Color {
@@ -94,25 +94,23 @@ struct TaskRowContentView: View {
     @Query var taskItemCategory: [IxListCategory]
     @Query var taskItemList: [IxList]
     
-    @State private var subtasksSpacerWidth: CGFloat = 0
-    
     init(
         task: IxTask,
         item: IxListItem?,
         showDate: Bool,
         redDate: Bool,
+        subtasksMaxWidth: CGFloat,
         onOpen: @escaping (IxTask) -> Void,
         onCompletionToggle: @escaping (IxTask) -> Void,
-        onEdit: @escaping (IxTask) -> Void,
         onDelete: @escaping (IxTask) -> Void
     ) {
         self.task = task
         self.showDate = showDate
         self.redDate = redDate
+        self.subtasksMaxWidth = subtasksMaxWidth
         
         self.onOpen = onOpen
         self.onCompletionToggle = onCompletionToggle
-        self.onEdit = onEdit
         self.onDelete = onDelete
         
         let listId = item?.list_id
@@ -153,32 +151,10 @@ struct TaskRowContentView: View {
     }
     
     var body: some View {
-        Menu {
-            Button(task.completed ? "Uncomplete" : "Complete", systemImage: task.completed ? "xmark" : "checkmark") {
-                onCompletionToggle(task)
-            }
-            
-            
-            Section {
-                Button("Edit", systemImage: "pencil") {
-                    onEdit(task)
-                }
-                
-                Menu {
-                    Button("Delete", systemImage: "trash", role: .destructive) {
-                        onDelete(task)
-                    }
-                    
-                    Button("Cancel", role: .cancel) {}
-                } label: {
-                    Label("Delete", systemImage: "trash")
-                }
-            }
+        Button {
+            onOpen(task)
         } label: {
             TaskRowContent
-                .onGeometryChange(for: CGSize.self, of: \.size) { newValue in
-                    subtasksSpacerWidth = newValue.width / 2
-                }
         }
         .listRowBackground(taskItemList.first?.color.toColorOrNil())
     }
@@ -186,17 +162,19 @@ struct TaskRowContentView: View {
     var TaskRowContent: some View {
         VStack(alignment: .leading) {
             HStack {
-                
                 VStack(alignment: .leading) {
-                    HStack {
-                        
-                        
-                        Text(task.name)
-                            .multilineTextAlignment(.leading)
-                            .if(task.completed) { view in
-                                view.strikethrough()
-                            }
-                    }
+//                    HStack {
+//                        if task.rrule != nil {
+//                            Image(systemName: "repeat")
+//                                .foregroundStyle(.secondary)
+//                        }
+//                    }
+                    
+                    Text(task.name)
+                        .multilineTextAlignment(.leading)
+                        .if(task.completed) { view in
+                            view.strikethrough()
+                        }
                     
                     if let listName = taskItemList.first?.name {
                         Text([listName, taskItemCategory.first?.name].compactMap { $0 }.joined(separator: " / "))
@@ -215,7 +193,6 @@ struct TaskRowContentView: View {
                     if !task.subtasks.isEmpty {
                         let sortedSubTasks = task.subtasks.sorted { $0.completed && !$1.completed }
                         
-                        
                         HStack(spacing: 3) {
                             ForEach(sortedSubTasks.indices, id: \.self) { index in
                                 UnevenRoundedRectangle(cornerRadii: .init(
@@ -228,7 +205,7 @@ struct TaskRowContentView: View {
                                 .foregroundColor(sortedSubTasks[index].completed ? .primary : .gray)
                             }
                             
-                            Spacer(minLength: subtasksSpacerWidth)
+                            Spacer(minLength: subtasksMaxWidth)
                         }.padding(.leading, 2)
                     }
                 }
@@ -250,9 +227,9 @@ struct TaskRowContentView: View {
 
 #Preview {
     @State var tasks: [IxTask] = [
-        IxTask(id: "id1", userId: "id", itemId: nil, name: "Buy Gocciole", description: "at the Conad today", subtasks: [IxSubTask(name: "Pavesi", completed: false), IxSubTask(name: "Choco", completed: true), IxSubTask(name: "Another", completed: false)], dueDate: .now, rrule: nil, completed: true, priority: 2, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: Int64(Date.now.addingTimeInterval(60 * 60 * 24 * -2).timeIntervalSince1970)),
+        IxTask(id: "id1", userId: "id", itemId: nil, name: "Buy Gocciole", description: "at the Conad today", subtasks: [IxSubTask(name: "Pavesi", completed: false), IxSubTask(name: "Choco", completed: true), IxSubTask(name: "Another", completed: false)], dueDate: .now, rrule: nil, completed: true, priority: 2, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: Int64(Date.now.addingTimeInterval(60 * 60 * 24 * -2).timeIntervalSince1970 * 1000)),
         
-        IxTask(id: "id2", userId: "id", itemId: nil, name: "Buy more Gocciole", description: "at the Conad today", subtasks: [IxSubTask(name: "Pavesi", completed: false), IxSubTask(name: "Choco", completed: true)], dueDate: nil, rrule: nil, completed: false, priority: 1, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
+        IxTask(id: "id2", userId: "id", itemId: nil, name: "Buy more Gocciole", description: "at the Conad today", subtasks: [], dueDate: nil, rrule: "", completed: false, priority: 1, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
         
         IxTask(id: "id3", userId: "id", itemId: nil, name: "Clean kitchen", description: "Before guests arrive", subtasks: [IxSubTask(name: "Sweep", completed: false), IxSubTask(name: "Mop", completed: false)], dueDate: .now.addingTimeInterval(86400), rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
         
@@ -263,12 +240,10 @@ struct TaskRowContentView: View {
     
     List {
         ForEach($tasks, id: \.id) { $task in
-            TaskRow(task: task, showDate: task.due_date != nil, redDate: false) { task in
+            TaskRow(task: task, showDate: task.due_date != nil, redDate: false, subtasksMaxWidth: UIScreen.main.bounds.width / 2) { task in
                 // Handle task open
             } onCompletionToggle: { task in
                 task.completed.toggle()
-            } onEdit: { task in
-                // Handle edit
             } onDelete: { task in
                 // Handle delete
             }

@@ -14,7 +14,7 @@ enum IxApiClientError: Error {
     case TooManyRequests
     
     case NotFound(EntityType)
-    case MissingPermission(Permission)
+    case MissingPermission(IxListPermission)
     case ProRequired(ProFeature)
 
     // MARK: Auth

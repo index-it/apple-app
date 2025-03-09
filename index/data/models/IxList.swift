@@ -71,4 +71,16 @@ class IxList {
             editedAt: nil
         )
     }
+    
+    func getPermissions(userId: String) -> IxListPermission? {
+        if user_id == userId {
+            return .list_owner
+        } else if editors.contains(userId) {
+            return .list_editor
+        } else if viewers.contains(userId) {
+            return .list_viewer
+        } else {
+            return nil
+        }
+    }
 }

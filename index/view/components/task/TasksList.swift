@@ -16,7 +16,6 @@ struct TasksList: View {
     
     private var onOpen: (_ task: IxTask) -> ()
     private var onCompletionToggle: (_ task: IxTask) -> ()
-    private var onEdit: (_ task: IxTask) -> ()
     private var onDelete: (_ task: IxTask) -> ()
     
     @Query private var tasks: [IxTask]
@@ -31,7 +30,6 @@ struct TasksList: View {
         taskReverseSorting: Bool,
         onOpen: @escaping (_: IxTask) -> Void,
         onCompletionToggle: @escaping (_: IxTask) -> Void,
-        onEdit: @escaping (_: IxTask) -> Void,
         onDelete: @escaping (_: IxTask) -> Void
     ) {
         self.dateFilter = dateFilter
@@ -41,7 +39,6 @@ struct TasksList: View {
         
         self.onOpen = onOpen
         self.onCompletionToggle = onCompletionToggle
-        self.onEdit = onEdit
         self.onDelete = onDelete
         
         let completedFilter = taskFilter == .completed
@@ -97,6 +94,7 @@ struct TasksList: View {
     }
     
     var body: some View {
+        let subtasksMaxWidth = UIScreen.main.bounds.width / 3
         ForEach(tasks.filter {
             (dateFilter != nil && $0.due_date != nil && Calendar.current.isDate($0.due_date!.toLocalDate(), inSameDayAs: dateFilter!)) ||
             (noDateFilter && $0.due_date == nil) ||
@@ -109,9 +107,9 @@ struct TasksList: View {
                 task: task,
                 showDate: (task.due_date != nil && dateComparison == .orderedAscending) || (task.due_date != nil && dateFilter != nil && dateComparison == .orderedDescending),
                 redDate: task.due_date != nil && dateComparison == .orderedAscending,
+                subtasksMaxWidth: subtasksMaxWidth,
                 onOpen: onOpen,
                 onCompletionToggle: onCompletionToggle,
-                onEdit: onEdit,
                 onDelete: onDelete
             ).swipeActions(edge: .trailing, allowsFullSwipe: true) {
                 Button {
@@ -142,8 +140,6 @@ struct TasksList: View {
         taskReverseSorting: false) { task in
             
         } onCompletionToggle: { task in
-            
-        } onEdit: { task in
             
         } onDelete: { task in
             

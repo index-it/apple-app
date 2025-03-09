@@ -10,13 +10,19 @@ import SwiftUI
 struct SettingsTabView: View {
     @EnvironmentObject private var ixApiClient: IxApiClient
     @EnvironmentObject private var errorService: ErrorStateService
-    
+    @Environment(\.modelContext) private var context
+
     @AppStorage("user") var user: User?
     
     @State private var showOnboarding = false
     
     private func logout() async {
         do {
+            try context.delete(model: IxList.self)
+            try context.delete(model: IxListCategory.self)
+            try context.delete(model: IxListItem.self)
+            try context.delete(model: IxTask.self)
+            
             try await ixApiClient.logout()
         } catch {
             

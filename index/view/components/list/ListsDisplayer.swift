@@ -11,6 +11,7 @@ import SwiftData
 struct ListsDisplayer: View {
     @Query private var lists: [IxList]
     
+    private var userId: String
     private var filter: ListFilter
     private var onFilterClear: () -> ()
     private var onCreation: () -> ()
@@ -18,6 +19,7 @@ struct ListsDisplayer: View {
     private var onShare: (_ list: IxList) -> ()
     private var onEdit: (_ list: IxList) -> ()
     private var onDelete: (_ list: IxList) -> ()
+    private var onLeave: (_ list: IxList) -> ()
     
     init(
         userId: String,
@@ -29,8 +31,10 @@ struct ListsDisplayer: View {
         onListCardTap: @escaping (_: IxList) -> Void,
         onShare: @escaping (_: IxList) -> Void,
         onEdit: @escaping (_: IxList) -> Void,
-        onDelete: @escaping (_: IxList) -> Void
+        onDelete: @escaping (_: IxList) -> Void,
+        onLeave: @escaping (_: IxList) -> Void
     ) {
+        self.userId = userId
         self.filter = filter
         self.onFilterClear = onFilterClear
         self.onCreation = onCreation
@@ -38,6 +42,7 @@ struct ListsDisplayer: View {
         self.onShare = onShare
         self.onEdit = onEdit
         self.onDelete = onDelete
+        self.onLeave = onLeave
         
         var filterPredicate = #Predicate<IxList> { _ in
             true
@@ -71,39 +76,30 @@ struct ListsDisplayer: View {
     
     
     var body: some View {
-        if lists.isEmpty {
-            EmptyView
-        } else {
-            ListsGridView
-        }
-    }
-    
-    private var EmptyView: some View {
-        VStack {
-            Spacer()
-            
-            ContentUnavailableView {
-                Label(filter == .shared ? "No shared lists" : "No lists", systemImage: "binoculars")
-            } description: {
-                Text(filter == .shared ? "You are not part of any shared list yet!" : "You don't have any list yet!")
-            } actions: {
-                if filter == .shared {
-                    Button {
-                        onFilterClear()
-                    } label: {
-                        Label("Clear filters", systemImage: "xmark")
-                    }.buttonStyle(.borderedProminent)
-                } else {
-                    Button {
-                        onCreation()
-                    } label: {
-                        Label("Create a list", systemImage: "plus")
-                    }.buttonStyle(.borderedProminent)
+        ListsGridView
+            .overlay {
+                if lists.isEmpty {
+                    ContentUnavailableView {
+                        Label(filter == .shared ? "No shared lists" : "No lists", systemImage: "binoculars")
+                    } description: {
+                        Text(filter == .shared ? "You are not part of any shared list yet!" : "You don't have any list yet!")
+                    } actions: {
+                        if filter == .shared {
+                            Button {
+                                onFilterClear()
+                            } label: {
+                                Label("Clear filters", systemImage: "xmark")
+                            }.buttonStyle(.borderedProminent)
+                        } else {
+                            Button {
+                                onCreation()
+                            } label: {
+                                Label("Create a list", systemImage: "plus")
+                            }.buttonStyle(.borderedProminent)
+                        }
+                    }
                 }
             }
-            
-            Spacer()
-        }.frame(maxHeight: .infinity)
     }
     
     private var ListsGridView: some View {
@@ -112,6 +108,7 @@ struct ListsDisplayer: View {
                 ForEach(lists) { list in
                     ListCard(
                         list: list,
+                        owner: list.user_id == userId,
                         onTap: {
                             onListCardTap(list)
                         },
@@ -123,6 +120,9 @@ struct ListsDisplayer: View {
                         },
                         onDelete: {
                            onDelete(list)
+                        },
+                        onLeave: {
+                            onLeave(list)
                         }
                     )
                 }
