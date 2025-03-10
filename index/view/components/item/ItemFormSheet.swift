@@ -51,7 +51,7 @@ struct ItemFormSheet: View {
             VStack {
                 Form {
                     Section {
-                        TextField(namePlaceholder, text: $name)
+                        TextField(namePlaceholder, text: $name, axis: .vertical)
                             .focused($isNameFocused)
                     } header: {
                         Text("Name")
@@ -67,7 +67,7 @@ struct ItemFormSheet: View {
                         }
                         .pickerStyle(.menu)
                         
-                        TextField("Link", text: $link)
+                        TextField("Link", text: $link, axis: .vertical)
                             .keyboardType(.URL)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()

@@ -16,9 +16,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "09600C4D2D7E57A8002B9CFA"
-               BuildableName = "IndexShareExtension.appex"
-               BlueprintName = "IndexShareExtension"
+               BlueprintIdentifier = "09F48F3A2D7E623D00CA50AC"
+               BuildableName = "indexShareExtension.appex"
+               BlueprintName = "indexShareExtension"
                ReferencedContainer = "container:index.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>

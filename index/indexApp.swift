@@ -21,7 +21,7 @@ struct indexApp: App {
     // clients
     private var modelContainer: ModelContainer
     @StateObject private var ixApiClient: IxApiClient
-    @StateObject private var ixWebsocketClient: IxWebsocketClient
+    private var ixWebsocketClient: IxWebsocketClient
     
     // auth & user
     @AppStorage(AppStorageKeys.logged_in_user) var user: User?
@@ -43,7 +43,7 @@ struct indexApp: App {
             
             let websocketEventHandler = IxWebsocketEventHandler(ixApiClient: apiClient, modelContext: modelContainer.mainContext)
             let websocketClient = IxWebsocketClient(ixWebsocketEventHandler: websocketEventHandler)
-            self._ixWebsocketClient = StateObject(wrappedValue: websocketClient)
+            self.ixWebsocketClient = websocketClient
         } catch {
             fatalError("Couldn't setup model container")
         }
@@ -58,10 +58,24 @@ struct indexApp: App {
             
             self.user = nil
             
+            do {
+                try modelContainer.mainContext.transaction {
+                    try modelContainer.mainContext.delete(model: IxList.self)
+                    try modelContainer.mainContext.delete(model: IxListCategory.self)
+                    try modelContainer.mainContext.delete(model: IxListItem.self)
+                    try modelContainer.mainContext.delete(model: IxTask.self)
+                }
+            } catch {}
+                
+            
+            SyncRegister.shared.resetState()
+            
             ixWebsocketClient.disconnectFromWebsocket()
         case let .Authenticated(user: networkUser):
             Self.log.debug("network client authenticated - id: \(networkUser.id) - email: \(networkUser.email)")
             self.user = networkUser
+            
+            SyncRegister.shared.resetState()
             
             ixWebsocketClient.connectAndListenToWebsocket()
             /*

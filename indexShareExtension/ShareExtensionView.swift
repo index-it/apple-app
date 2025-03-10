@@ -24,8 +24,8 @@ struct ShareExtensionView: View {
     @State private var selectedCategory: IxListCategory? = nil
     
     init(name: String?, link: String?) {
-        self.name = name ?? ""
-        self.link = link ?? ""
+        self.name = name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        self.link = link?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     }
     
     private func loadLists() async {
@@ -66,7 +66,7 @@ struct ShareExtensionView: View {
     
     private func save(listId: String, categoryId: String?, name: String, link: String?, note: String?) async {
         do {
-            try await ixApiClient.createListItem(listId: listId, categoryId: categoryId, name: name, link: link, note: note)
+            let _ = try await ixApiClient.createListItem(listId: listId, categoryId: categoryId, name: name, link: link, note: note)
             
             close()
         } catch {
@@ -84,6 +84,7 @@ struct ShareExtensionView: View {
             }
             .onChange(of: selectedList) { _, newValue in
                 Task {
+                    selectedCategory = nil
                     await loadCategories(listId: newValue.id)
                 }
             }
@@ -95,7 +96,7 @@ struct ShareExtensionView: View {
                 Section {
                     TextField("Name", text: $name, axis: .vertical)
                     
-                    TextField("Link", text: $link)
+                    TextField("Link", text: $link, axis: .vertical)
                         .keyboardType(.URL)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
@@ -107,10 +108,8 @@ struct ShareExtensionView: View {
                 Section {
                     Picker(selection: $selectedList) {
                         ForEach(lists, id: \.id) { list in
-                            HStack {
-                                Text(list.icon)
-                                Text(list.name)
-                            }.tag(list)
+                            Text("\(list.icon) \(list.name)")
+                                .tag(list)
                         }
                     } label: {
                         HStack {
@@ -164,7 +163,7 @@ struct ShareExtensionView: View {
                                 note: note
                             )
                         }
-                    }
+                    }.disabled(name.isEmpty)
                 }
             }
         }

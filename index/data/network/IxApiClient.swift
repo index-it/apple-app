@@ -20,8 +20,8 @@ class IxApiClient: ObservableObject {
     // Create a single URLSession instance to reuse
     private let urlSession: URLSession
     
-    init(cookieStorage: HTTPCookieStorage? = nil) {
-        self.cookieStorage = cookieStorage ?? .shared
+    init(cookieStorage: HTTPCookieStorage = IxCookieStorageProvider.get()) {
+        self.cookieStorage = cookieStorage
         
         let configuration = URLSessionConfiguration.default
         configuration.httpCookieStorage = self.cookieStorage
