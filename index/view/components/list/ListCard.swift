@@ -19,81 +19,81 @@ struct ListCard: View {
     var withInteractions: Bool = true
     
     var body: some View {
-        VStack {
-            HStack {
-                Text(list.icon)
-                    .font(.title)
-                
-                Spacer()
-                
-                if withInteractions {
-                    Menu {
-                        if owner {
-                            Button("Sharing", systemImage: "person.2.badge.gearshape", action: onShare)
-                        }
-                        
-                        Button("Edit", systemImage: "pencil", action: onEdit)
-                        
-                        if owner {
-                            Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
-                        } else {
-                            Button("Leave", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive, action: onLeave)
-                        }
-                    } label: {
-                        ZStack {
-                            Circle()
-                                .fill(Color.white.opacity(0.20))
-                                .frame(width: 30, height: 30)
+        Button { onTap()
+        } label: {
+            VStack {
+                HStack {
+                    Text(list.icon)
+                        .font(.title)
+                    
+                    Spacer()
+                    
+                    if withInteractions {
+                        Menu {
+                            if owner {
+                                Button("Sharing", systemImage: "person.2.badge.gearshape", action: onShare)
+                            }
                             
-                            Image(systemName: "ellipsis")
-                                .foregroundColor(list.color.toColor(fallback: .white).contrastColor())
-                                .fontWeight(.semibold)
-                                .font(.title3)
+                            Button("Edit", systemImage: "pencil", action: onEdit)
+                            
+                            if owner {
+                                Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
+                            } else {
+                                Button("Leave", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive, action: onLeave)
+                            }
+                        } label: {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.white.opacity(0.20))
+                                    .frame(width: 30, height: 30)
+                                
+                                Image(systemName: "ellipsis")
+                                    .foregroundColor(list.color.toColor(fallback: .white).contrastColor())
+                                    .fontWeight(.semibold)
+                                    .font(.title3)
+                            }
                         }
                     }
                 }
-            }
-            
-            Spacer()
-            
-            HStack {
-                if (list.isShared()) {
-                    Image(systemName: "person.2.fill")
-                        .font(.title3)
-                        .foregroundStyle(list.color.toColor(fallback: .white).contrastColor())
-                        .onTapGesture(perform: onShare)
-                }
                 
-                Text(list.name)
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(list.color.toColor(fallback: .white).contrastColor())
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Spacer()
+                
+                HStack {
+                    if (list.isShared()) {
+                        Image(systemName: "person.2.fill")
+                            .font(.title3)
+                            .foregroundStyle(list.color.toColor(fallback: .white).contrastColor())
+                            .onTapGesture(perform: onShare)
+                    }
+                    
+                    Text(list.name)
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(list.color.toColor(fallback: .white).contrastColor())
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
-            
-        }
-        
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            DynamicColor(hexString: list.color).lighter(amount: 0.07).toColor(),
-                            DynamicColor(hexString: list.color).toColor()
-                            
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                DynamicColor(hexString: list.color).lighter(amount: 0.07).toColor(),
+                                DynamicColor(hexString: list.color).toColor()
+                                
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
-                )
-        )
-        .frame(height: 110)
+            )
+            .frame(height: 110)
+        }
         .if(!withInteractions, transform: { view in
             view.shadow(color: Color(hexString: list.color).opacity(0.5), radius: 10)
         })
         .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: 20))
-        .onTapGesture(perform: onTap)
         .if(withInteractions) { view in
             // TODO: Fix white edges on context menu
             view.contextMenu {

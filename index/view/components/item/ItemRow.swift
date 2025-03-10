@@ -74,9 +74,8 @@ struct ItemRow: View {
                     } label: {
                         Label("See notes", systemImage: "text.page")
                             .labelStyle(.iconOnly)
-                            .fontWeight(.bold)
                             .padding(6)
-                            .foregroundStyle(color?.contrastColor() ?? UIColor.label.toColor())
+                            .foregroundStyle(color?.contrastColor() ?? Color.accentColor)
                     }.background(Color.clear)
                 }
                 
@@ -88,9 +87,8 @@ struct ItemRow: View {
                     } label: {
                         Label("Open link", systemImage: "link")
                             .labelStyle(.iconOnly)
-                            .fontWeight(.bold)
                             .padding(6)
-                            .foregroundStyle(color?.contrastColor() ?? UIColor.label.toColor())
+                            .foregroundStyle(color?.contrastColor() ?? Color.accentColor)
                     }.background(Color.clear)
                 }
             }.frame(alignment: .trailing)

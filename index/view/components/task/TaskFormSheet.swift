@@ -502,16 +502,14 @@ struct TaskFormSheet: View {
     var body: some View {
         NavigationView {
             Form {
-                // MARK: Name, description, priority
                 nameAndDescriptionSection
                 
                 prioritySection
                 
-                // MARK: Due date and related features
+                subtasksSection
+                
                 dueDateSection
                 
-                // MARK: Subtasks
-                subtasksSection
                 
                 if itemId != nil {
                     connectedItemSection
@@ -580,20 +578,16 @@ struct TaskFormSheet: View {
     // Due Date Section
     var dueDateSection: some View {
         Section {
-            // MARK: Due date
             dueDateToggle
             
             if dueDate != nil {
                 dueDatePicker
             }
             
-            // MARK: Reminders
             remindersNavLink
             
-            // MARK: Recurrence
             recurrenceNavLink
             
-            // MARK: Recurrence ending
             if recurrenceEnabled {
                 endRecurrenceNavLink
             }
@@ -791,17 +785,14 @@ struct TaskFormSheet: View {
             
             recurrenceFrequencySection
             
-            // MARK: Weekly recurrence
             if recurrenceFrequency == .weekly && recurrenceEnabled {
                 weeklyRecurrenceSection
             }
             
-            // MARK: Monthly recurrence
             if recurrenceFrequency == .monthly && recurrenceEnabled {
                 monthlyRecurrenceSection
             }
             
-            // MARK: yearly recurrence
             if recurrenceFrequency == .yearly && recurrenceEnabled {
                 yearlyRecurrenceSection
             }

@@ -18,10 +18,14 @@ struct SettingsTabView: View {
     
     private func logout() async {
         do {
-            try context.delete(model: IxList.self)
-            try context.delete(model: IxListCategory.self)
-            try context.delete(model: IxListItem.self)
-            try context.delete(model: IxTask.self)
+            try context.transaction {
+                try context.delete(model: IxList.self)
+                try context.delete(model: IxListCategory.self)
+                try context.delete(model: IxListItem.self)
+                try context.delete(model: IxTask.self)
+            }
+            
+            SyncRegister.shared.resetState()
             
             try await ixApiClient.logout()
         } catch {

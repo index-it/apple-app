@@ -14,7 +14,19 @@ class IxApiClient: ObservableObject {
     
     @Published var authenticationStatus = AuthStatus.Loading
     
-    init() {
+    // Store the cookie storage instance
+    private let cookieStorage: HTTPCookieStorage
+    
+    // Create a single URLSession instance to reuse
+    private let urlSession: URLSession
+    
+    init(cookieStorage: HTTPCookieStorage? = nil) {
+        self.cookieStorage = cookieStorage ?? .shared
+        
+        let configuration = URLSessionConfiguration.default
+        configuration.httpCookieStorage = self.cookieStorage
+        self.urlSession = URLSession(configuration: configuration)
+        
         Task {
             do {
                 _ = try await me()
@@ -47,7 +59,7 @@ class IxApiClient: ObservableObject {
     private func setAuthenticationStatus(authenticationStatus: AuthStatus) {
         self.authenticationStatus = authenticationStatus
     }
-    
+
     // MARK: - Authentication
     
     /// gets the given welcome action for a user email
@@ -61,7 +73,7 @@ class IxApiClient: ObservableObject {
             .appendingPathComponent("/welcome-action")
             .appending(queryItems: [URLQueryItem(name: "email", value: email)])
         
-        let (data, urlRes) = try await URLSession.shared.data(from: url)
+        let (data, urlRes) = try await urlSession.data(from: url)
         
         let res = urlRes as! HTTPURLResponse
         
@@ -90,7 +102,7 @@ class IxApiClient: ObservableObject {
         let body = try JSONEncoder().encode(EmailAndPasswordReqBody(email: email, password: password))
         req.httpBody = body
         
-        let (_, urlRes) = try await URLSession.shared.data(for: req)
+        let (_, urlRes) = try await urlSession.data(for: req)
         
         let res = urlRes as! HTTPURLResponse
         
@@ -127,7 +139,7 @@ class IxApiClient: ObservableObject {
         let bodyString = "email=\(email)&password=\(password)"
         req.httpBody = bodyString.data(using: .utf8)
         
-        let (_, urlRes) = try await URLSession.shared.data(for: req)
+        let (_, urlRes) = try await urlSession.data(for: req)
         let res = urlRes as! HTTPURLResponse
         
         switch res.statusCode {
@@ -161,7 +173,7 @@ class IxApiClient: ObservableObject {
         let bodyString = "email=\(email)&password=\(password)"
         req.httpBody = bodyString.data(using: .utf8)
         
-        let (_, urlRes) = try await URLSession.shared.data(for: req)
+        let (_, urlRes) = try await urlSession.data(for: req)
         let res = urlRes as! HTTPURLResponse
         
         switch res.statusCode {
@@ -190,7 +202,7 @@ class IxApiClient: ObservableObject {
         var req = URLRequest(url: url)
         req.httpMethod = "GET"
         
-        let (_, urlRes) = try await URLSession.shared.data(for: req)
+        let (_, urlRes) = try await urlSession.data(for: req)
         let res = urlRes as! HTTPURLResponse
         
         if (res.statusCode == 200) {
@@ -222,7 +234,7 @@ class IxApiClient: ObservableObject {
         let body = try JSONEncoder().encode(EmailAndPasswordReqBody(email: email, password: password))
         req.httpBody = body
         
-        let (data, urlRes) = try await URLSession.shared.data(for: req)
+        let (data, urlRes) = try await urlSession.data(for: req)
         
         let res = urlRes as! HTTPURLResponse
         
@@ -252,7 +264,7 @@ class IxApiClient: ObservableObject {
             .appending(queryItems: [URLQueryItem(name: "token_id", value: idToken)])
         let req = URLRequest(url: url)
         
-        let (data, urlRes) = try await URLSession.shared.data(for: req)
+        let (data, urlRes) = try await urlSession.data(for: req)
         let res = urlRes as! HTTPURLResponse
         
         switch res.statusCode {
@@ -281,7 +293,7 @@ class IxApiClient: ObservableObject {
             .appending(queryItems: [URLQueryItem(name: "token_id", value: idToken)])
         let req = URLRequest(url: url)
         
-        let (data, urlRes) = try await URLSession.shared.data(for: req)
+        let (data, urlRes) = try await urlSession.data(for: req)
         let res = urlRes as! HTTPURLResponse
         
         switch res.statusCode {
@@ -317,7 +329,7 @@ class IxApiClient: ObservableObject {
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let (_, response) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -343,7 +355,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         
-        let (_, response) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -367,7 +379,7 @@ class IxApiClient: ObservableObject {
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let (_, response) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -387,7 +399,7 @@ class IxApiClient: ObservableObject {
     func logout() async throws {
         let url = Self.baseUrl.appendingPathComponent("/logout")
         
-        let (_, urlRes) = try await URLSession.shared.data(from: url)
+        let (_, urlRes) = try await urlSession.data(from: url)
         
         let res = urlRes as! HTTPURLResponse
         
@@ -415,7 +427,7 @@ class IxApiClient: ObservableObject {
     func me() async throws -> User {
         let url = Self.baseUrl.appendingPathComponent("/me")
         
-        let (data, urlRes) = try await URLSession.shared.data(from: url)
+        let (data, urlRes) = try await urlSession.data(from: url)
         
         let res = urlRes as! HTTPURLResponse
         
@@ -444,7 +456,7 @@ class IxApiClient: ObservableObject {
     func getLists() async throws -> [IxList] {
         let url = Self.baseUrl.appendingPathComponent("/lists")
         
-        let (data, urlRes) = try await URLSession.shared.data(from: url)
+        let (data, urlRes) = try await urlSession.data(from: url)
         
         let res = urlRes as! HTTPURLResponse
         
@@ -481,7 +493,7 @@ class IxApiClient: ObservableObject {
         let body = ListCreateOrEditReqBody(name: name, icon: icon, color: color, is_public: is_public)
         request.httpBody = try JSONEncoder().encode(body)
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -512,7 +524,7 @@ class IxApiClient: ObservableObject {
     /// - `IxApiClientError.Unknown`: For unexpected errors.
     func getList(id: String) async throws -> IxList {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(id)")
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await urlSession.data(from: url)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -548,7 +560,7 @@ class IxApiClient: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(requestBody)
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -583,7 +595,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         
-        let (_, response) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -616,7 +628,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -646,7 +658,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let (_, response) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -682,7 +694,7 @@ class IxApiClient: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(requestBody)
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -719,7 +731,7 @@ class IxApiClient: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(requestBody)
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -752,7 +764,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -782,7 +794,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -808,7 +820,7 @@ class IxApiClient: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(requestBody)
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -844,7 +856,7 @@ class IxApiClient: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(requestBody)
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -875,7 +887,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         
-        let (_, response) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -914,7 +926,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -941,7 +953,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -973,7 +985,7 @@ class IxApiClient: ObservableObject {
         let body = ListItemCreateOrEditReqBody(name: name, category_id: categoryId, link: link, note: note)
         request.httpBody = try JSONEncoder().encode(body)
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         
@@ -1006,7 +1018,7 @@ class IxApiClient: ObservableObject {
         let body = ListItemCreateOrEditReqBody(name: name, category_id: categoryId, link: link, note: note)
         request.httpBody = try JSONEncoder().encode(body)
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -1037,7 +1049,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -1062,7 +1074,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         
-        let (_, response) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -1094,7 +1106,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: urlComponents.url!)
         request.httpMethod = "GET"
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -1116,7 +1128,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -1155,7 +1167,7 @@ class IxApiClient: ObservableObject {
         
         request.httpBody = try Self.encoder().encode(body)
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -1196,7 +1208,7 @@ class IxApiClient: ObservableObject {
         )
         request.httpBody = try Self.encoder().encode(body)
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -1224,7 +1236,7 @@ class IxApiClient: ObservableObject {
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -1254,7 +1266,7 @@ class IxApiClient: ObservableObject {
         var request = URLRequest(url: urlComponents.url!)
         request.httpMethod = "DELETE"
         
-        let (_, response) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -1277,7 +1289,7 @@ class IxApiClient: ObservableObject {
     func getColorsSuggestion() async throws -> [String] {
         let url = Self.baseUrl.appendingPathComponent("/suggestions/colors")
         
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await urlSession.data(from: url)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -1300,7 +1312,7 @@ class IxApiClient: ObservableObject {
     func getListTemplateSuggestion() async throws -> NetworkListTemplateSuggestion {
         let url = Self.baseUrl.appendingPathComponent("/suggestions/templates/list")
         
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await urlSession.data(from: url)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -1322,7 +1334,7 @@ class IxApiClient: ObservableObject {
     func getCategoryTemplateSuggestion() async throws -> NetworkCategoryTemplateSuggestion {
         let url = Self.baseUrl.appendingPathComponent("/suggestions/templates/category")
         
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await urlSession.data(from: url)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -1344,7 +1356,7 @@ class IxApiClient: ObservableObject {
     func getItemTemplateSuggestion() async throws -> NetworkItemTemplateSuggestion {
         let url = Self.baseUrl.appendingPathComponent("/suggestions/templates/item")
         
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await urlSession.data(from: url)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {
@@ -1366,7 +1378,7 @@ class IxApiClient: ObservableObject {
     func getTaskTemplateSuggestion() async throws -> NetworkTaskTemplateSuggestion {
         let url = Self.baseUrl.appendingPathComponent("/suggestions/templates/task")
         
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await urlSession.data(from: url)
         let httpResponse = response as! HTTPURLResponse
         
         switch httpResponse.statusCode {

@@ -14,14 +14,40 @@ import GoogleSignIn
 struct indexApp: App {
     private static let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "index-app-entrypoint")
     
+    // managers
     @StateObject private var navigationManager = NavigationManager()
     @StateObject private var authNavigationManager = AuthNavigationManager()
-    @StateObject private var ixApiClient = IxApiClient()
     @StateObject private var errorService = ErrorStateService()
+    // clients
+    private var modelContainer: ModelContainer
+    @StateObject private var ixApiClient: IxApiClient
+    @StateObject private var ixWebsocketClient: IxWebsocketClient
     
-    @AppStorage("user") var user: User?
-    
+    // auth & user
+    @AppStorage(AppStorageKeys.logged_in_user) var user: User?
     @State private var authStatus: AuthStatus = .Loading
+    
+    // webview
+    @State private var presentingSafariView = false
+    @State private var urlToOpen: URL?
+    
+    init() {
+        let apiClient = IxApiClient()
+        self._ixApiClient = StateObject(wrappedValue: apiClient)
+        
+        do {
+            let schema = Schema([IxList.self, IxListCategory.self, IxListItem.self, IxTask.self])
+            let modelContainer = try ModelContainer(for: schema, configurations: [ModelConfiguration(isStoredInMemoryOnly: false)])
+            modelContainer.mainContext.autosaveEnabled = false
+            self.modelContainer = modelContainer
+            
+            let websocketEventHandler = IxWebsocketEventHandler(ixApiClient: apiClient, modelContext: modelContainer.mainContext)
+            let websocketClient = IxWebsocketClient(ixWebsocketEventHandler: websocketEventHandler)
+            self._ixWebsocketClient = StateObject(wrappedValue: websocketClient)
+        } catch {
+            fatalError("Couldn't setup model container")
+        }
+    }
     
     func handleNewNetworkAuthStatus(networkAuthStatus: AuthStatus) {
         switch networkAuthStatus {
@@ -29,13 +55,17 @@ struct indexApp: App {
             Self.log.debug("network client authentication loading")
         case .Unauthenticated:
             Self.log.debug("network client unauthenticated")
+            
             self.user = nil
+            
+            ixWebsocketClient.disconnectFromWebsocket()
         case let .Authenticated(user: networkUser):
             Self.log.debug("network client authenticated - id: \(networkUser.id) - email: \(networkUser.email)")
             self.user = networkUser
+            
+            ixWebsocketClient.connectAndListenToWebsocket()
             /*
              TODO:
-             - connect to websockets
              - send notification token to backend
              - login revenue cat
              */
@@ -68,7 +98,7 @@ struct indexApp: App {
                 .environmentObject(authNavigationManager)
                 .environmentObject(ixApiClient)
                 .environmentObject(errorService)
-                .modelContainer(for: [IxList.self, IxListCategory.self, IxListItem.self, IxTask.self], isAutosaveEnabled: false)
+                .modelContainer(modelContainer)
                 .onReceive(ixApiClient.$authenticationStatus) { newValue in
                     handleNewNetworkAuthStatus(networkAuthStatus: newValue)
                 }
@@ -77,10 +107,19 @@ struct indexApp: App {
                 }.onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
                 }
-                .environment(\.openURL, OpenURLAction { url in
-                  return .handled
-                })
                 .alertPresentationWindow(service: errorService)
+                .environment(\.openURL, OpenURLAction { url in
+                    self.urlToOpen = url
+                    self.presentingSafariView = true
+                    return .handled
+                })
+                .sheet(isPresented: $presentingSafariView, onDismiss: {
+                    self.urlToOpen = nil
+                }) {
+                    if let url = urlToOpen {
+                        SafariView(url: url)
+                    }
+                }
         }
     }
 }

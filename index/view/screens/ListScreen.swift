@@ -56,6 +56,9 @@ struct ListScreen: View {
     @State private var newItemNote = ""
     @State private var newItemCategory: String? = nil
     
+    // MARK: Tas
+    @State private var showTaskCreationSheet = false
+    
     // MARK: Item filters and sorting
     @AppStorage(AppStorageKeys.item_filter) private var itemFilter = AppStorageKeys.Defaults.item_filter
     @AppStorage(AppStorageKeys.item_sorting) private var itemSorting = AppStorageKeys.Defaults.item_sorting
@@ -91,25 +94,19 @@ struct ListScreen: View {
     // MARK: - Local storage savers
     func saveList(_ list: IxList) async throws {
         try context.transaction {
-            context.delete(list)
             context.insert(list)
-            try context.save()
         }
     }
     
     func saveItem(_ item: IxListItem) async throws {
         try context.transaction {
-            context.delete(item)
             context.insert(item)
-            try context.save()
         }
     }
     
     func saveCategory(_ category: IxListCategory) async throws {
         try context.transaction {
-            context.delete(category)
             context.insert(category)
-            try context.save()
         }
     }
     
@@ -138,11 +135,8 @@ struct ListScreen: View {
                 categories.forEach { category in
                     context.insert(category)
                 }
-                
-                try context.save()
             }
         } catch {
-            
             errorService.insert(.localizedError(title: "Error loading categories", error: error))
         }
     }
@@ -162,8 +156,6 @@ struct ListScreen: View {
                 items.forEach { item in
                     context.insert(item)
                 }
-                
-                try context.save()
             }
         } catch {
             errorService.insert(.localizedError(title: "Error loading list items", error: error))
@@ -233,9 +225,15 @@ struct ListScreen: View {
         do {
             try await ixApiClient.deleteListItem(listId: listId, itemId: itemId)
             
-            try context.delete(model: IxListItem.self, where: #Predicate { item in item.id == itemId })
+            try context.transaction {
+                try context.delete(model: IxListItem.self, where: #Predicate { item in item.id == itemId })
+            }
         } catch IxApiClientError.NotFound {
-            do { try context.delete(model: IxListItem.self, where: #Predicate { item in item.id == itemId }) } catch {}
+            do {
+                try context.transaction {
+                    try context.delete(model: IxListItem.self, where: #Predicate { item in item.id == itemId })
+                }
+            } catch {}
         } catch {
             errorService.insert(.localizedError(title: "Error deleting item", error: error))
         }
@@ -270,11 +268,45 @@ struct ListScreen: View {
         do {
             try await ixApiClient.deleteListCategory(listId: listId, categoryId: categoryId)
             
-            try context.delete(model: IxListCategory.self, where: #Predicate { category in category.id == categoryId })
+            try context.transaction {
+                try context.delete(model: IxListCategory.self, where: #Predicate { category in category.id == categoryId })
+            }
         } catch IxApiClientError.NotFound {
-            do { try context.delete(model: IxListCategory.self, where: #Predicate { category in category.id == categoryId }) } catch {}
+            do {
+                try context.transaction {
+                    try context.delete(model: IxListCategory.self, where: #Predicate { category in category.id == categoryId })
+                }
+            } catch {}
         } catch {
             errorService.insert(.localizedError(title: "Error deleting category", error: error))
+        }
+        
+        if selectedCategory?.id == categoryId {
+            selectedCategory = categories.first
+        }
+    }
+    
+    // MARK: Task
+    func createTask(
+        name: String,
+        description: String?,
+        dueDate: Date?,
+        rrule: String?,
+        reminders: [IxTaskReminder],
+        subtasks: [IxSubTask],
+        priority: Int?,
+        itemId: String?
+    ) async {
+        do {
+            let task = try await ixApiClient.createTask(name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
+            
+            try context.transaction {
+                context.insert(task)
+            }
+        } catch IxApiClientError.ProRequired(let proFeature) {
+            // TODO: Show pro sheet with a global toggle
+        } catch {
+            errorService.insert(.localizedError(title: "Error creating task", error: error))
         }
     }
     
@@ -365,6 +397,27 @@ struct ListScreen: View {
                 }.presentationDetents([.medium, .large])
                     .presentationDragIndicator(.hidden)
             }
+            .sheet(
+                isPresented: $showTaskCreationSheet,
+                content: {
+                    TaskFormSheet(
+                        showSheet: $showTaskCreationSheet,
+                        name: selectedItem?.name ?? "",
+                        description: selectedItem?.note,
+                        priority: nil,
+                        dueDate: nil,
+                        rrule: nil,
+                        reminders: [],
+                        itemId: nil,
+                        subtasks: [],
+                        namePlaceholder: "Task name"
+                    ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
+                        Task {
+                            await createTask(name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
+                        }
+                    }
+                }
+            )
             .navigationTitle(list.name)
             .toolbar {
                 // MARK: - Toolbar
@@ -517,7 +570,11 @@ struct ListScreen: View {
                 selectedItem = item
                 showItemNotePopover = true
             } onOpenLink: { _, link in
-                if let url = URL(string: link) {
+                var urlString = link
+                if !urlString.starts(with: "http") {
+                    urlString = "https://\(urlString)"
+                }
+                if let url = URL(string: urlString) {
                     openURL(url)
                 }
             } onCompletionChange: { item, completion in

@@ -13,7 +13,7 @@ struct MainView: View {
     @EnvironmentObject var ixApiClient: IxApiClient
     
     @Binding var authStatus: AuthStatus
-    
+
     var body: some View {
         NavigationStack(path: $navigationManager.path) {
             Group {
@@ -34,6 +34,7 @@ struct MainView: View {
                 }
             }
         }
+
     }
 }
 

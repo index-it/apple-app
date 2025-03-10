@@ -36,9 +36,7 @@ struct TasksTabView: View {
 
     private func saveTask(_ task: IxTask) async throws {
         try context.transaction {
-            context.delete(task)
             context.insert(task)
-            try context.save()
         }
     }
     
@@ -67,8 +65,6 @@ struct TasksTabView: View {
                 tasks.forEach { ixTask in
                     context.insert(ixTask)
                 }
-                
-                try context.save()
             }
         } catch {
             errorService.insert(.localizedError(title: "Error loading tasks", error: error))
@@ -88,7 +84,7 @@ struct TasksTabView: View {
         do {
             let task = try await ixApiClient.createTask(name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
             
-            context.insert(task)
+            try await saveTask(task)
         } catch IxApiClientError.ProRequired(let proFeature) {
             // TODO: Show pro sheet with a global toggle
         } catch {
@@ -133,9 +129,15 @@ struct TasksTabView: View {
     func deleteTask(id: String, all: Bool? = nil) async {
         do {
             try await ixApiClient.deleteTask(taskId: id, all: all)
-            try context.delete(model: IxTask.self, where: #Predicate { $0.id == id })
+            try context.transaction {
+                try context.delete(model: IxTask.self, where: #Predicate { $0.id == id })
+            }
         } catch IxApiClientError.NotFound {
-            do { try context.delete(model: IxTask.self, where: #Predicate { $0.id == id }) } catch {}
+            do {
+                try context.transaction {
+                    try context.delete(model: IxTask.self, where: #Predicate { $0.id == id })
+                }
+            } catch {}
         } catch {
             errorService.insert(.localizedError(title: "Error deleting task", error: error))
         }

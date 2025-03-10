@@ -27,8 +27,6 @@ struct CompletedTasksScreen: View {
                 tasks.forEach { ixTask in
                     context.insert(ixTask)
                 }
-                
-                try context.save()
             }
         } catch {
             errorService.insert(.localizedError(title: "Error loading tasks", error: error))

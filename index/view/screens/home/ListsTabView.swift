@@ -48,9 +48,7 @@ struct ListsTabView: View {
     
     private func saveList(_ list: IxList) async throws {
         try context.transaction {
-            context.delete(list)
             context.insert(list)
-            try context.save()
         }
     }
     
@@ -85,8 +83,6 @@ struct ListsTabView: View {
                 lists.forEach { ixList in
                     context.insert(ixList)
                 }
-                
-                try context.save()
             }
         } catch {
             errorService.insert(.localizedError(title: "Error loading lists", error: error))
@@ -97,7 +93,7 @@ struct ListsTabView: View {
         do {
             let list = try await ixApiClient.createList(name: name, icon: emoji, color: color.hexString(), is_public: isPublic)
             
-            context.insert(list)
+            try await saveList(list)
         } catch IxApiClientError.ProRequired(let proFeature) {
             // TODO: Show pro sheet with a global toggle
         } catch {
@@ -118,9 +114,15 @@ struct ListsTabView: View {
     func deleteList(id: String) async {
         do {
             try await ixApiClient.deleteList(id: id)
-            try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
+            try context.transaction {
+                try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
+            }
         } catch IxApiClientError.NotFound {
-            do { try context.delete(model: IxList.self, where: #Predicate { $0.id == id }) } catch {}
+            do {
+                try context.transaction {
+                    try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
+                }
+            } catch {}
         } catch {
             errorService.insert(.localizedError(title: "Error deleting list", error: error))
         }
@@ -131,9 +133,15 @@ struct ListsTabView: View {
     func leaveList(id: String) async {
         do {
             try await ixApiClient.leaveList(id: id)
-            try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
+            try context.transaction {
+                try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
+            }
         } catch IxApiClientError.NotFound {
-            do { try context.delete(model: IxList.self, where: #Predicate { $0.id == id }) } catch {}
+            do {
+                try context.transaction {
+                    try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
+                }
+            } catch {}
         } catch {
             errorService.insert(.localizedError(title: "Error leaving list", error: error))
         }
