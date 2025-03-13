@@ -7,7 +7,6 @@
 
 import SwiftUI
 import SwiftData
-import AlertToast
 
 struct ListScreen: View {
     @EnvironmentObject private var ixApiClient: IxApiClient
@@ -331,7 +330,7 @@ struct ListScreen: View {
             })
             .sheet(
                 isPresented: $showItemEditSheet,
-                content: {
+                content: { [selectedItem] in
                     ItemFormSheet(
                         showSheet: $showItemEditSheet,
                         name: selectedItem?.name ?? "",
@@ -365,7 +364,7 @@ struct ListScreen: View {
             })
             .sheet(
                 isPresented: $showCategoryEditSheet,
-                content: {
+                content: { [selectedCategory] in
                     CategoryFormSheet(
                         showSheet: $showCategoryEditSheet,
                         name: selectedCategory?.name ?? "",
@@ -380,7 +379,7 @@ struct ListScreen: View {
                         }
                     }
             })
-            .sheet(isPresented: $showItemNotePopover) {
+            .sheet(isPresented: $showItemNotePopover) { [selectedItem] in
                 NavigationView {
                     ScrollView(showsIndicators: false) {
                         Text(selectedItem?.note ?? "This item has no notes in it")
@@ -399,7 +398,7 @@ struct ListScreen: View {
             }
             .sheet(
                 isPresented: $showTaskCreationSheet,
-                content: {
+                content: { [selectedItem] in
                     TaskFormSheet(
                         showSheet: $showTaskCreationSheet,
                         name: selectedItem?.name ?? "",
@@ -497,13 +496,6 @@ struct ListScreen: View {
                     }.padding(.top)
                 }
             }
-            .toast(isPresenting: $showItemMovedToNextCategoryToast) {
-                // TODO: [UI] background color and toast style
-                AlertToast(displayMode: .hud, type: .regular, title: nil, subTitle: "Item moved to next category!")
-            }
-            .toast(isPresenting: $showItemMovedToPreviousCategoryToast) {
-                AlertToast(displayMode: .hud, type: .regular, title: nil, subTitle: "Item moved to previous category!")
-            }
             .onAppear {
                 if SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.list(listId)) {
                     Task {
@@ -582,6 +574,8 @@ struct ListScreen: View {
                     await setItemCompletion(listId: item.list_id, itemId: item.id, completed: completion)
                 }
             } onCreateTask: { item in
+                selectedItem = item
+                showTaskCreationSheet = true
             } onEdit: { item in
                 selectedItem = item
                 showItemEditSheet = true

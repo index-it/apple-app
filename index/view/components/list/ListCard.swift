@@ -19,7 +19,8 @@ struct ListCard: View {
     var withInteractions: Bool = true
     
     var body: some View {
-        Button { onTap()
+        Button {
+            onTap()
         } label: {
             VStack {
                 HStack {

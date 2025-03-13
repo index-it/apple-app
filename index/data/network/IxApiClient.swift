@@ -36,7 +36,7 @@ class IxApiClient: ObservableObject {
         }
     }
     
-    private static func decoder() -> JSONDecoder {
+    static func decoder() -> JSONDecoder {
         let decoder = JSONDecoder()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -45,7 +45,7 @@ class IxApiClient: ObservableObject {
         return decoder
     }
     
-    private static func encoder() -> JSONEncoder {
+    static func encoder() -> JSONEncoder {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         

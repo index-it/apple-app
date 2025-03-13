@@ -1,15 +1,6 @@
 {
-  "originHash" : "bc6621976bb1f85803fa0cef8a361abd0dc1bbaac689186e133b9a7cded649c4",
+  "originHash" : "8b516546c9ab1327b496b41b486910b5395e1e64e048cf50f262ace7806fb76c",
   "pins" : [
-    {
-      "identity" : "alerttoast",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/elai950/AlertToast.git",
-      "state" : {
-        "revision" : "b39252eacd159904afd7d718bba0afabb87f2f2f",
-        "version" : "1.3.9"
-      }
-    },
     {
       "identity" : "app-check",
       "kind" : "remoteSourceControl",
@@ -26,15 +17,6 @@
       "state" : {
         "revision" : "c89ed571ae140f8eb1142735e6e23d7bb8c34cb2",
         "version" : "1.7.5"
-      }
-    },
-    {
-      "identity" : "down",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/johnxnguyen/Down.git",
-      "state" : {
-        "revision" : "f34b166be1f1db4aa8f573067e901d72f2a6be57",
-        "version" : "0.11.0"
       }
     },
     {
@@ -110,12 +92,12 @@
       }
     },
     {
-      "identity" : "swiftdown",
+      "identity" : "starscream",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/qeude/SwiftDown.git",
+      "location" : "https://github.com/daltoniam/Starscream",
       "state" : {
-        "revision" : "3a988bfa50ffbc55ee312749c326f8791d7f87ad",
-        "version" : "0.4.1"
+        "revision" : "c6bfd1af48efcc9a9ad203665db12375ba6b145a",
+        "version" : "4.0.8"
       }
     }
   ],

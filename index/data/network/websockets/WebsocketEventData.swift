@@ -6,7 +6,7 @@
 //
 
 /// Represents a websocket event that should be sent to a user
-struct WebsocketEventData: Codable {
+struct WebsocketEventData: Decodable {
     let fromSessionId: String?
     let fromUserId: String?
     let type: WebsocketEventType

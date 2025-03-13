@@ -35,18 +35,11 @@ struct indexApp: App {
         let apiClient = IxApiClient()
         self._ixApiClient = StateObject(wrappedValue: apiClient)
         
-        do {
-            let schema = Schema([IxList.self, IxListCategory.self, IxListItem.self, IxTask.self])
-            let modelContainer = try ModelContainer(for: schema, configurations: [ModelConfiguration(isStoredInMemoryOnly: false)])
-            modelContainer.mainContext.autosaveEnabled = false
-            self.modelContainer = modelContainer
-            
-            let websocketEventHandler = IxWebsocketEventHandler(ixApiClient: apiClient, modelContext: modelContainer.mainContext)
-            let websocketClient = IxWebsocketClient(ixWebsocketEventHandler: websocketEventHandler)
-            self.ixWebsocketClient = websocketClient
-        } catch {
-            fatalError("Couldn't setup model container")
-        }
+        self.modelContainer = ModelContainerProvider.get()
+        
+        let websocketEventHandler = IxWebsocketEventHandler(ixApiClient: apiClient, modelContext: modelContainer.mainContext)
+        let websocketClient = IxWebsocketClient(ixWebsocketEventHandler: websocketEventHandler)
+        self.ixWebsocketClient = websocketClient
     }
     
     func handleNewNetworkAuthStatus(networkAuthStatus: AuthStatus) {
@@ -58,15 +51,16 @@ struct indexApp: App {
             
             self.user = nil
             
-            do {
-                try modelContainer.mainContext.transaction {
-                    try modelContainer.mainContext.delete(model: IxList.self)
-                    try modelContainer.mainContext.delete(model: IxListCategory.self)
-                    try modelContainer.mainContext.delete(model: IxListItem.self)
-                    try modelContainer.mainContext.delete(model: IxTask.self)
-                }
-            } catch {}
-                
+            DispatchQueue.main.async {
+                do {
+                    try modelContainer.mainContext.transaction {
+                        try modelContainer.mainContext.delete(model: IxList.self)
+                        try modelContainer.mainContext.delete(model: IxListCategory.self)
+                        try modelContainer.mainContext.delete(model: IxListItem.self)
+                        try modelContainer.mainContext.delete(model: IxTask.self)
+                    }
+                } catch {}
+            }
             
             SyncRegister.shared.resetState()
             

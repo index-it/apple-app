@@ -8,6 +8,7 @@
 import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
+import SwiftData
 
 @objc(ShareViewController)
 class ShareViewController: UIViewController {
@@ -49,8 +50,9 @@ class ShareViewController: UIViewController {
     
     func showView(name: String?, url: String?) {
         DispatchQueue.main.async {
-            let contentView = UIHostingController(rootView: ShareExtensionView(name: name, link: url))
-            //            let contentView = UIHostingController(rootView: ShareExtensionView(data: "", url: ""))
+            let contentView = UIHostingController(
+                rootView: ShareExtensionView(name: name, link: url).modelContainer(ModelContainerProvider.get())
+            )
             self.addChild(contentView)
             self.view.addSubview(contentView.view)
             

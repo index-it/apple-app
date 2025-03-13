@@ -5,7 +5,7 @@
 //  Created by Giulio Pimenoff Verdolin on 10/03/25.
 //
 
-enum WebsocketEventContent: Codable {
+enum WebsocketEventContent: Decodable {
     case empty
     case userUpdate(UserUpdateEventContent)
     case categoryCreateOrUpdate(CategoryCreateOrUpdateEventContent)
@@ -19,85 +19,49 @@ enum WebsocketEventContent: Codable {
     
     private enum CodingKeys: String, CodingKey {
         case type
-        case payload
     }
     
     init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(String.self, forKey: .type)
+        let container = try decoder.singleValueContainer()
+        let contentContainer = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try contentContainer.decode(String.self, forKey: .type)
         
         switch type {
         case "EMPTY":
             self = .empty
         case "USER_UPDATE":
-            let payload = try container.decode(UserUpdateEventContent.self, forKey: .payload)
+            let payload = try container.decode(UserUpdateEventContent.self)
             self = .userUpdate(payload)
         case "CATEGORY_CREATE_OR_UPDATE":
-            let payload = try container.decode(CategoryCreateOrUpdateEventContent.self, forKey: .payload)
+            let payload = try container.decode(CategoryCreateOrUpdateEventContent.self)
             self = .categoryCreateOrUpdate(payload)
         case "CATEGORY_DELETE":
-            let payload = try container.decode(CategoryDeleteEventContent.self, forKey: .payload)
+            let payload = try container.decode(CategoryDeleteEventContent.self)
             self = .categoryDelete(payload)
         case "ITEM_CREATE_OR_UPDATE":
-            let payload = try container.decode(ItemCreateOrUpdateEventContent.self, forKey: .payload)
+            let payload = try container.decode(ItemCreateOrUpdateEventContent.self)
             self = .itemCreateOrUpdate(payload)
         case "ITEM_DELETE":
-            let payload = try container.decode(ItemDeleteEventContent.self, forKey: .payload)
+            let payload = try container.decode(ItemDeleteEventContent.self)
             self = .itemDelete(payload)
         case "LIST_CREATE_OR_UPDATE":
-            let payload = try container.decode(ListCreateOrUpdateEventContent.self, forKey: .payload)
+            let payload = try container.decode(ListCreateOrUpdateEventContent.self)
             self = .listCreateOrUpdate(payload)
         case "LIST_DELETE":
-            let payload = try container.decode(ListDeleteEventContent.self, forKey: .payload)
+            let payload = try container.decode(ListDeleteEventContent.self)
             self = .listDelete(payload)
         case "TASK_CREATE_OR_UPDATE":
-            let payload = try container.decode(TaskCreateOrUpdateEventContent.self, forKey: .payload)
+            let payload = try container.decode(TaskCreateOrUpdateEventContent.self)
             self = .taskCreateOrUpdate(payload)
         case "TASK_DELETE":
-            let payload = try container.decode(TaskDeleteEventContent.self, forKey: .payload)
+            let payload = try container.decode(TaskDeleteEventContent.self)
             self = .taskDelete(payload)
         default:
             throw DecodingError.dataCorruptedError(
                 forKey: .type,
-                in: container,
+                in: contentContainer,
                 debugDescription: "Unknown event content type: \(type)"
             )
-        }
-    }
-    
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        
-        switch self {
-        case .empty:
-            try container.encode("EMPTY", forKey: .type)
-        case .userUpdate(let content):
-            try container.encode("USER_UPDATE", forKey: .type)
-            try container.encode(content, forKey: .payload)
-        case .categoryCreateOrUpdate(let content):
-            try container.encode("CATEGORY_CREATE_OR_UPDATE", forKey: .type)
-            try container.encode(content, forKey: .payload)
-        case .categoryDelete(let content):
-            try container.encode("CATEGORY_DELETE", forKey: .type)
-            try container.encode(content, forKey: .payload)
-        case .itemCreateOrUpdate(let content):
-            try container.encode("ITEM_CREATE_OR_UPDATE", forKey: .type)
-            try container.encode(content, forKey: .payload)
-        case .itemDelete(let content):
-            try container.encode("ITEM_DELETE", forKey: .type)
-            try container.encode(content, forKey: .payload)
-        case .listCreateOrUpdate(let content):
-            try container.encode("LIST_CREATE_OR_UPDATE", forKey: .type)
-            try container.encode(content, forKey: .payload)
-        case .listDelete(let content):
-            try container.encode("LIST_DELETE", forKey: .type)
-            try container.encode(content, forKey: .payload)
-        case .taskCreateOrUpdate(let content):
-            try container.encode("TASK_CREATE_OR_UPDATE", forKey: .type)
-            try container.encode(content, forKey: .payload)
-        case .taskDelete(let content):
-            try container.encode("TASK_DELETE", forKey: .type)
-            try container.encode(content, forKey: .payload)
         }
     }
     
