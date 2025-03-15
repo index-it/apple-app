@@ -80,6 +80,7 @@
 			membershipExceptions = (
 				core/date/IxDateUtils.swift,
 				core/extensions/DateExtentions.swift,
+				core/IxError.swift,
 				data/ModelContainerProvider.swift,
 				data/models/AuthStatus.swift,
 				data/models/EntityType.swift,
@@ -104,11 +105,19 @@
 			);
 			target = 092FE7C12D7F3C8200F38388 /* indexWidgetExtension */;
 		};
+		093CEDBE2D860DF800F7D463 /* Exceptions for "indexWidget" folder in "index" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				indexTasksWidget.swift,
+			);
+			target = 093287D82C9C811200A0717E /* index */;
+		};
 		09EA31C12D7E69F3003FD174 /* Exceptions for "index" folder in "indexShareExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				core/date/IxDateUtils.swift,
 				core/extensions/DateExtentions.swift,
+				core/IxError.swift,
 				data/ModelContainerProvider.swift,
 				data/models/AuthStatus.swift,
 				data/models/EntityType.swift,
@@ -159,6 +168,7 @@
 		092FE7C72D7F3C8200F38388 /* indexWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				093CEDBE2D860DF800F7D463 /* Exceptions for "indexWidget" folder in "index" target */,
 				092FE7DB2D7F3C8300F38388 /* Exceptions for "indexWidget" folder in "indexWidgetExtension" target */,
 			);
 			path = indexWidget;

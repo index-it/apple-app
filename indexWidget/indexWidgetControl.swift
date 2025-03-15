@@ -9,69 +9,84 @@ import AppIntents
 import SwiftUI
 import WidgetKit
 
-struct indexWidgetControl: ControlWidget {
-    static let kind: String = "app.index-it.index.indexWidget"
+struct CreateTaskWidgetControl: ControlWidget {
+    static let kind: String = "app.index-it.index.createTaskWidget"
 
     var body: some ControlWidgetConfiguration {
-        AppIntentControlConfiguration(
-            kind: Self.kind,
-            provider: Provider()
-        ) { value in
-            ControlWidgetToggle(
-                "Start Timer",
-                isOn: value.isRunning,
-                action: StartTimerIntent(value.name)
-            ) { isRunning in
-                Label(isRunning ? "On" : "Off", systemImage: "timer")
-            }
+        StaticControlConfiguration(
+            kind: Self.kind
+        ) {
+            ControlWidgetButton(
+                action: CreateTaskIntent(),
+                label: {
+                    VStack {
+                        Image(systemName: "calendar.badge.plus")
+                        Text("Create Task")
+                    }
+                }
+            )
         }
-        .displayName("Timer")
-        .description("A an example control that runs a timer.")
+        .displayName("Create Task")
+        .description("Quickly create a new task.")
     }
 }
 
-extension indexWidgetControl {
-    struct Value {
-        var isRunning: Bool
-        var name: String
-    }
+struct CreateListItemWidgetControl: ControlWidget {
+    static let kind: String = "app.index-it.index.createListItemWidget"
 
-    struct Provider: AppIntentControlValueProvider {
-        func previewValue(configuration: TimerConfiguration) -> Value {
-            indexWidgetControl.Value(isRunning: false, name: configuration.timerName)
+    var body: some ControlWidgetConfiguration {
+        StaticControlConfiguration(
+            kind: Self.kind
+        ) {
+            ControlWidgetButton(
+                action: CreateListItemIntent(),
+                label: {
+                    VStack {
+                        Image(systemName: "note.text.badge.plus")
+                        Text("Index It")
+                    }
+                }
+            )
         }
-
-        func currentValue(configuration: TimerConfiguration) async throws -> Value {
-            let isRunning = true // Check if the timer is running
-            return indexWidgetControl.Value(isRunning: isRunning, name: configuration.timerName)
-        }
+        .displayName("Index It")
+        .description("Quickly add a new item to a list.")
     }
 }
 
-struct TimerConfiguration: ControlConfigurationIntent {
-    static let title: LocalizedStringResource = "Timer Name Configuration"
-
-    @Parameter(title: "Timer Name", default: "Timer")
-    var timerName: String
-}
-
-struct StartTimerIntent: SetValueIntent {
-    static let title: LocalizedStringResource = "Start a timer"
-
-    @Parameter(title: "Timer Name")
-    var name: String
-
-    @Parameter(title: "Timer is running")
-    var value: Bool
-
-    init() {}
-
-    init(_ name: String) {
-        self.name = name
-    }
-
+struct CreateTaskIntent: AppIntent {
+    static var title: LocalizedStringResource = "Create Task"
+    static var description: IntentDescription = "Create a new task"
+    
     func perform() async throws -> some IntentResult {
-        // Start the timer…
+        // Construct the URL to open the app on the create task page
+        guard let url = URL(string: "https://web.index-it.app/create-task") else {
+            throw IxError.runtimeError("Couldn't create app intent url")
+        }
+        
+        await OpenURLAction(handler: { url in
+            return .systemAction
+        }).callAsFunction(url)
         return .result()
     }
+    
+    static var openAppWhenRun: Bool = true
+}
+
+struct CreateListItemIntent: AppIntent {
+    static var title: LocalizedStringResource = "Create List Item"
+    static var description: IntentDescription = "Create a new list item"
+    
+    func perform() async throws -> some IntentResult {
+        guard let url = URL(string: "https://web.index-it.app/create-item") else {
+            throw IxError.runtimeError("Couldn't create app intent url")
+        }
+        
+        await OpenURLAction(handler: { url in
+            return .systemAction
+        }).callAsFunction(url)
+        
+        return .result()
+    }
+    
+    static var openAppWhenRun: Bool = true
 }

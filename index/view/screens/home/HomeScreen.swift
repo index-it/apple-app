@@ -8,26 +8,22 @@
 import SwiftUI
 
 struct HomeScreen: View {
-    @EnvironmentObject var ixApiClient: IxApiClient
-    
-    @State private var selectedTab = 1
-    @State private var search: String = ""
+    @EnvironmentObject var navigationManager: NavigationManager
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            Tab("Your tasks", systemImage: "rectangle.grid.1x2.fill", value: 0) {
+        TabView(selection: $navigationManager.selectedHomeTab) {
+            Tab("Your tasks", systemImage: "rectangle.grid.1x2.fill", value: HomeTab.tasks) {
                 TasksTabView()
             }
             
-            Tab("Your lists", systemImage: "square.grid.2x2.fill", value: 1) {
+            Tab("Your lists", systemImage: "square.grid.2x2.fill", value: HomeTab.lists) {
                 ListsTabView()
             }
             
-            Tab("Settings", systemImage: "gearshape.fill", value: 2) {
+            Tab("Settings", systemImage: "gearshape.fill", value: HomeTab.settings) {
                 SettingsTabView()
             }
         }
-            
     }
 }
 

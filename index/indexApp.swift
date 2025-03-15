@@ -99,6 +99,48 @@ struct indexApp: App {
         }
     }
     
+    
+    func handleIncomingURL(_ url: URL) {
+        if GIDSignIn.sharedInstance.handle(url) {
+            return
+        }
+        
+        handleInAppNavigation(url)
+    }
+    
+    func handleInAppNavigation(_ url: URL) {
+        if url.host() != "web.index-it.app" {
+            return
+        }
+        
+        // Extract the path components, ignoring the domain for Universal Links
+        let pathComponents = url.pathComponents.filter { $0 != "/" && !$0.isEmpty }
+        guard pathComponents.count >= 1 else { return }
+        
+        // Rest of your URL parsing logic remains the same
+        let section = pathComponents[0]
+        
+        switch section {
+        case "create-item":
+            navigationManager.navigateToTab(.lists, showCreateSheet: true)
+        case "create-task":
+            navigationManager.navigateToTab(.tasks, showCreateSheet: true)
+        case "lists":
+            if let listId = pathComponents[safe: 1] {
+                print(listId)
+                navigationManager.push(navigationRoute: .listRoute(listId: listId))
+            } else {
+                navigationManager.navigateToTab(.lists)
+            }
+        case "tasks":
+            navigationManager.navigateToTab(.tasks)
+        case "settings":
+            navigationManager.navigateToTab(.settings)
+        default:
+            return
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
             MainView(authStatus: $authStatus)
@@ -112,18 +154,17 @@ struct indexApp: App {
                 }
                 .onChange(of: user, initial: true) { _, newValue in
                     handleNewAppStorageUser(user: newValue)
-                }.onOpenURL { url in
-                    GIDSignIn.sharedInstance.handle(url)
                 }
                 .alertPresentationWindow(service: errorService)
+                .onOpenURL(perform: { url in
+                    handleIncomingURL(url)
+                })
                 .environment(\.openURL, OpenURLAction { url in
                     self.urlToOpen = url
                     self.presentingSafariView = true
                     return .handled
                 })
-                .sheet(isPresented: $presentingSafariView, onDismiss: {
-                    self.urlToOpen = nil
-                }) {
+                .sheet(isPresented: $presentingSafariView, onDismiss: { self.urlToOpen = nil }) {
                     if let url = urlToOpen {
                         SafariView(url: url)
                     }

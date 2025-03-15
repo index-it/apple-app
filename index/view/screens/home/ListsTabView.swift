@@ -315,6 +315,11 @@ struct ListsTabView: View {
                         }
                     }
                 }
+                .sheet(isPresented: $navigationManager.showCreateItemSheet) {
+                    AddListItemFormSheet {
+                        navigationManager.showCreateItemSheet = false
+                    }.presentationDetents([.large])
+                }
                 .sheet(isPresented: $showShareSheet) {
                     ListSharingSheet(
                         showSheet: $showShareSheet,

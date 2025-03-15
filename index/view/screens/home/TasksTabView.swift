@@ -20,7 +20,6 @@ struct TasksTabView: View {
     @State private var todayDate: Date = Date.now.toLocalDate()
     
     // MARK: Task creation
-    @State private var showCreationSheet = false
     @State private var taskCreationDueDate: Date? = nil
     @State private var taskCreationNamePlaceholder = "Task name"
     
@@ -33,7 +32,7 @@ struct TasksTabView: View {
     @AppStorage(AppStorageKeys.task_sorting) private var sorting: TaskSorting = AppStorageKeys.Defaults.task_sorting
     @AppStorage(AppStorageKeys.task_reverse_sorting) private var reverseSorting = AppStorageKeys.Defaults.task_reverse_sorting
     @AppStorage(AppStorageKeys.task_filter) private var filter: TaskFilter = .uncompleted
-
+    
     private func saveTask(_ task: IxTask) async throws {
         try context.transaction {
             context.insert(task)
@@ -148,7 +147,7 @@ struct TasksTabView: View {
             TaskListView
                 .navigationTitle("Your tasks")
                 .floatingActionButton("plus", action: {
-                    showCreationSheet = true
+                    navigationManager.showCreateTaskSheet = true
                 })
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -224,10 +223,10 @@ struct TasksTabView: View {
                     }
                 )
                 .sheet(
-                    isPresented: $showCreationSheet,
-                    content: {
+                    isPresented: $navigationManager.showCreateTaskSheet,
+                    content: { [taskCreationDueDate] in
                         TaskFormSheet(
-                            showSheet: $showCreationSheet,
+                            showSheet: $navigationManager.showCreateTaskSheet,
                             name: "",
                             description: nil,
                             priority: nil,
@@ -280,6 +279,9 @@ struct TasksTabView: View {
                 await fetchTaskTemplateSuggestion()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name.NSCalendarDayChanged).receive(on: DispatchQueue.main)) { _ in
+            todayDate = Date.now.toLocalDate()
+        }
     }
     
     var TaskListView: some View {
@@ -311,7 +313,7 @@ struct TasksTabView: View {
                     .textCase(nil)
                     .onTapGesture {
                         taskCreationDueDate = todayDate
-                        showCreationSheet = true
+                        navigationManager.showCreateTaskSheet = true
                     }
             }
             
@@ -350,7 +352,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    showCreationSheet = true
+                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
@@ -374,7 +376,7 @@ struct TasksTabView: View {
                         showDeleteConfirmationDialog = true
                     }
             } header: {
-                let date = todayDate.addingTimeInterval(IxDateUtils.oneDayMillis)
+                let date = todayDate.addingTimeInterval(IxDateUtils.twoDayMillis)
                 
                 VStack(alignment: .leading) {
                     Text(IxDateUtils.Formatters.shared.taskSectionHeading.string(from: date))
@@ -388,7 +390,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    showCreationSheet = true
+                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
@@ -426,7 +428,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    showCreationSheet = true
+                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
@@ -464,7 +466,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    showCreationSheet = true
+                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
@@ -502,7 +504,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    showCreationSheet = true
+                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
@@ -540,7 +542,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    showCreationSheet = true
+                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
@@ -571,7 +573,7 @@ struct TasksTabView: View {
                     .textCase(nil)
                     .onTapGesture {
                         taskCreationDueDate = todayDate.addingTimeInterval(IxDateUtils.sevenDayMillis)
-                        showCreationSheet = true
+                        navigationManager.showCreateTaskSheet = true
                     }
             }
         }

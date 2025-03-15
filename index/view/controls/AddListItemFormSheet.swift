@@ -25,11 +25,11 @@ struct AddListItemFormSheet: View {
     @Query private var categories: [IxListCategory]
 
     init(
-        name: String?,
-        link: String?,
-        note: String?,
-        selectedListId: String?,
-        selectedCategoryId: String?,
+        name: String? = nil,
+        link: String? = nil,
+        note: String? = nil,
+        selectedListId: String? = nil,
+        selectedCategoryId: String? = nil,
         onCancel: @escaping () -> Void,
         syncThreeshold: Int64 = 3600000
     ) {
