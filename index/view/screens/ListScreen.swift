@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct ListScreen: View {
     @EnvironmentObject private var ixApiClient: IxApiClient
@@ -302,6 +303,8 @@ struct ListScreen: View {
             try context.transaction {
                 context.insert(task)
             }
+            
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch IxApiClientError.ProRequired(let proFeature) {
             // TODO: Show pro sheet with a global toggle
         } catch {

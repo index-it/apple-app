@@ -57,6 +57,7 @@
 		092FE7C32D7F3C8200F38388 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		092FE7C52D7F3C8200F38388 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		093287D92C9C811200A0717E /* index.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = index.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0973F6F72D86E1BF0034BE63 /* indexWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = indexWidgetExtension.entitlements; sourceTree = "<group>"; };
 		09F48F3B2D7E623D00CA50AC /* indexShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = indexShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -80,7 +81,9 @@
 			membershipExceptions = (
 				core/date/IxDateUtils.swift,
 				core/extensions/DateExtentions.swift,
+				core/Intents.swift,
 				core/IxError.swift,
+				core/IxKinds.swift,
 				data/ModelContainerProvider.swift,
 				data/models/AuthStatus.swift,
 				data/models/EntityType.swift,
@@ -93,6 +96,9 @@
 				data/models/User.swift,
 				data/models/UserCreationSource.swift,
 				data/models/WelcomeAction.swift,
+				data/network/IxApiClient.swift,
+				data/network/IxApiClientException.swift,
+				data/network/IxCookieStorageProvider.swift,
 				data/network/models/IxListSingleUserAccessInfo.swift,
 				data/network/models/NetworkList.swift,
 				data/network/models/NetworkListCategory.swift,
@@ -101,6 +107,15 @@
 				data/network/models/NetworkSuggestions.swift,
 				data/network/models/NetworkTask.swift,
 				data/network/models/NetworkUser.swift,
+				data/network/request/EmailAndPasswordReqBody.swift,
+				data/network/request/ListCategoryCreateOrEditReqBody.swift,
+				data/network/request/ListContentUpdateReqBody.swift,
+				data/network/request/ListCreateOrEditReqBody.swift,
+				data/network/request/ListGiveUserAccessReqBody.swift,
+				data/network/request/ListItemCreateOrEditReqBody.swift,
+				data/network/request/ListRemoveUserAccessReqBody.swift,
+				data/network/request/TaskCreateOrEditReqBody.swift,
+				data/network/response/WelcomeActionResponse.swift,
 				data/network/SyncRegister.swift,
 			);
 			target = 092FE7C12D7F3C8200F38388 /* indexWidgetExtension */;
@@ -117,7 +132,9 @@
 			membershipExceptions = (
 				core/date/IxDateUtils.swift,
 				core/extensions/DateExtentions.swift,
+				core/Intents.swift,
 				core/IxError.swift,
+				core/IxKinds.swift,
 				data/ModelContainerProvider.swift,
 				data/models/AuthStatus.swift,
 				data/models/EntityType.swift,
@@ -231,6 +248,7 @@
 		093287D02C9C811200A0717E = {
 			isa = PBXGroup;
 			children = (
+				0973F6F72D86E1BF0034BE63 /* indexWidgetExtension.entitlements */,
 				093287DB2C9C811200A0717E /* index */,
 				09F48F3C2D7E623D00CA50AC /* indexShareExtension */,
 				092FE7C72D7F3C8200F38388 /* indexWidget */,
@@ -453,6 +471,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = indexWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 79VJQ9DB34;
@@ -482,6 +501,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = indexWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 79VJQ9DB34;

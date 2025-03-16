@@ -54,11 +54,7 @@ struct AddListItemFormSheet: View {
                 }
             }
 
-            if selectedListId.isEmpty, let listId = lists.first?.id {
-                Task { @MainActor in
-                    selectedListId = listId
-                }
-            }
+            
         } catch {}
     }
 
@@ -121,15 +117,17 @@ struct AddListItemFormSheet: View {
                 }
 
                 Section {
-                    Picker(selection: $selectedListId) {
-                        ForEach(lists, id: \.id) { list in
-                            Text("\(list.icon)   \(list.name)")
-                                .tag(list.id)
+                    if !lists.isEmpty {
+                        Picker(selection: $selectedListId) {
+                            ForEach(lists, id: \.id) { list in
+                                Text("\(list.icon)  \(list.name)")
+                                    .tag(list.id)
+                            }
+                        } label: {
+                            Text("List")
                         }
-                    } label: {
-                        Text("List")
+                        .pickerStyle(.menu)
                     }
-                    .pickerStyle(.menu)
 
                     Picker(selection: $selectedCategoryId) {
                         Text("No category").tag(nil as String?)
@@ -171,6 +169,11 @@ struct AddListItemFormSheet: View {
                 }
             }
         }
+        .onChange(of: lists, { _, newValue in
+            if selectedListId.isEmpty, let listId = newValue.first?.id {
+                selectedListId = listId
+            }
+        })
         .onChange(of: selectedListId) { _, newValue in
             selectedCategoryId = nil
 

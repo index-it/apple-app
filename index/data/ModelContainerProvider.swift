@@ -8,7 +8,7 @@
 import SwiftData
 
 struct ModelContainerProvider {
-    @MainActor static func get() -> ModelContainer {
+    @MainActor static let shared: ModelContainer = {
         do {
             let schema = Schema([IxList.self, IxListCategory.self, IxListItem.self, IxTask.self])
             
@@ -22,5 +22,5 @@ struct ModelContainerProvider {
         } catch {
             fatalError("Could not create model container")
         }
-    }
+    }()
 }

@@ -35,7 +35,7 @@ struct indexApp: App {
         let apiClient = IxApiClient()
         self._ixApiClient = StateObject(wrappedValue: apiClient)
         
-        self.modelContainer = ModelContainerProvider.get()
+        self.modelContainer = ModelContainerProvider.shared
         
         let websocketEventHandler = IxWebsocketEventHandler(ixApiClient: apiClient, modelContext: modelContainer.mainContext)
         let websocketClient = IxWebsocketClient(ixWebsocketEventHandler: websocketEventHandler)

@@ -10,7 +10,7 @@ import WidgetKit
 import SwiftData
 
 struct TodayTasksWidget: Widget {
-    let kind: String = "app.index-it.index.tasksWidget"
+    let kind: String = IxKinds.tasksWidget
     
     var body: some WidgetConfiguration {
         StaticConfiguration(
@@ -33,6 +33,7 @@ struct TodayTasksEntry: TimelineEntry {
 
 struct TodayTasksWidgetView : View {
     var entry: TodayTasksProvider.Entry
+    
     @Environment(\.widgetFamily) var widgetFamily
     @Environment(\.openURL) var openUrl
     
@@ -50,7 +51,7 @@ struct TodayTasksWidgetView : View {
             systemMediumView
         case .systemLarge:
             systemLargeView
-        @unknown default:
+        default:
             systemSmallView
         }
     }
@@ -66,6 +67,7 @@ struct TodayTasksWidgetView : View {
                 Text("\(entry.tasks.count)")
                     .font(.title2)
                     .fontWeight(.semibold)
+                    .contentTransition(.numericText())
             }
             
             if entry.tasks.isEmpty {
@@ -94,6 +96,7 @@ struct TodayTasksWidgetView : View {
                     Text("\(entry.tasks.count)")
                         .font(.title)
                         .fontWeight(.semibold)
+                        .contentTransition(.numericText())
                     Text("Today")
                         .fontWeight(.semibold)
                         .foregroundStyle(Color.accentColor)
@@ -128,6 +131,7 @@ struct TodayTasksWidgetView : View {
                     Text("\(entry.tasks.count)")
                         .font(.title)
                         .fontWeight(.semibold)
+                        .contentTransition(.numericText())
                     Text("Today")
                         .fontWeight(.semibold)
                         .foregroundStyle(Color.accentColor)
@@ -164,11 +168,7 @@ struct TodayTasksWidgetView : View {
     
     @ViewBuilder
     var createTaskButtonView: some View {
-        Button {
-            if let url = URL(string: "https://web.index-it.app/create-task") {
-                openUrl(url)
-            }
-        } label: {
+        Button(intent: CreateTaskIntent()) {
             Label("Create", systemImage: "plus")
                 .labelStyle(.iconOnly)
         }
@@ -178,14 +178,20 @@ struct TodayTasksWidgetView : View {
     func tasksListView(_ tasks: ArraySlice<IxTask>) -> some View {
         ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
             HStack {
-                Label("Complete", systemImage: "circle")
-                    .labelStyle(.iconOnly)
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
+                Button(intent: CompleteTaskIntent(taskId: task.id)) {
+                    Label("Complete", systemImage: task.completed ? "inset.filled.circle" : "circle")
+                        .labelStyle(.iconOnly)
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                }.buttonStyle(.plain)
+                    
                 
                 Text(task.name)
                     .lineLimit(1)
                     .font(.footnote)
+                
+                Spacer()
+                    
             }
             
             
@@ -215,22 +221,20 @@ struct TodayTasksProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<TodayTasksEntry>) -> ()) {
-        Task {
-            let container = await ModelContainerProvider.get()
+        Task { @MainActor in
             var tasks: [IxTask] = []
             
-            let modelContext = ModelContext(container)
+            let modelContext = ModelContext(ModelContainerProvider.shared)
             
             // Create a predicate for today's tasks
             let calendar = Calendar.current
-            let startOfDay = calendar.startOfDay(for: Date())
-            let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
-            
+            let now = Date.now.toLocalDate()
+
             let predicate = #Predicate<IxTask> {
-                (($0.due_date != nil && $0.due_date! >= startOfDay && $0.due_date! < endOfDay) || ($0.due_date == nil)) && !$0.completed
+                !$0.completed
             }
             
-            let descriptor = FetchDescriptor<IxTask>(predicate: predicate)
+            let descriptor = FetchDescriptor<IxTask>(predicate: predicate, sortBy: [SortDescriptor(\IxTask.priority)])
             
             do {
                 tasks = try modelContext.fetch(descriptor)
@@ -239,7 +243,9 @@ struct TodayTasksProvider: TimelineProvider {
             }
             
             // Create the timeline entry with fetched tasks
-            let entry = TodayTasksEntry(date: Date(), tasks: tasks)
+            let entry = TodayTasksEntry(date: Date(), tasks: tasks.filter({
+                $0.due_date == nil || calendar.compare($0.due_date!.toLocalDate(), to: now, toGranularity: .day).rawValue <= 0
+            }))
             
             // Update every hour or when the widget refreshes
             let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!
@@ -252,9 +258,7 @@ struct TodayTasksProvider: TimelineProvider {
 
 struct TodayTasksWidget_Previews: PreviewProvider {
     static var tasks = [
-        IxTask(id: "1", userId: "1", itemId: nil, name: "Buy Gocciole", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
-        IxTask(id: "2", userId: "1", itemId: nil, name: "Clean windsurf", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
-        IxTask(id: "3", userId: "1", itemId: nil, name: "be intentional.", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil)
+        IxTask(id: "1", userId: "1", itemId: nil, name: "Buy Gocciole", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil)
     ]
     static var previews: some View {
         TodayTasksWidgetView(entry: TodayTasksEntry(

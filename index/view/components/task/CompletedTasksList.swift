@@ -43,14 +43,14 @@ struct CompletedTasksList: View {
                 onOpen: onOpen,
                 onCompletionToggle: onCompletionToggle,
                 onDelete: onDelete
-            ).swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            ).swipeActions(edge: .trailing) {
                 Button(role: .destructive) {
                     onDelete(task)
                 } label: {
                     Label("Delete", systemImage: "trash.fill")
                 }
             }.if(task.rrule == nil) { view in
-                view.swipeActions(edge: .leading, allowsFullSwipe: true) {
+                view.swipeActions(edge: .leading) {
                     Button {
                         onCompletionToggle(task)
                     } label: {

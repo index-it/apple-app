@@ -51,7 +51,7 @@ class ShareViewController: UIViewController {
     func showView(name: String?, url: String?) {
         DispatchQueue.main.async {
             let contentView = UIHostingController(
-                rootView: ShareExtensionView(name: name, link: url).modelContainer(ModelContainerProvider.get())
+                rootView: ShareExtensionView(name: name, link: url).modelContainer(ModelContainerProvider.shared)
             )
             self.addChild(contentView)
             self.view.addSubview(contentView.view)

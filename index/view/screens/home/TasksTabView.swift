@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct TasksTabView: View {
     @EnvironmentObject private var navigationManager: NavigationManager
@@ -84,6 +85,8 @@ struct TasksTabView: View {
             let task = try await ixApiClient.createTask(name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
             
             try await saveTask(task)
+            
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch IxApiClientError.ProRequired(let proFeature) {
             // TODO: Show pro sheet with a global toggle
         } catch {
@@ -106,6 +109,8 @@ struct TasksTabView: View {
             let task = try await ixApiClient.editTask(taskId: id, name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
             
             try await saveTask(task)
+            
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch {
             errorService.insert(.localizedError(title: "Error editing task", error: error))
         }
@@ -119,6 +124,8 @@ struct TasksTabView: View {
             let task = try await ixApiClient.setTaskCompletion(taskId: id, completed: completed)
             
             try await saveTask(task)
+            
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch {
             errorService.insert(.localizedError(title: "Error \(completed ? "completing" : "uncompleting") task", error: error))
         }
@@ -131,6 +138,8 @@ struct TasksTabView: View {
             try context.transaction {
                 try context.delete(model: IxTask.self, where: #Predicate { $0.id == id })
             }
+            
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch IxApiClientError.NotFound {
             do {
                 try context.transaction {

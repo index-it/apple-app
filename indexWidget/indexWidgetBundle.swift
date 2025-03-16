@@ -10,8 +10,6 @@ import SwiftUI
 
 @main
 struct indexWidgetBundle: WidgetBundle {
-    
-    @WidgetBundleBuilder
     var body: some Widget {
         TodayTasksWidget()
         CreateListItemWidgetControl()
