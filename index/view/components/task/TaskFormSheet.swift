@@ -749,7 +749,7 @@ struct TaskFormSheet: View {
             reminders.append(
                 IxTaskReminder(
                     daysBefore: Int64(createReminderDays),
-                    timeOffset: Int64(timeOffset)
+                    timeOffset: Int64(IxDateUtils.reminderOffsetToUtc(Int64(timeOffset)))
                 )
             )
         } label: {

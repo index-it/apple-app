@@ -23,118 +23,119 @@ class IxWebsocketEventHandler {
     func handleWebsocketEvent(data: WebsocketEventData) async throws {
         let eventualExceptionMessage = "websocket event content doesn't match type: \(data)"
         
-        switch data.type {
-        case .userAuthSessionsInvalidated:
-            try await handleUserAuthSessionsInvalidated()
-            
-        case .userUpdated:
-            switch data.content {
-            case .userUpdate(let content):
-                try await handleUserUpdated(content: content)
-            default:
-                throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
-            }
-            
-        case .listCreated:
-            switch data.content {
-            case .listCreateOrUpdate(let content):
-                try await handleListCreated(content: content)
-            default:
-                throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
-            }
-            
-        case .listUpdated:
-            switch data.content {
-            case .listCreateOrUpdate(let content):
-                try await handleListUpdated(content: content)
-            default:
-                throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
-            }
-            
-        case .listDeleted:
-            switch data.content {
-            case .listDelete(let content):
-                try await handleListDeleted(content: content)
-            default:
-                throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
-            }
-            
-        case .categoryCreated:
-            switch data.content {
-            case .categoryCreateOrUpdate(let content):
-                try await handleCategoryCreated(content: content)
-            default:
-                throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
-            }
-            
-        case .categoryUpdated:
-            switch data.content {
-            case .categoryCreateOrUpdate(let content):
-                try await handleCategoryUpdated(content: content)
-            default:
-                throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
-            }
-            
-        case .categoryDeleted:
-            switch data.content {
-            case .categoryDelete(let content):
-                try await handleCategoryDeleted(content: content)
-            default:
-                throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
-            }
-            
-        case .itemCreated:
-            switch data.content {
-            case .itemCreateOrUpdate(let content):
-                try await handleItemCreated(content: content)
-            default:
-                throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
-            }
-            
-        case .itemUpdated:
-            switch data.content {
-            case .itemCreateOrUpdate(let content):
-                try await handleItemUpdated(content: content)
-            default:
-                throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
-            }
-            
-        case .itemDeleted:
-            switch data.content {
-            case .itemDelete(let content):
-                try await handleItemDeleted(content: content)
-            default:
-                throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
-            }
-            
-        case .taskCreated:
-            switch data.content {
-            case .taskCreateOrUpdate(let content):
-                try await handleTaskCreated(content: content)
-            default:
-                throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
-            }
-            
-        case .taskUpdated:
-            switch data.content {
-            case .taskCreateOrUpdate(let content):
-                try await handleTaskUpdated(content: content)
-            default:
-                throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
-            }
-            
-        case .taskDeleted:
-            switch data.content {
-            case .taskDelete(let content):
-                try await handleTaskDeleted(content: content)
-            default:
-                throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
+        Task { @MainActor in
+            switch data.type {
+            case .userAuthSessionsInvalidated:
+                try await handleUserAuthSessionsInvalidated()
+                
+            case .userUpdated:
+                switch data.content {
+                case .userUpdate(let content):
+                    try await handleUserUpdated(content: content)
+                default:
+                    throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
+                }
+                
+            case .listCreated:
+                switch data.content {
+                case .listCreateOrUpdate(let content):
+                    try await handleListCreated(content: content)
+                default:
+                    throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
+                }
+                
+            case .listUpdated:
+                switch data.content {
+                case .listCreateOrUpdate(let content):
+                    try await handleListUpdated(content: content)
+                default:
+                    throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
+                }
+                
+            case .listDeleted:
+                switch data.content {
+                case .listDelete(let content):
+                    try await handleListDeleted(content: content)
+                default:
+                    throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
+                }
+                
+            case .categoryCreated:
+                switch data.content {
+                case .categoryCreateOrUpdate(let content):
+                    try await handleCategoryCreated(content: content)
+                default:
+                    throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
+                }
+                
+            case .categoryUpdated:
+                switch data.content {
+                case .categoryCreateOrUpdate(let content):
+                    try await handleCategoryUpdated(content: content)
+                default:
+                    throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
+                }
+                
+            case .categoryDeleted:
+                switch data.content {
+                case .categoryDelete(let content):
+                    try await handleCategoryDeleted(content: content)
+                default:
+                    throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
+                }
+                
+            case .itemCreated:
+                switch data.content {
+                case .itemCreateOrUpdate(let content):
+                    try await handleItemCreated(content: content)
+                default:
+                    throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
+                }
+                
+            case .itemUpdated:
+                switch data.content {
+                case .itemCreateOrUpdate(let content):
+                    try await handleItemUpdated(content: content)
+                default:
+                    throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
+                }
+                
+            case .itemDeleted:
+                switch data.content {
+                case .itemDelete(let content):
+                    try await handleItemDeleted(content: content)
+                default:
+                    throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
+                }
+                
+            case .taskCreated:
+                switch data.content {
+                case .taskCreateOrUpdate(let content):
+                    try await handleTaskCreated(content: content)
+                default:
+                    throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
+                }
+                
+            case .taskUpdated:
+                switch data.content {
+                case .taskCreateOrUpdate(let content):
+                    try await handleTaskUpdated(content: content)
+                default:
+                    throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
+                }
+                
+            case .taskDeleted:
+                switch data.content {
+                case .taskDelete(let content):
+                    try await handleTaskDeleted(content: content)
+                default:
+                    throw NSError(domain: "WebsocketEventHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: eventualExceptionMessage])
+                }
             }
         }
     }
     
     // MARK: User
-    
     private func handleUserAuthSessionsInvalidated() async throws {
         try await ixApiClient.logout()
     }

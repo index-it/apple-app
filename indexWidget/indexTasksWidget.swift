@@ -75,8 +75,6 @@ struct TodayTasksWidgetView : View {
                     .foregroundStyle(.secondary)
                     .font(.footnote)
             } else {
-                Spacer(minLength: 6)
-                
                 tasksListView(entry.tasks.prefix(3))
             }
             
@@ -191,7 +189,6 @@ struct TodayTasksWidgetView : View {
                     .font(.footnote)
                 
                 Spacer()
-                    
             }
             
             

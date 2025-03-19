@@ -372,7 +372,7 @@ class IxApiClient: ObservableObject {
     /// ### Throws:
     /// - `IxApiClientError.Unknown`: For unexpected errors.
     func sendNotificationRegistrationToken(token: String) async throws {
-        let url = Self.baseUrl.appendingPathComponent("/me/notifications/register")
+        let url = Self.baseUrl.appendingPathComponent("/me/notifications/registration")
         let body = ["token": token]
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -439,6 +439,31 @@ class IxApiClient: ObservableObject {
         case 401:
             await setAuthenticationStatus(authenticationStatus: .Unauthenticated)
             throw IxApiClientError.Unauthenticated
+        default:
+            Self.log.error("unexpected api response: \(res)")
+            throw IxApiClientError.Unknown
+        }
+    }
+    
+    func restorePurchases() async throws -> User {
+        let url = Self.baseUrl.appendingPathComponent("/pro/subscription/restore")
+        let (data, urlRes) = try await urlSession.data(from: url)
+        
+        let res = urlRes as! HTTPURLResponse
+        
+        switch res.statusCode {
+        case 200:
+            let user = User(from: try JSONDecoder().decode(NetworkUser.self, from: data))
+            await setAuthenticationStatus(authenticationStatus: .Authenticated(user: user))
+            return user
+        case 204:
+            // nothing to do, user is already updated
+            return try await me()
+        case 401:
+            await setAuthenticationStatus(authenticationStatus: .Unauthenticated)
+            throw IxApiClientError.Unauthenticated
+        case 404:
+            throw IxApiClientError.NotFound(.pro_subscription)
         default:
             Self.log.error("unexpected api response: \(res)")
             throw IxApiClientError.Unknown

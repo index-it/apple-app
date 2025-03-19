@@ -228,7 +228,7 @@ struct TasksTabView: View {
                         }
                     },
                     message: {
-                        Text("Are you sure you want to delete the\(selectedTask?.rrule != nil ? " **recurring**" : "") task \(selectedTask?.name ?? "")?")
+                        Text("Are you sure you want to delete the\(selectedTask?.rrule != nil ? " recurring" : "") task \(selectedTask?.name ?? "")?")
                     }
                 )
                 .sheet(

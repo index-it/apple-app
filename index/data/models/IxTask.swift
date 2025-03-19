@@ -94,7 +94,7 @@ struct IxTaskReminder: Codable, Hashable {
     func hourAndMinuteString() -> String {
         let startOfDay = Calendar.current.startOfDay(for: Date.now)
         // Convert milliseconds to seconds and add to start of the day
-        let targetDate = startOfDay.addingTimeInterval(Double(time_offset) / 1000)
+        let targetDate = startOfDay.addingTimeInterval(Double(IxDateUtils.reminderOffsetFromUtc(time_offset)) / 1000)
 
         let formatter = DateFormatter()
         formatter.timeStyle = .short

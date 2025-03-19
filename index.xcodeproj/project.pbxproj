@@ -16,6 +16,8 @@
 		092FE7C62D7F3C8200F38388 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 092FE7C52D7F3C8200F38388 /* SwiftUI.framework */; };
 		092FE7D72D7F3C8300F38388 /* indexWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 092FE7C22D7F3C8200F38388 /* indexWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		0932EB3B2CEB6BBF00321EEE /* DynamicColor in Frameworks */ = {isa = PBXBuildFile; productRef = 0932EB3A2CEB6BBF00321EEE /* DynamicColor */; };
+		0992A7412D8A44B400EF7B33 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0992A7402D8A44B400EF7B33 /* FirebaseCore */; };
+		0992A7432D8A44BB00EF7B33 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 0992A7422D8A44BB00EF7B33 /* FirebaseMessaging */; };
 		099487EA2CEBC59500B3FC57 /* MCEmojiPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 099487E92CEBC59500B3FC57 /* MCEmojiPicker */; };
 		09F48F452D7E623D00CA50AC /* indexShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 09F48F3B2D7E623D00CA50AC /* indexShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -117,6 +119,7 @@
 				data/network/request/TaskCreateOrEditReqBody.swift,
 				data/network/response/WelcomeActionResponse.swift,
 				data/network/SyncRegister.swift,
+				"GoogleService-Info.plist",
 			);
 			target = 092FE7C12D7F3C8200F38388 /* indexWidgetExtension */;
 		};
@@ -168,6 +171,7 @@
 				data/network/request/TaskCreateOrEditReqBody.swift,
 				data/network/response/WelcomeActionResponse.swift,
 				data/network/SyncRegister.swift,
+				"GoogleService-Info.plist",
 				view/controls/AddListItemFormSheet.swift,
 			);
 			target = 09F48F3A2D7E623D00CA50AC /* indexShareExtension */;
@@ -225,12 +229,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0992A7432D8A44BB00EF7B33 /* FirebaseMessaging in Frameworks */,
 				092FE7BD2D7F2BCC00F38388 /* Starscream in Frameworks */,
 				0915C1692CB80DA1003CF70B /* GoogleSignIn in Frameworks */,
 				0932EB3B2CEB6BBF00321EEE /* DynamicColor in Frameworks */,
 				092F90AF2D7296A300760176 /* RevenueCat in Frameworks */,
 				092F90B12D7296A300760176 /* RevenueCatUI in Frameworks */,
 				0915C16B2CB80DA1003CF70B /* GoogleSignInSwift in Frameworks */,
+				0992A7412D8A44B400EF7B33 /* FirebaseCore in Frameworks */,
 				099487EA2CEBC59500B3FC57 /* MCEmojiPicker in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -328,6 +334,8 @@
 				092F90AE2D7296A300760176 /* RevenueCat */,
 				092F90B02D7296A300760176 /* RevenueCatUI */,
 				092FE7BC2D7F2BCC00F38388 /* Starscream */,
+				0992A7402D8A44B400EF7B33 /* FirebaseCore */,
+				0992A7422D8A44BB00EF7B33 /* FirebaseMessaging */,
 			);
 			productName = index;
 			productReference = 093287D92C9C811200A0717E /* index.app */;
@@ -391,6 +399,7 @@
 				099487E82CEBC59500B3FC57 /* XCRemoteSwiftPackageReference "MCEmojiPicker" */,
 				092F90AD2D7296A300760176 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 				092FE7BB2D7F2AF600F38388 /* XCRemoteSwiftPackageReference "Starscream" */,
+				0992A5C72D8A3A3400EF7B33 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 093287DA2C9C811200A0717E /* Products */;
@@ -856,6 +865,14 @@
 				minimumVersion = 5.0.1;
 			};
 		};
+		0992A5C72D8A3A3400EF7B33 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.10.0;
+			};
+		};
 		099487E82CEBC59500B3FC57 /* XCRemoteSwiftPackageReference "MCEmojiPicker" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/izyumkin/MCEmojiPicker";
@@ -896,6 +913,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0932EB392CEB6BBF00321EEE /* XCRemoteSwiftPackageReference "DynamicColor" */;
 			productName = DynamicColor;
+		};
+		0992A7402D8A44B400EF7B33 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0992A5C72D8A3A3400EF7B33 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		0992A7422D8A44BB00EF7B33 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0992A5C72D8A3A3400EF7B33 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
 		};
 		099487E92CEBC59500B3FC57 /* MCEmojiPicker */ = {
 			isa = XCSwiftPackageProductDependency;

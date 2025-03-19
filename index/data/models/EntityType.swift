@@ -14,6 +14,7 @@ enum EntityType {
     case task
     case user
     case self_user
+    case pro_subscription
     
     var localizedDescription: String {
         switch self {
@@ -29,6 +30,8 @@ enum EntityType {
             return NSLocalizedString("User", comment: "Entity type: User")
         case .self_user:
             return NSLocalizedString("You", comment: "Entity type: Self User, referring to the current logged-in user")
+        case .pro_subscription:
+            return NSLocalizedString("Pro subscription", comment: "Entity type: Pro Subscription")
         }
     }
 }

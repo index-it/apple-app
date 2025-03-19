@@ -9,15 +9,20 @@ import os
 import SwiftUI
 import SwiftData
 import GoogleSignIn
+import FirebaseMessaging
+import RevenueCat
 
 @main
 struct indexApp: App {
     private static let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "index-app-entrypoint")
     
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     // managers
     @StateObject private var navigationManager = NavigationManager()
     @StateObject private var authNavigationManager = AuthNavigationManager()
     @StateObject private var errorService = ErrorStateService()
+    
     // clients
     private var modelContainer: ModelContainer
     @StateObject private var ixApiClient: IxApiClient
@@ -72,11 +77,23 @@ struct indexApp: App {
             SyncRegister.shared.resetState()
             
             ixWebsocketClient.connectAndListenToWebsocket()
-            /*
-             TODO:
-             - send notification token to backend
-             - login revenue cat
-             */
+            
+            Task {
+                do {
+                    let firebaseMessagingToken = try await Messaging.messaging().token()
+                    try await self.ixApiClient.sendNotificationRegistrationToken(token: firebaseMessagingToken)
+                } catch {
+                    print("Failed sending firebase messaging token to server: \(error)")
+                }
+            }
+            
+            Task {
+                do {
+                    let _ = try await Purchases.shared.logIn(networkUser.id)
+                } catch {
+                    print("Failed logging in user in revenue cat: \(error)")
+                }
+            }
         }
     }
     
@@ -143,7 +160,8 @@ struct indexApp: App {
     
     var body: some Scene {
         WindowGroup {
-            MainView(authStatus: $authStatus)
+//            MainView(authStatus: $authStatus)
+            PaywallView() {}
                 .environmentObject(navigationManager)
                 .environmentObject(authNavigationManager)
                 .environmentObject(ixApiClient)
@@ -164,10 +182,13 @@ struct indexApp: App {
                     self.presentingSafariView = true
                     return .handled
                 })
-                .sheet(isPresented: $presentingSafariView, onDismiss: { self.urlToOpen = nil }) {
+                .sheet(isPresented: $presentingSafariView, onDismiss: { self.urlToOpen = nil }) { [urlToOpen] in
                     if let url = urlToOpen {
                         SafariView(url: url)
                     }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: .navigateToTasks)) { notification in
+                    navigationManager.navigateToTab(.tasks)
                 }
         }
     }

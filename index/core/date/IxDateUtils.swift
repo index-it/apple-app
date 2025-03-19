@@ -52,4 +52,12 @@ struct IxDateUtils {
             return formatter
         }()
     }
+    
+    static func reminderOffsetToUtc(_ offset: Int64) -> Int64 {
+        return offset - Int64(TimeZone.current.secondsFromGMT() * 1000)
+    }
+    
+    static func reminderOffsetFromUtc(_ offset: Int64) -> Int64 {
+        return offset + Int64(TimeZone.current.secondsFromGMT() * 1000)
+    }
 }
