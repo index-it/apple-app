@@ -410,7 +410,7 @@ struct ListScreen: View {
                         dueDate: nil,
                         rrule: nil,
                         reminders: [],
-                        itemId: nil,
+                        itemId: selectedItem?.id,
                         subtasks: [],
                         namePlaceholder: "Task name"
                     ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in

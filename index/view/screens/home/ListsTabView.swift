@@ -20,6 +20,8 @@ struct ListsTabView: View {
     
     @Query private var lists: [IxList]
     
+    @State private var showPaywall: Bool = false
+    
     // MARK: List creation
     @State private var showCreationSheet = false
     @State private var newListNamePlaceholder: String? = nil
@@ -279,7 +281,11 @@ struct ListsTabView: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
-                            showCreationSheet = true
+                            if let user = user, !user.has_pro && lists.count >= 5 {
+                                showPaywall = true
+                            } else {
+                                showCreationSheet = true
+                            }
                         } label: {
                             Image(systemName: "plus.circle")
                         }
@@ -315,6 +321,7 @@ struct ListsTabView: View {
                         }
                     }
                 }
+                .paywallCover(isPresented: $showPaywall)
                 .sheet(isPresented: $navigationManager.showCreateItemSheet) {
                     AddListItemFormSheet {
                         navigationManager.showCreateItemSheet = false
@@ -458,8 +465,10 @@ struct ListsTabView: View {
 #Preview {
     @Previewable @StateObject var ixApiClient = IxApiClient()
     @Previewable @StateObject var errorService = ErrorStateService()
-    
+    @Previewable @StateObject var navigationManager = NavigationManager()
+
     ListsTabView()
         .environmentObject(ixApiClient)
         .environmentObject(errorService)
+        .environmentObject(navigationManager)
 }

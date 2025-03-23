@@ -160,8 +160,7 @@ struct indexApp: App {
     
     var body: some Scene {
         WindowGroup {
-//            MainView(authStatus: $authStatus)
-            PaywallView() {}
+            MainView(authStatus: $authStatus)
                 .environmentObject(navigationManager)
                 .environmentObject(authNavigationManager)
                 .environmentObject(ixApiClient)

@@ -71,6 +71,9 @@ struct TaskFormSheet: View {
     // MARK: View props
     @Binding var showSheet: Bool
     
+    @AppStorage(AppStorageKeys.logged_in_user) private var user: User?
+    @State private var showPaywall = false
+    
     @FocusState private var isNameFocused: Bool
     
     @State private var name: String
@@ -539,6 +542,7 @@ struct TaskFormSheet: View {
             
             parseRRule()
         }
+        .paywallCover(isPresented: $showPaywall)
     }
     
     // Name and Description Section
@@ -744,14 +748,18 @@ struct TaskFormSheet: View {
     // Add Reminder Button
     var addReminderButton: some View {
         Button {
-            let timeOffset = (Calendar.current.component(.hour, from: createReminderTime) * 60 * 60 * 1000) + (Calendar.current.component(.minute, from: createReminderTime) * 60 * 1000)
-            
-            reminders.append(
-                IxTaskReminder(
-                    daysBefore: Int64(createReminderDays),
-                    timeOffset: Int64(IxDateUtils.reminderOffsetToUtc(Int64(timeOffset)))
+            if !reminders.isEmpty && user?.has_pro != true {
+                showPaywall = true
+            } else {
+                let timeOffset = (Calendar.current.component(.hour, from: createReminderTime) * 60 * 60 * 1000) + (Calendar.current.component(.minute, from: createReminderTime) * 60 * 1000)
+                
+                reminders.append(
+                    IxTaskReminder(
+                        daysBefore: Int64(createReminderDays),
+                        timeOffset: Int64(IxDateUtils.reminderOffsetToUtc(Int64(timeOffset)))
+                    )
                 )
-            )
+            }
         } label: {
             Text("Add reminder")
                 .frame(maxWidth: .infinity)

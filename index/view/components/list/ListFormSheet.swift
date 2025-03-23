@@ -11,6 +11,9 @@ import MCEmojiPicker
 struct ListFormSheet: View {
     @Binding var showSheet: Bool
     
+    @AppStorage(AppStorageKeys.logged_in_user) private var user: User?
+    @State private var showPaywall = false
+    
     @State private var showEmojiPicker = false
     @FocusState private var isNameFocused: Bool
     
@@ -102,7 +105,18 @@ struct ListFormSheet: View {
                 
                 Form {
                     Section() {
-                        Toggle("Public", isOn: $isPublic)
+                        Toggle("Public", isOn: Binding(
+                            get: { isPublic },
+                            set: { newValue in
+                                let hasPro = user?.has_pro == true
+                                
+                                if hasPro {
+                                    isPublic = newValue
+                                } else {
+                                    showPaywall = true
+                                }
+                            }
+                        ))
                     } header: {
                         Text("Visibility")
                     } footer: {
@@ -133,6 +147,7 @@ struct ListFormSheet: View {
                         }.disabled(isNameInvalid)
                     }
                 }
+                .paywallCover(isPresented: $showPaywall)
         }
     }
 }

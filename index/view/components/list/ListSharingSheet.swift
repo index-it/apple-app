@@ -19,6 +19,8 @@ struct ListSharingSheet: View {
         addUserEmail.contains("@") && addUserEmail.contains(".") && addUserEmail.count >= 5
     }
     
+    @AppStorage(AppStorageKeys.logged_in_user) private var user: User?
+    @State private var showPaywall = false
     
     @State private var isPublic: Bool
     @Binding private var showSheet: Bool
@@ -74,13 +76,16 @@ struct ListSharingSheet: View {
                         EditSheet
                     }
                 }
-        }.alert(
+        }
+        .alert(
             "Invitation sent",
-            isPresented: $showUserInvitationSuccessAlert) {
-                Button("Ok", role: .cancel) {}
-            } message: {
-                Text("An invitation email has been sent to \(addUserEmail). He will need to accept the invitation to \(addUserEditor ? "collaborate in " : "view") this list.")
-            }
+            isPresented: $showUserInvitationSuccessAlert
+        ) {
+            Button("Ok", role: .cancel) {}
+        } message: {
+            Text("An invitation email has been sent to \(addUserEmail). He will need to accept the invitation to \(addUserEditor ? "collaborate in " : "view") this list.")
+        }
+        .paywallCover(isPresented: $showPaywall)
 
     }
     
@@ -88,7 +93,18 @@ struct ListSharingSheet: View {
         VStack {
             Form {
                 Section {
-                    Toggle(isOn: $isPublic) {
+                    Toggle(isOn: Binding(
+                        get: { isPublic },
+                        set: { newValue in
+                            let hasPro = user?.has_pro == true
+                            
+                            if hasPro {
+                                isPublic = newValue
+                            } else {
+                                showPaywall = true
+                            }
+                        }
+                    )) {
                         HStack {
                             if loadingPublic {
                                 ProgressView()
@@ -97,6 +113,7 @@ struct ListSharingSheet: View {
                             Text("Public list")
                         }
                     }.disabled(loadingPublic)
+                        
                 } footer: {
                     Text("By making this list public it will be accessible by anyone, but only you will be able to edit it")
                 }

@@ -8,16 +8,43 @@
 import SwiftUI
 
 struct AccountSettingsView: View {
+    @EnvironmentObject private var ixApiClient: IxApiClient
+    @EnvironmentObject private var errorService: ErrorStateService
+    @EnvironmentObject private var navigationManager: NavigationManager
+    @Environment(\.modelContext) private var context
+    @Environment(\.openURL) var openURL
     @Environment(\.dismiss) private var dismiss
     
-    var userEmail: String
-    var onChangePassword: (_ newPassword: String) -> ()
-    var onLogout: () -> ()
-    var onDeleteAccount: () -> ()
+    @AppStorage("user") var user: User?
     
     @State private var showChangePasswordAlert = false
     @State private var newPassword = ""
     @State private var newPasswordRepeat = ""
+    
+    private func logout() async {
+        do {
+            try await ixApiClient.logout()
+        } catch {
+            
+        }
+    }
+    
+    private func changePassword(newPassword: String) async {
+        do {
+            try await ixApiClient.changePassword(newPassword: newPassword)
+        } catch {
+            errorService.insert(.localizedError(title: "Error changing password", error: error))
+        }
+    }
+    
+    private func deleteAccount() async {
+        do {
+            // TODO: Uncomment on release
+            // try await ixApiClient.deleteLoggedInUser()
+        } catch {
+            errorService.insert(.localizedError(title: "Error deleting account", error: error))
+        }
+    }
     
     private var isNewPasswordValid: Bool {
         newPassword == newPasswordRepeat && (8...100).contains(newPassword.count) && newPassword.wholeMatch(of: /(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/) != nil
@@ -38,7 +65,9 @@ struct AccountSettingsView: View {
                 SecureField("Repeat password", text: $newPasswordRepeat)
                 
                 Button("Save") {
-                    onChangePassword(newPassword)
+                    Task {
+                        await changePassword(newPassword: newPassword)
+                    }
                 }.disabled(!isNewPasswordValid)
                 
                 Button("Cancel", role: .cancel, action: {})
@@ -48,15 +77,19 @@ struct AccountSettingsView: View {
             .confirmationDialog("Logout", isPresented: $showLogoutDialog) {
                 Button("Logout", role: .destructive) {
                     dismiss()
-                    dismiss()
-                    onLogout()
+                    navigationManager.clear()
+                    Task {
+                        await logout()
+                    }
                 }
             }
             .alert("Delete account", isPresented: $showDeleteAccountAlert, actions: {
                 TextField("Type 'GOODBYE'", text: $deleteAccountGoodbyeText)
                 
                 Button("Delete", role: .destructive) {
-                    onDeleteAccount()
+                    Task {
+                        await deleteAccount()
+                    }
                 }.disabled(!isGoodbyeTextValid)
             }, message: {
                 Text("Are you sure you want to delete your account?\n**This action is permanent**, all your data will be wiped out immediately and you won't be able to restore it!")
@@ -68,7 +101,7 @@ struct AccountSettingsView: View {
             VStack {
                 Text("Currently logged in as")
                 
-                Text(userEmail)
+                Text(user?.email ?? "Loading...")
                     .fontWeight(.semibold)
                     .foregroundStyle(.tint)
             }.padding()
@@ -102,12 +135,5 @@ struct AccountSettingsView: View {
 }
 
 #Preview {
-    AccountSettingsView(userEmail: "giuliopime@gmail.com") { _ in
-        
-    } onLogout: {
-        
-    } onDeleteAccount: {
-            
-    }
-
+    AccountSettingsView()
 }

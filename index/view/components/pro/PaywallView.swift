@@ -102,10 +102,31 @@ struct PaywallView: View {
                 
                 Spacer()
                 
-                PlaceholderView()
-                    .frame(maxHeight: 128)
+                VStack(alignment: .leading) {
+                    HStack {
+                        Text("Features you will unlock:")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                        
+                        Spacer()
+                    }.padding(.bottom, 6)
                 
-                Spacer()
+                    
+                    Grid(verticalSpacing: 12) {
+                        ForEach(Self.features, id: \.title) { feature in
+                            GridRow {
+                                Image(systemName: feature.icon)
+                                
+                                Text(feature.title)
+                                    .gridColumnAlignment(.leading)
+                                
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 48)
+                
                 
                 VStack {
                     packagesView

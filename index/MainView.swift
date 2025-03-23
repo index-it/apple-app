@@ -31,6 +31,10 @@ struct MainView: View {
                     ListScreen(listId: listId)
                 case .completedTasks:
                     CompletedTasksScreen()
+                case .accountSettings:
+                    AccountSettingsView()
+                case .proSettings:
+                    ProSettingsView()
                 }
             }
         }

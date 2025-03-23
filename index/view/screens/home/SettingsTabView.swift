@@ -11,6 +11,7 @@ import RevenueCat
 struct SettingsTabView: View {
     @EnvironmentObject private var ixApiClient: IxApiClient
     @EnvironmentObject private var errorService: ErrorStateService
+    @EnvironmentObject private var navigationManager: NavigationManager
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
 
@@ -20,33 +21,7 @@ struct SettingsTabView: View {
     @State private var showPaywall = false
     
     @State private var manageSubscriptionLoading: Bool = false
-    
-    private func logout() async {
-        do {
-            
-            
-            try await ixApiClient.logout()
-        } catch {
-            
-        }
-    }
-    
-    private func changePassword(newPassword: String) async {
-        do {
-            try await ixApiClient.changePassword(newPassword: newPassword)
-        } catch {
-            errorService.insert(.localizedError(title: "Error changing password", error: error))
-        }
-    }
-    
-    private func deleteAccount() async {
-        do {
-            // TODO: Uncomment on release
-            // try await ixApiClient.deleteLoggedInUser()
-        } catch {
-            errorService.insert(.localizedError(title: "Error deleting account", error: error))
-        }
-    }
+
     
     private func manageSubscriptions() {
         manageSubscriptionLoading = true
@@ -93,59 +68,36 @@ struct SettingsTabView: View {
                     }
                     
                     Section {
-                        NavigationLink(
-                            destination: {
-                                AccountSettingsView(
-                                    userEmail: user?.email ?? "Loading...",
-                                    onChangePassword: { newPassword in
-                                        Task {
-                                            await changePassword(newPassword: newPassword)
-                                        }
-                                    },
-                                    onLogout: {
-                                        Task {
-                                            await logout()
-                                        }
-                                    },
-                                    onDeleteAccount: {
-                                        Task {
-                                            await deleteAccount()
-                                        }
-                                    })
-                            }) {
+                        Button {
+                            navigationManager.push(navigationRoute: .accountSettings)
+                        } label: {
+                            HStack {
                                 Label("Account", systemImage: "person.fill")
                                     .labelStyle(ColorfulIconLabelStyle(color: .accentColor))
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.forward")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
                             }
+                        }
                         
                         if let user = user, user.has_pro {
-                            NavigationLink(
-                                destination: {
-                                    List {
-                                        currentlySubscribedCardView
-                                            .listRowInsets(EdgeInsets())
-                                            .listRowBackground(Color.clear)
-                                        
-                                        Section {
-                                            Button {
-                                                manageSubscriptions()
-                                            } label: {
-                                                HStack {
-                                                    if manageSubscriptionLoading {
-                                                        ProgressView()
-                                                            .controlSize(.regular)
-                                                    }
-                                                    
-                                                    Text("Manage subscription")
-                                                }
-                                            }.disabled(manageSubscriptionLoading)
-                                        }
-                                    }
-                                    .navigationTitle("Pro")
-                                    .navigationBarTitleDisplayMode(.inline)
-                                }) {
+                            Button {
+                                navigationManager.push(navigationRoute: .proSettings)
+                            } label: {
+                                HStack {
                                     Label("Pro", systemImage: "crown.fill")
                                         .labelStyle(ColorfulIconLabelStyle(color: .purple))
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "chevron.forward")
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
                                 }
+                            }
                         }
                         
                         
@@ -261,6 +213,7 @@ struct SettingsTabView: View {
             }
         }
         .buttonStyle(.plain)
+        .foregroundStyle(.white)
     }
     
     var currentlySubscribedCardView: some View {
@@ -300,7 +253,7 @@ struct SettingsTabView: View {
                 )
             }
             .clipShape(RoundedRectangle(cornerRadius: 24))
-        }
+        }.foregroundStyle(.white)
     }
 }
 
