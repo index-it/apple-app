@@ -426,14 +426,24 @@ struct ListScreen: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Section {
-                            Picker(selection: $itemFilter) {
-                                ForEach(ItemFilter.allCases) { filter in
-                                    Text(filter.rawValue)
-                                        .tag(filter)
+                            Toggle("Show completed", isOn: Binding(get: {
+                                itemFilter == .all
+                            }, set: { newValue in
+                                if newValue {
+                                    itemFilter = .all
+                                } else {
+                                    itemFilter = .uncompleted
                                 }
-                            } label: {
-                                Label("Items filter", systemImage: "line.3.horizontal.decrease")
-                            }.pickerStyle(.menu)
+                            }))
+                            
+//                            Picker(selection: $itemFilter) {
+//                                ForEach(ItemFilter.allCases) { filter in
+//                                    Text(filter.rawValue)
+//                                        .tag(filter)
+//                                }
+//                            } label: {
+//                                Label("Items filter", systemImage: "line.3.horizontal.decrease")
+//                            }.pickerStyle(.menu)
                             
                             Picker(selection: $itemSorting) {
                                 ForEach(ItemSorting.allCases) { sort in

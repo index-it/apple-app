@@ -15,7 +15,7 @@ struct ListsTabView: View {
     @EnvironmentObject private var errorService: ErrorStateService
     @Environment(\.modelContext) private var context
     
-    @AppStorage("user") var user: User?
+    @AppStorage(AppStorageKeys.logged_in_user) var user: User?
     @AppStorage(AppStorageKeys.colors_suggestions) var colorsSuggested: [Color] = AppStorageKeys.Defaults.colors
     
     @Query private var lists: [IxList]

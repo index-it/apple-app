@@ -93,15 +93,24 @@ struct TasksList: View {
         _tasks = Query(filter: filterPredicate, sort: [sortDescriptor])
     }
     
+    private var calendar: Calendar {
+        var cal = Calendar.current
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        return cal
+    }
+    
     var body: some View {
         let subtasksMaxWidth = UIScreen.main.bounds.width / 3
+        
         ForEach(tasks.filter {
-            (dateFilter != nil && $0.due_date != nil && Calendar.current.isDate($0.due_date!.toLocalDate(), inSameDayAs: dateFilter!)) ||
+            (dateFilter != nil && $0.due_date != nil && calendar.isDate($0.due_date!, inSameDayAs: dateFilter!)) ||
             (noDateFilter && $0.due_date == nil) ||
-            (earlierThanDateFilter && $0.due_date != nil && dateFilter != nil && Calendar.current.compare($0.due_date!.toLocalDate(), to: dateFilter!, toGranularity: .day) == .orderedAscending) ||
-            (laterThanDateFilter && $0.due_date != nil && dateFilter != nil && Calendar.current.compare($0.due_date!.toLocalDate(), to: dateFilter!, toGranularity: .day) == .orderedDescending)
+            (earlierThanDateFilter && $0.due_date != nil && dateFilter != nil && calendar.compare($0.due_date!, to: dateFilter!, toGranularity: .day) == .orderedAscending) ||
+            (laterThanDateFilter && $0.due_date != nil && dateFilter != nil && calendar.compare($0.due_date!, to: dateFilter!, toGranularity: .day) == .orderedDescending)
         }) { task in
-            let dateComparison = task.due_date != nil ? Calendar.current.compare(task.due_date!.toLocalDate(), to: dateFilter!, toGranularity: .day) : ComparisonResult.orderedSame
+            
+            
+            let dateComparison = task.due_date != nil ? calendar.compare(task.due_date!, to: dateFilter!, toGranularity: .day) : ComparisonResult.orderedSame
             
             TaskRow(
                 task: task,

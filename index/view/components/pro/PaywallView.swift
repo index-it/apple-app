@@ -119,7 +119,7 @@ struct PaywallView: View {
                                 
                                 Text(feature.title)
                                     .gridColumnAlignment(.leading)
-                                
+                                    .foregroundStyle(Color.primary.opacity(0.8))
                             }
                         }
                     }

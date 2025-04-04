@@ -75,3 +75,11 @@ extension View {
         modifier(MeshGradientBackground())
     }
 }
+
+#Preview {
+    VStack {
+        
+    }
+    .frame(minWidth: 1920, minHeight: 1080)
+    .meshGradientBackground()
+}

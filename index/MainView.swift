@@ -35,6 +35,8 @@ struct MainView: View {
                     AccountSettingsView()
                 case .proSettings:
                     ProSettingsView()
+                case .about:
+                    AboutView()
                 }
             }
         }

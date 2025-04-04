@@ -23,7 +23,7 @@ struct IxDateUtils {
         let taskDueDate: DateFormatter = {
             let formatter = DateFormatter()
             formatter.dateFormat = "EEE d MMM"
-            formatter.timeZone = TimeZone.current
+            formatter.timeZone = TimeZone.gmt
             
             return formatter
         }()
@@ -31,7 +31,7 @@ struct IxDateUtils {
         let taskDueDatePicker: DateFormatter = {
             let formatter = DateFormatter()
             formatter.dateFormat = "EEEE, d MMMM YYYY"
-            formatter.timeZone = TimeZone.current
+            formatter.timeZone = TimeZone.gmt
             
             return formatter
         }()
@@ -39,7 +39,7 @@ struct IxDateUtils {
         let taskSectionHeading: DateFormatter = {
             let formatter = DateFormatter()
             formatter.dateFormat = "EEEE"
-            formatter.timeZone = TimeZone.current
+            formatter.timeZone = TimeZone.gmt
             
             return formatter
         }()
@@ -47,7 +47,7 @@ struct IxDateUtils {
         let taskSectionSubheading: DateFormatter = {
             let formatter = DateFormatter()
             formatter.dateFormat = "d MMMM"
-            formatter.timeZone = TimeZone.current
+            formatter.timeZone = TimeZone.gmt
             
             return formatter
         }()

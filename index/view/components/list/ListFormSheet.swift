@@ -147,6 +147,11 @@ struct ListFormSheet: View {
                         }.disabled(isNameInvalid)
                     }
                 }
+                .onAppear {
+                    if name.isEmpty {
+                        isNameFocused = true
+                    }
+                }
                 .paywallCover(isPresented: $showPaywall)
         }
     }

@@ -15,7 +15,7 @@ struct TasksTabView: View {
     @EnvironmentObject private var errorService: ErrorStateService
     @Environment(\.modelContext) private var context
     
-    @AppStorage("user") var user: User?
+    @AppStorage(AppStorageKeys.logged_in_user) var user: User?
     
     // MARK: Date
     @State private var todayDate: Date = Date.now.toLocalDate()
@@ -362,6 +362,10 @@ struct TasksTabView: View {
                 }.onTapGesture {
                     taskCreationDueDate = date
                     navigationManager.showCreateTaskSheet = true
+                }
+                .onAppear {
+                    print("tomorrow")
+                    print(date)
                 }
             }
             

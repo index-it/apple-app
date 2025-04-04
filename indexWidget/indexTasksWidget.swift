@@ -224,7 +224,8 @@ struct TodayTasksProvider: TimelineProvider {
             let modelContext = ModelContext(ModelContainerProvider.shared)
             
             // Create a predicate for today's tasks
-            let calendar = Calendar.current
+            var calendar = Calendar.current
+            calendar.timeZone = TimeZone(identifier: "UTC")!
             let now = Date.now.toLocalDate()
 
             let predicate = #Predicate<IxTask> {
@@ -241,7 +242,7 @@ struct TodayTasksProvider: TimelineProvider {
             
             // Create the timeline entry with fetched tasks
             let entry = TodayTasksEntry(date: Date(), tasks: tasks.filter({
-                $0.due_date == nil || calendar.compare($0.due_date!.toLocalDate(), to: now, toGranularity: .day).rawValue <= 0
+                $0.due_date == nil || calendar.compare($0.due_date!, to: now, toGranularity: .day).rawValue <= 0
             }))
             
             // Update every hour or when the widget refreshes

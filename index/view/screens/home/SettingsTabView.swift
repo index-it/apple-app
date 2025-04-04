@@ -15,7 +15,7 @@ struct SettingsTabView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
 
-    @AppStorage("user") var user: User?
+    @AppStorage(AppStorageKeys.logged_in_user) var user: User?
     
     @State private var showOnboarding = false
     @State private var showPaywall = false
@@ -114,10 +114,21 @@ struct SettingsTabView: View {
                             Label("Support", systemImage: "lifepreserver.fill")
                                 .labelStyle(ColorfulIconLabelStyle(color: .red))
                         }.tint(.primary)
-                        Link(destination: URL(string: "https://apps.apple.com/TODO")!) {
-                            Label("Rate on the App Store", systemImage: "star.fill")
-                                .labelStyle(ColorfulIconLabelStyle(color: .yellow))
-                        }.tint(.primary) // TODO
+                        
+                        Button {
+                            navigationManager.push(navigationRoute: .about)
+                        } label: {
+                            HStack {
+                                Label("About & Feedback", systemImage: "heart.fill")
+                                    .labelStyle(ColorfulIconLabelStyle(color: .orange))
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.forward")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                     
                     Section(header: Text("ABOUT")) {
