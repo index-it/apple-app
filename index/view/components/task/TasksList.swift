@@ -109,7 +109,6 @@ struct TasksList: View {
             (laterThanDateFilter && $0.due_date != nil && dateFilter != nil && calendar.compare($0.due_date!, to: dateFilter!, toGranularity: .day) == .orderedDescending)
         }) { task in
             
-            
             let dateComparison = task.due_date != nil ? calendar.compare(task.due_date!, to: dateFilter!, toGranularity: .day) : ComparisonResult.orderedSame
             
             TaskRow(

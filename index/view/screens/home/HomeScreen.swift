@@ -10,6 +10,8 @@ import SwiftUI
 struct HomeScreen: View {
     @EnvironmentObject var navigationManager: NavigationManager
     
+    @AppStorage(AppStorageKeys.onboarding_showed) private var onboardingShowed: Bool = false
+
     var body: some View {
         TabView(selection: $navigationManager.selectedHomeTab) {
             Tab("Your tasks", systemImage: "rectangle.grid.1x2.fill", value: HomeTab.tasks) {
@@ -22,6 +24,20 @@ struct HomeScreen: View {
             
             Tab("Settings", systemImage: "gearshape.fill", value: HomeTab.settings) {
                 SettingsTabView()
+            }
+        }
+        .fullScreenCover(
+            isPresented: Binding(
+                get: {
+                    !onboardingShowed
+                },
+                set: { newValue in
+                    onboardingShowed = true
+                }
+            )
+        ) {
+            OnboardingView {
+                onboardingShowed = true
             }
         }
     }

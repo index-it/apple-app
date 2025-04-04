@@ -52,7 +52,11 @@ class IxListItem {
         )
     }
     
-    static func loading() -> IxListItem {
-        IxListItem(id: UUID().uuidString, user_id: "", list_id: "", category_id: nil, name: "Loading...", completed: false, link: nil, note: nil, created_at: 0, edited_at: 0, completed_at: 0)
+    static func loading(
+        name: String? = nil,
+        link: String? = nil,
+        note: String? = nil
+    ) -> IxListItem {
+        IxListItem(id: UUID().uuidString, user_id: "", list_id: "", category_id: nil, name: name ?? "Loading...", completed: false, link: link ?? nil, note: note ?? nil, created_at: 0, edited_at: 0, completed_at: 0)
     }
 }

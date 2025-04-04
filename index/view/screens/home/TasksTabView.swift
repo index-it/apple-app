@@ -363,10 +363,6 @@ struct TasksTabView: View {
                     taskCreationDueDate = date
                     navigationManager.showCreateTaskSheet = true
                 }
-                .onAppear {
-                    print("tomorrow")
-                    print(date)
-                }
             }
             
             Section {

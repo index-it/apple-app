@@ -91,7 +91,7 @@ class IxWebsocketClient: ObservableObject {
     private let decoder: JSONDecoder
     
     init(
-        cookiesStorage: HTTPCookieStorage = .shared,
+        cookiesStorage: HTTPCookieStorage = IxCookieStorageProvider.get(),
         ixWebsocketEventHandler: IxWebsocketEventHandler
     ) {
         self.decoder = IxApiClient.decoder()
@@ -173,7 +173,7 @@ class IxWebsocketClient: ObservableObject {
     private func scheduleReconnect() {
         DispatchQueue.main.async {
             self.reconnectTimer?.invalidate()
-            self.reconnectTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: false) { [weak self] _ in
+            self.reconnectTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: false) { [weak self] _ in
                 self?.connectAndListenToWebsocket()
             }
         }

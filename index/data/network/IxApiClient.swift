@@ -40,6 +40,7 @@ class IxApiClient: ObservableObject {
         let decoder = JSONDecoder()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = TimeZone(identifier: "UTC")!
         decoder.dateDecodingStrategy = .formatted(formatter)
         
         return decoder

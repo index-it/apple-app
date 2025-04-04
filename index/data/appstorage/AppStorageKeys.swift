@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct AppStorageKeys {
+    static let onboarding_showed = "onboarding_showed"
+    
     // MARK: user & templates
     static let logged_in_user = "logged_in_user"
     static let colors_suggestions = "colors_suggestions"

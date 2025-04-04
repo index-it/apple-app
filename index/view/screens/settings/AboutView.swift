@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct AboutView: View {
+    @Environment(\.openURL) var openURL
     @State private var showPaywall = false
     @AppStorage(AppStorageKeys.logged_in_user) private var user: User?
     
@@ -15,7 +16,14 @@ struct AboutView: View {
         NavigationView {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading) {
-                    Image(AppIconProvider.appIcon())
+                    Image(uiImage: UIApplication.shared.alternateIconName == nil
+                          ? UIImage(named: "AppIcon60x60") ?? UIImage()
+                          : UIImage(named: UIApplication.shared.alternateIconName!) ?? UIImage())
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 100, height: 100)
+                    .padding(.bottom, 8)
+                    .padding(.top, 48)
                     
                     Text("Ciao!")
                         .font(.largeTitle)
@@ -24,7 +32,6 @@ struct AboutView: View {
                     
                     Text("I created this app to be more organized and intentional in my everyday life.")
                         .multilineTextAlignment(.leading)
-                        .padding(.top)
                     
                     Text("I'd love to hear your feedback. I can't promise that I'll implement every change, but I'll listen and do what I can.")
                         .multilineTextAlignment(.leading)
@@ -86,7 +93,14 @@ struct AboutView: View {
                         .padding(.top, 1)
                     
                     Button {
-                        // TODO
+                        let email = "support@index-it.app"
+                        let subject = "iOS Feedback"
+                        let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+                        let mailtoURL = URL(string: "mailto:\(email)?subject=\(encodedSubject)")!
+                       
+                        if UIApplication.shared.canOpenURL(mailtoURL) {
+                            UIApplication.shared.open(mailtoURL)
+                        }
                     } label: {
                         Label("Send me an email", systemImage: "paperplane")
                             .frame(maxWidth: .infinity)
@@ -94,14 +108,14 @@ struct AboutView: View {
                         .padding(.top, 4)
                     
                     Button {
-                        // TODO
+                        UIPasteboard.general.string = "support@index-it.app"
                     } label: {
                         Label("Copy email address", systemImage: "document.on.document")
                             .frame(maxWidth: .infinity)
                     }.buttonStyle(AboutButtonStyle())
                         .padding(.top, 4)
                     
-                    Text("How are you?")
+                    Text("Who are you?")
                         .font(.title2)
                         .fontWeight(.semibold)
                         .multilineTextAlignment(.leading)
@@ -111,23 +125,25 @@ struct AboutView: View {
                         .padding(.top, 1)
                     
                     Button {
-                        // TODO
+                        openURL(URL(string: "https://giuliopime.dev")!)
                     } label: {
                         Text("giuliopime.dev")
                             .frame(maxWidth: .infinity)
                     }.buttonStyle(AboutButtonStyle())
                         .padding(.top, 4)
+                        .padding(.bottom, 48)
                 }
             }
-            .padding()
-            .toolbarBackground(UIColor.systemGray6.toColor(), for: .navigationBar)
-            .toolbarBackgroundVisibility(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    ShareLink(item: URL(string: "https://index-it.app")!)
-                }
-            }
+            .ignoresSafeArea(edges: .bottom)
+            .padding(.horizontal, 32)
             .paywallCover(isPresented: $showPaywall)
+        }
+        .toolbarBackground(UIColor.systemGray6.toColor(), for: .navigationBar)
+        .toolbarBackgroundVisibility(.visible, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                ShareLink(item: URL(string: "https://index-it.app")!)
+            }
         }
     }
 }

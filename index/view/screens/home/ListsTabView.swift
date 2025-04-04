@@ -26,6 +26,7 @@ struct ListsTabView: View {
     @State private var showCreationSheet = false
     @State private var newListNamePlaceholder: String? = nil
     @State private var newListColor: Color? = nil
+    @State private var newListEmoji: String = String.randomEmoji()
     
     // MARK: Selected list
     @State private var selectedList: IxList? = nil
@@ -360,7 +361,7 @@ struct ListsTabView: View {
                         showSheet: $showCreationSheet,
                         name: "",
                         color: newListColor ?? Color.green,
-                        emoji: String.randomEmoji(),
+                        emoji: newListEmoji,
                         isPublic: false,
                         namePlaceholder: newListNamePlaceholder ?? "List name",
                         colors: colorsSuggested
@@ -452,6 +453,8 @@ struct ListsTabView: View {
             }
         }.onChange(of: showCreationSheet, initial: true) {
             if showCreationSheet {
+                newListEmoji = String.randomEmoji()
+                
                 Task {
                     await fetchListTemplateSuggestion()
                 }
