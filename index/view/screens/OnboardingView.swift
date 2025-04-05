@@ -16,6 +16,7 @@ struct OnboardingPage {
         case lists;
         case items;
         case tasks;
+        case integrations;
         case thanks;
     }
 }
@@ -25,6 +26,7 @@ struct OnboardingView: View {
         .init(title: "Create the lists you need", description: "You can create as many lists as you need to organize your thoughts.\nYou can also share them with your friends and family or make it public!", id: .lists),
         .init(title: "Completion, links and notes", description: "When inside a list, swipe on a list item to complete it, you can also assign it a link or add some notes!", id: .items),
         .init(title: "Use tasks to stay organized", description: "Create tasks with priorities, reminders, recurrence and more options to organize your day, then swipe to complete or delete them!", id: .tasks),
+        .init(title: "Seamlessly integrated", description: "Add anything to a list simply by hitting the share button from any app, drop a widget on your home or add quick buttons to your control center and lock screen!", id: .integrations),
         .init(title: "Enjoy the app!", description: "Hey, my name is Giulio. I'm a spaghetti coder from Italy and currently it's just me developing this app :>\n\nIf you like the idea of the app and wanna support the development, feel free to purchase the pro version!\n\nThank you for reading this ❤️\nEnjoy using Index!", id: .thanks)
     ]
     static private var lists: [IxList] = [
@@ -116,6 +118,12 @@ struct OnboardingView: View {
                         itemsDemo
                     } else if page.id == .tasks {
                         tasksDemo
+                    } else if page.id == .integrations {
+                        Image("ios_system_illustration")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .padding(.top, 32)
+                            .padding(.horizontal)
                     } else {
                         Image("giulio")
                             .resizable()
@@ -131,7 +139,7 @@ struct OnboardingView: View {
     }
     
     private var listsDemo: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 12)], spacing: 12) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 12)], spacing: 12) {
             ForEach(Self.lists) { list in
                 ListCard(
                     list: list,

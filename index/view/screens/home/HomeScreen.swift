@@ -33,11 +33,19 @@ struct HomeScreen: View {
                 },
                 set: { newValue in
                     onboardingShowed = true
+                    
+                    Task {
+                        await NotificationManager.shared.request()
+                    }
                 }
             )
         ) {
             OnboardingView {
                 onboardingShowed = true
+                
+                Task {
+                    await NotificationManager.shared.request()
+                }
             }
         }
     }

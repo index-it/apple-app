@@ -32,7 +32,7 @@ struct ListScreen: View {
     @State private var showItemMovedToNextCategoryToast = false
     @State private var showItemMovedToPreviousCategoryToast = false
     
-    // TODO: imrpove ItemsDisplayer performance
+    // TODO: improve ItemsDisplayer performance
 //    @State private var debouncedSelectedCategory: IxListCategory? = nil
 
     @State private var showCategoryEditSheet = false
@@ -40,7 +40,7 @@ struct ListScreen: View {
     // MARK: Category creation
     @State private var showCategoryCreationSheet = false
     @State private var newCategoryName = ""
-    @State private var newCategoryNamePlaceholder = ""
+    @State private var newCategoryNamePlaceholder = "Category name"
     @State private var newCategoryColor = Color.accentColor
 
     // MARK: Selected item
@@ -51,7 +51,7 @@ struct ListScreen: View {
     // MARK: New item
     @State private var showItemCreationSheet = false
     @State private var newItemName = ""
-    @State private var newItemNamePlaceholder = ""
+    @State private var newItemNamePlaceholder = "Name"
     @State private var newItemLink = ""
     @State private var newItemNote = ""
     @State private var newItemCategory: String? = nil
@@ -530,27 +530,27 @@ struct ListScreen: View {
                     }
                 }
             }
-            .onChange(of: showItemCreationSheet, initial: true) { _, new in
-                if new {
-                    Task {
-                        await fetchItemTemplateSuggestion()
-                    }
-                }
-            }
-            .onChange(of: showCategoryCreationSheet, initial: true) { _, new in
-                if new {
-                    Task {
-                        await fetchCategoryTemplateSuggestion()
-                    }
-                }
-            }
-            .onChange(of: showCategoryEditSheet, initial: true) { _, new in
-                if new {
-                    Task {
-                        await fetchCategoryTemplateSuggestion()
-                    }
-                }
-            }
+//            .onChange(of: showItemCreationSheet, initial: true) { _, new in
+//                if new {
+//                    Task {
+//                        await fetchItemTemplateSuggestion()
+//                    }
+//                }
+//            }
+//            .onChange(of: showCategoryCreationSheet, initial: true) { _, new in
+//                if new {
+//                    Task {
+//                        await fetchCategoryTemplateSuggestion()
+//                    }
+//                }
+//            }
+//            .onChange(of: showCategoryEditSheet, initial: true) { _, new in
+//                if new {
+//                    Task {
+//                        await fetchCategoryTemplateSuggestion()
+//                    }
+//                }
+//            }
             .onChange(of: lists) { _, newLists in
                 guard let newList = newLists.first else {
                     navigationManager.pop()

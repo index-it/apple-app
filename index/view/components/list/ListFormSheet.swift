@@ -66,6 +66,7 @@ struct ListFormSheet: View {
                     
                     HStack(spacing: 12) {
                         Button {
+                            isNameFocused = false
                             showEmojiPicker = true
                         } label: {
                             Text(emoji)

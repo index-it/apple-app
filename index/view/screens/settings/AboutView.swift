@@ -6,10 +6,14 @@
 //
 
 import SwiftUI
+import StoreKit
 
 struct AboutView: View {
     @Environment(\.openURL) var openURL
+    @Environment(\.requestReview) var requestReview
+    
     @State private var showPaywall = false
+    
     @AppStorage(AppStorageKeys.logged_in_user) private var user: User?
     
     var body: some View {
@@ -48,7 +52,7 @@ struct AboutView: View {
                         .padding(.top, 1)
                     
                     Button {
-                        // TODO
+                        requestReview()
                     } label: {
                         Label("Review App", systemImage: "heart")
                             .frame(maxWidth: .infinity)

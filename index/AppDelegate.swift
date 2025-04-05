@@ -23,18 +23,6 @@ class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate {
         
         UNUserNotificationCenter.current().delegate = self
         
-        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
-        UNUserNotificationCenter.current().requestAuthorization(
-            options: authOptions) { granted, error in
-                if granted {
-                    print("Notification permission granted")
-                } else if let error = error {
-                    print("Notification permission error: \(error.localizedDescription)")
-                }
-            }
-        application.registerForRemoteNotifications()
-        setupNotificationCategories()
-        
         return true
     }
     
@@ -65,17 +53,6 @@ class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate {
                 print("Failed sending firebase messaging token to the server: \(error)")
             }
         }
-    }
-    
-    func setupNotificationCategories() {
-        let taskCategory = UNNotificationCategory(
-            identifier: "TASK_REMINDER",
-            actions: [],
-            intentIdentifiers: [],
-            options: []
-        )
-        
-        UNUserNotificationCenter.current().setNotificationCategories([taskCategory])
     }
 }
 

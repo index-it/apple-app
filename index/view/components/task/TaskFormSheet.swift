@@ -68,6 +68,7 @@ enum EndRepeat {
 // MARK: View
 
 struct TaskFormSheet: View {
+    @EnvironmentObject private var errorService: ErrorStateService
     // MARK: View props
     @Binding var showSheet: Bool
     
@@ -502,6 +503,21 @@ struct TaskFormSheet: View {
         }
     }
     
+    func addReminder() {
+        if !reminders.isEmpty && user?.has_pro != true {
+            showPaywall = true
+        } else {
+            let timeOffset = (Calendar.current.component(.hour, from: createReminderTime) * 60 * 60 * 1000) + (Calendar.current.component(.minute, from: createReminderTime) * 60 * 1000)
+            
+            reminders.append(
+                IxTaskReminder(
+                    daysBefore: Int64(createReminderDays),
+                    timeOffset: Int64(IxDateUtils.reminderOffsetToUtc(Int64(timeOffset)))
+                )
+            )
+        }
+    }
+    
     var body: some View {
         NavigationView {
             Form {
@@ -748,17 +764,17 @@ struct TaskFormSheet: View {
     // Add Reminder Button
     var addReminderButton: some View {
         Button {
-            if !reminders.isEmpty && user?.has_pro != true {
-                showPaywall = true
-            } else {
-                let timeOffset = (Calendar.current.component(.hour, from: createReminderTime) * 60 * 60 * 1000) + (Calendar.current.component(.minute, from: createReminderTime) * 60 * 1000)
-                
-                reminders.append(
-                    IxTaskReminder(
-                        daysBefore: Int64(createReminderDays),
-                        timeOffset: Int64(IxDateUtils.reminderOffsetToUtc(Int64(timeOffset)))
-                    )
-                )
+            Task {
+                if !NotificationManager.shared.hasPermissions() {
+                    let accepted = await NotificationManager.shared.request()
+                    if accepted {
+                        addReminder()
+                    } else {
+                        errorService.insert(.customMessage(title: "Enable notifications", message: "Go into Settings > Apps > Index and enable notifications to use task reminders."))
+                    }
+                } else {
+                    addReminder()
+                }
             }
         } label: {
             Text("Add reminder")
