@@ -140,7 +140,7 @@ struct SettingsTabView: View {
                                     .foregroundStyle(.gray)
                             })
                         }.tint(.primary)
-                        Link(destination: URL(string: "https://apps.apple.com/TODO")!) {
+                        Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
                             Label(title: {
                                 Text("Terms of service")
                             }, icon: {

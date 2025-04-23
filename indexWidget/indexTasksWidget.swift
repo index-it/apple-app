@@ -225,7 +225,7 @@ struct TodayTasksProvider: TimelineProvider {
             
             // Create a predicate for today's tasks
             var calendar = Calendar.current
-//            calendar.timeZone = TimeZone(identifier: "UTC")!
+            calendar.timeZone = TimeZone(identifier: "UTC")!
             let now = Date.now.toLocalDate()
 
             let predicate = #Predicate<IxTask> {

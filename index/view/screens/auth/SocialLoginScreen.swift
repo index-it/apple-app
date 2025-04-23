@@ -116,7 +116,7 @@ struct SocialLoginScreen: View {
                     .padding()
                 
                 
-                Text("By continuing you agree to our \(Text("[Terms of Service](https://index-it.app/terms)").fontWeight(.semibold)) and \(Text("[Privacy Policy](https://index-it.app/privacy)").fontWeight(.semibold))")
+                Text("By continuing you agree to our \(Text("[Terms of Service](https://www.apple.com/legal/internet-services/itunes/dev/stdeula/)").fontWeight(.semibold)) and \(Text("[Privacy Policy](https://index-it.app/privacy)").fontWeight(.semibold))")
                     .tint(.primary)
                     .multilineTextAlignment(.center)
                     .font(.caption)

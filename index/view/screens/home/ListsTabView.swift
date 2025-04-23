@@ -282,7 +282,7 @@ struct ListsTabView: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
-                            if let user = user, !user.has_pro && lists.count >= 5 {
+                            if let user = user, !user.has_pro && lists.count >= 7 {
                                 showPaywall = true
                             } else {
                                 showCreationSheet = true
