@@ -16,6 +16,7 @@ struct TasksTabView: View {
     @Environment(\.modelContext) private var context
     
     @AppStorage(AppStorageKeys.logged_in_user) var user: User?
+    @State private var showPaywall = false
     
     // MARK: Date
     @State private var todayDate: Date = Date.now.toLocalDate()
@@ -87,8 +88,8 @@ struct TasksTabView: View {
             try await saveTask(task)
             
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
-        } catch IxApiClientError.ProRequired(let proFeature) {
-            // TODO: Show pro sheet with a global toggle
+        } catch IxApiClientError.ProRequired(_) {
+            showPaywall = true
         } catch {
             errorService.insert(.localizedError(title: "Error creating task", error: error))
         }
@@ -158,6 +159,7 @@ struct TasksTabView: View {
                 .floatingActionButton("plus", action: {
                     navigationManager.showCreateTaskSheet = true
                 })
+                .paywallCover(isPresented: $showPaywall)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         NavigationLink {

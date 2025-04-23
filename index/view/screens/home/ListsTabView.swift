@@ -97,8 +97,8 @@ struct ListsTabView: View {
             let list = try await ixApiClient.createList(name: name, icon: emoji, color: color.hexString(), is_public: isPublic)
             
             try await saveList(list)
-        } catch IxApiClientError.ProRequired(let proFeature) {
-            // TODO: Show pro sheet with a global toggle
+        } catch IxApiClientError.ProRequired(_) {
+            showPaywall = true
         } catch {
             errorService.insert(.localizedError(title: "Error creating list", error: error))
         }

@@ -19,23 +19,13 @@ struct TaskConnectedItemSectionView: View {
         item: IxListItem?,
         onDelete: @escaping () -> Void
     ) {
+        self.item = item
         self.onDelete = onDelete
         
         let categoryId = item?.category_id
         let listId = item?.list_id
         
-        if let categoryId = categoryId, let listId = listId {
-            var categoryDescriptor: FetchDescriptor<IxListCategory>
-            
-            categoryDescriptor = FetchDescriptor<IxListCategory> (
-                predicate: #Predicate { category in
-                    category.id == categoryId
-                }
-            )
-            
-            categoryDescriptor.fetchLimit = 1
-            _categories = Query(categoryDescriptor)
-            
+        if let listId = listId {
             var listDescriptor: FetchDescriptor<IxList>
             
             listDescriptor = FetchDescriptor<IxList> (
@@ -46,6 +36,25 @@ struct TaskConnectedItemSectionView: View {
             
             listDescriptor.fetchLimit = 1
             _lists = Query(listDescriptor)
+            
+            if let categoryId = categoryId {
+                var categoryDescriptor: FetchDescriptor<IxListCategory>
+                
+                categoryDescriptor = FetchDescriptor<IxListCategory> (
+                    predicate: #Predicate { category in
+                        category.id == categoryId
+                    }
+                )
+                
+                categoryDescriptor.fetchLimit = 1
+                _categories = Query(categoryDescriptor)
+            } else {
+                let categoryDescriptor = FetchDescriptor<IxListCategory> (
+                    predicate: #Predicate { _ in false }
+                )
+                
+                _categories = Query(categoryDescriptor)
+            }
         } else {
             let categoryDescriptor = FetchDescriptor<IxListCategory> (
                 predicate: #Predicate { _ in false }

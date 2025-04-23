@@ -41,7 +41,9 @@ struct ItemFormSheet: View {
         self.category = category
         self.link = link ?? ""
         self.note = note ?? ""
-        self.categories = categories
+        self.categories = categories.sorted {
+            $0.name < $1.name
+        }
         self.namePlaceholder = namePlaceholder
         self.onSave = onSave
     }

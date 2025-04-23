@@ -10,6 +10,7 @@ import SwiftData
 
 struct ItemsList: View {
     private var listId: String
+    private var listColor: Color
     private var category: IxListCategory?
     
     private var itemFilter: ItemFilter
@@ -26,13 +27,14 @@ struct ItemsList: View {
     
     @Query private var items: [IxListItem]
     
-    private var color: Color? {
-        guard let category = category else { return nil }
+    private var color: Color {
+        guard let category = category else { return listColor }
         return Color(hexString: category.color)
     }
     
     init(
         listId: String,
+        listColor: Color,
         category: IxListCategory?,
         itemFilter: ItemFilter,
         itemSorting: ItemSorting,
@@ -47,6 +49,7 @@ struct ItemsList: View {
         onDelete: @escaping (IxListItem) -> Void
     ) {
         self.listId = listId
+        self.listColor = listColor
         self.category = category
         self.itemFilter = itemFilter
         self.onClearItemFilter = onClearItemFilter
@@ -126,9 +129,9 @@ struct ItemsList: View {
                     Spacer()
                     
                     ContentUnavailableView {
-                        Label(itemFilter == .completed ? "No completed items" : "No items", systemImage: "binoculars")
+                        Label("No items", systemImage: "binoculars")
                     } description: {
-                        Text(itemFilter == .completed ? "You didn't complete any item yet" : "There are no items in this category")
+                        Text(category == nil ? "There are no uncategorized items" : "There are no items in this category") // TODO
                     } actions: {
                         if itemFilter == .completed {
                             Button {

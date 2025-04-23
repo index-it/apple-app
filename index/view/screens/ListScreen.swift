@@ -16,6 +16,8 @@ struct ListScreen: View {
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
     
+    @State private var showPaywall = false
+    
     private var listId: String
     
     @AppStorage(AppStorageKeys.colors_suggestions) var colorsSuggested: [Color] = AppStorageKeys.Defaults.colors
@@ -68,6 +70,18 @@ struct ListScreen: View {
     @AppStorage private var hideDefaultCategory: Bool
     @AppStorage(AppStorageKeys.category_sorting) private var categorySorting = AppStorageKeys.Defaults.category_sorting
     @AppStorage(AppStorageKeys.category_reverse_sorting) private var categoryReverseSorting = AppStorageKeys.Defaults.category_reverse_sorting
+    
+    private var contentColor: Color {
+        guard let selectedCategory = selectedCategory else {
+            if list.user_id == "loading" {
+                return Color.accentColor
+            } else {
+                return list.color.toColor(fallback: .accentColor)
+            }
+        }
+        
+        return selectedCategory.color.toColor(fallback: .accentColor)
+    }
 
     init(listId: String) {
         self.listId = listId
@@ -305,8 +319,8 @@ struct ListScreen: View {
             }
             
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
-        } catch IxApiClientError.ProRequired(let proFeature) {
-            // TODO: Show pro sheet with a global toggle
+        } catch IxApiClientError.ProRequired(_) {
+            showPaywall = true
         } catch {
             errorService.insert(.localizedError(title: "Error creating task", error: error))
         }
@@ -421,29 +435,23 @@ struct ListScreen: View {
                 }
             )
             .navigationTitle(list.name)
+            .paywallCover(isPresented: $showPaywall)
             .toolbar {
                 // MARK: - Toolbar
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Section {
-                            Toggle("Show completed", isOn: Binding(get: {
-                                itemFilter == .all
-                            }, set: { newValue in
-                                if newValue {
-                                    itemFilter = .all
-                                } else {
-                                    itemFilter = .uncompleted
+                            Toggle("Show completed", isOn: Binding(
+                                get: {
+                                    itemFilter == .all
+                                }, set: { newValue in
+                                    if newValue {
+                                        itemFilter = .all
+                                    } else {
+                                        itemFilter = .uncompleted
+                                    }
                                 }
-                            }))
-                            
-//                            Picker(selection: $itemFilter) {
-//                                ForEach(ItemFilter.allCases) { filter in
-//                                    Text(filter.rawValue)
-//                                        .tag(filter)
-//                                }
-//                            } label: {
-//                                Label("Items filter", systemImage: "line.3.horizontal.decrease")
-//                            }.pickerStyle(.menu)
+                            ))
                             
                             Picker(selection: $itemSorting) {
                                 ForEach(ItemSorting.allCases) { sort in
@@ -486,7 +494,7 @@ struct ListScreen: View {
                             Label("Create item", systemImage: "plus.circle.fill")
                                 .labelStyle(.titleAndIcon)
                                 .fontWeight(.semibold)
-                                .foregroundStyle(selectedCategory?.color.toColor(fallback: .accentColor) ?? Color.accentColor)
+                                .foregroundStyle(contentColor)
                         }
                         
                         Spacer()
@@ -530,28 +538,7 @@ struct ListScreen: View {
                     }
                 }
             }
-//            .onChange(of: showItemCreationSheet, initial: true) { _, new in
-//                if new {
-//                    Task {
-//                        await fetchItemTemplateSuggestion()
-//                    }
-//                }
-//            }
-//            .onChange(of: showCategoryCreationSheet, initial: true) { _, new in
-//                if new {
-//                    Task {
-//                        await fetchCategoryTemplateSuggestion()
-//                    }
-//                }
-//            }
-//            .onChange(of: showCategoryEditSheet, initial: true) { _, new in
-//                if new {
-//                    Task {
-//                        await fetchCategoryTemplateSuggestion()
-//                    }
-//                }
-//            }
-            .onChange(of: lists) { _, newLists in
+            .onChange(of: lists, initial: true) { _, newLists in
                 guard let newList = newLists.first else {
                     navigationManager.pop()
                     return
@@ -564,6 +551,7 @@ struct ListScreen: View {
     private var ScreenContent: some View {
         ItemsList(
             listId: listId,
+            listColor: contentColor,
             category: selectedCategory,
             itemFilter: itemFilter,
             itemSorting: itemSorting,

@@ -39,8 +39,7 @@ struct AccountSettingsView: View {
     
     private func deleteAccount() async {
         do {
-            // TODO: Uncomment on release
-            // try await ixApiClient.deleteLoggedInUser()
+            try await ixApiClient.deleteLoggedInUser()
         } catch {
             errorService.insert(.localizedError(title: "Error deleting account", error: error))
         }

@@ -119,7 +119,7 @@ struct AddListItemFormSheet: View {
                 Section {
                     if !lists.isEmpty {
                         Picker(selection: $selectedListId) {
-                            ForEach(lists, id: \.id) { list in
+                            ForEach(lists.sorted{ $0.name < $1.name }, id: \.id) { list in
                                 Text("\(list.icon)  \(list.name)")
                                     .tag(list.id)
                             }
@@ -132,7 +132,7 @@ struct AddListItemFormSheet: View {
                     Picker(selection: $selectedCategoryId) {
                         Text("No category").tag(nil as String?)
 
-                        ForEach(categories.filter { cat in cat.list_id == selectedListId }, id: \.id) { category in
+                        ForEach(categories.filter { cat in cat.list_id == selectedListId }.sorted{ $0.name < $1.name }, id: \.id) { category in
                             Text(category.name).tag(category.id)
                         }
                     } label: {

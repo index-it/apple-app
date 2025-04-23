@@ -625,6 +625,10 @@ struct TaskFormSheet: View {
                     withAnimation {
                         dueDate = newValue ? Date.now : nil
                     }
+                    
+                    if newValue {
+                        isNameFocused = false
+                    }
                 })
         ) {
             Label {

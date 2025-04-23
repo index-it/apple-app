@@ -26,6 +26,7 @@ struct AboutView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 100, height: 100)
+                    .cornerRadius(20)
                     .padding(.bottom, 8)
                     .padding(.top, 48)
                     
