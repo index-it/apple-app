@@ -11,52 +11,72 @@ import SwiftData
 import GoogleSignIn
 import FirebaseMessaging
 import RevenueCat
+import IxCoreKit
 
+fileprivate let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "AppEntrypoint")
+
+///
+/// ## Authentication logic
+///
+/// **AuthenticationHelper**
+/// Simple class that holds the status of network and local authentication values
+/// We react to:
+/// - network auth change: set new value to the @AppStorage user + perform the core operations of user authentication
+/// - local auth change: update navigation, we want navigation to be driven by the local value because it's faster on app load
+///
+/// **Network authentication**
+/// Network authentication source of truth is the api client.
+/// We pass a callback to the client for auth change events, the callback simply sets the new status in the AuthenticationHelper
+///
+/// **Local authentication**
+/// Local authentication source of truth is the @AppStorage user value
+/// We react to its changes and simply sets the new status in the AuthenticationHelper
+///
 @main
 struct indexApp: App {
-    private static let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "index-app-entrypoint")
-    
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
-    // managers
+    @StateObject private var authenticationHelper: AuthenticationHelper
+    @AppStorage(AppStorageKeys.loggedInUser, store: UserDefaults(suiteName: IxIdentifiers.APP_GROUP)!) private var user: User?
+    
     @StateObject private var navigationManager = NavigationManager()
     @StateObject private var authNavigationManager = AuthNavigationManager()
     @StateObject private var errorService = ErrorStateService()
     
-    // clients
     private var modelContainer: ModelContainer
-    @StateObject private var ixApiClient: IxApiClient
+    private var ixApiClient: IxApiClient
     private var ixWebsocketClient: IxWebsocketClient
     
-    // auth & user
-    @AppStorage(AppStorageKeys.logged_in_user) var user: User?
-    @State private var authStatus: AuthStatus = .Loading
-    
-    // webview
     @State private var presentingSafariView = false
-    @State private var urlToOpen: URL?
+    @State private var urlToPresentInSafariView: URL?
     
     init() {
-        let apiClient = IxApiClient()
-        self._ixApiClient = StateObject(wrappedValue: apiClient)
-        
         self.modelContainer = ModelContainerProvider.shared
         
-        let websocketEventHandler = IxWebsocketEventHandler(ixApiClient: apiClient, modelContext: modelContainer.mainContext)
+        let authHelper = AuthenticationHelper()
+        self._authenticationHelper = StateObject(wrappedValue: authHelper)
+        
+        self.ixApiClient = IxApiClient { newAuthStatus in
+            Task { @MainActor in
+                authHelper.setBackendAuthStatus(newAuthStatus)
+            }
+        }
+        
+        let websocketEventHandler = IxWebsocketEventHandler(ixApiClient: ixApiClient, modelContext: modelContainer.mainContext)
         let websocketClient = IxWebsocketClient(ixWebsocketEventHandler: websocketEventHandler)
         self.ixWebsocketClient = websocketClient
     }
     
-    func handleNewNetworkAuthStatus(networkAuthStatus: AuthStatus) {
-        switch networkAuthStatus {
-        case .Loading:
-            Self.log.debug("network client authentication loading")
-        case .Unauthenticated:
-            Self.log.debug("network client unauthenticated")
+    func onBackendAuthStatusChange(_ authStatus: AuthStatus) {
+        switch authStatus {
+        case .loading:
+            log.debug("api client authentication loading")
+        case .unauthenticated:
+            log.debug("api client unauthenticated")
             
-            self.user = nil
-            
-            DispatchQueue.main.async {
+            Task { @MainActor in
+                self.user = nil
+                
                 do {
                     try modelContainer.mainContext.transaction {
                         try modelContainer.mainContext.delete(model: IxList.self)
@@ -64,130 +84,108 @@ struct indexApp: App {
                         try modelContainer.mainContext.delete(model: IxListItem.self)
                         try modelContainer.mainContext.delete(model: IxTask.self)
                     }
-                } catch {}
-            }
-            
-            SyncRegister.shared.resetState()
-            
-            ixWebsocketClient.disconnectFromWebsocket()
-        case let .Authenticated(user: networkUser):
-            Self.log.debug("network client authenticated - id: \(networkUser.id) - email: \(networkUser.email)")
-            self.user = networkUser
-            
-            SyncRegister.shared.resetState()
-            
-            ixWebsocketClient.connectAndListenToWebsocket()
-            
-            Task {
-                do {
-                    let firebaseMessagingToken = try await Messaging.messaging().token()
-                    try await self.ixApiClient.sendNotificationRegistrationToken(token: firebaseMessagingToken)
                 } catch {
-                    print("Failed sending firebase messaging token to server: \(error)")
+                    log.error("Failed to clear database data: \(error)")
                 }
             }
             
-            Task {
-                do {
-                    let _ = try await Purchases.shared.logIn(networkUser.id)
-                } catch {
-                    print("Failed logging in user in revenue cat: \(error)")
-                }
+            
+            Task.detached {
+                async let disconnectResult: () = ixWebsocketClient.disconnect()
+                async let clearRegisterResult: () = SyncRegister.shared.clear()
+                async let revenueCatResult: () = RevenueCatHelper.logout()
+                
+                _ = await (disconnectResult, clearRegisterResult, revenueCatResult)
+            }
+        case let .authenticated(user: networkUser):
+            log.debug("network client authenticated - id: \(networkUser.id) - email: \(networkUser.email)")
+            
+            Task { @MainActor in
+                self.user = networkUser
+            }
+            
+            Task.detached {
+                await SyncRegister.shared.clear()
+                await ixWebsocketClient.connectAndHandleMessages()
+            }
+            
+            Task.detached {
+                async let firebaseTask: () = registerFirebaseToken(ixApiClient: ixApiClient)
+                async let revenueCatTask: () = RevenueCatHelper.login(userId: networkUser.id)
+                
+                await (_, _) = (firebaseTask, revenueCatTask)
             }
         }
     }
     
-    func handleNewAppStorageUser(user: User?) {
-        guard let nonNilUser = user else {
-            Self.log.debug("received nil user from AppStorage, setting the authStatus to Unauthenticated")
-            DispatchQueue.main.async {
-                authStatus = .Unauthenticated
-                navigationManager.clear()
-            }
-            return
-        }
-        
-        Self.log.debug("received user from AppStorage - id: \(nonNilUser.id) - email: \(nonNilUser.email)")
-        
-        DispatchQueue.main.async {
-            authStatus = .Authenticated(user: nonNilUser)
+    func onLocalAuthStatusChange(_ authStatus: AuthStatus) {
+        switch authStatus {
+        case .loading:
+            log.debug("loading user from AppStorage")
+        case .unauthenticated:
+            log.debug("user not locally authenticated, AppStorage user is nil")
+            navigationManager.clear()
+            errorService.clear()
+        case .authenticated(user: let user):
+            log.debug("received user from AppStorage - id: \(user.id) - email: \(user.email)")
+            errorService.clear()
             authNavigationManager.clear()
             navigationManager.clear()
         }
     }
     
-    
-    func handleIncomingURL(_ url: URL) {
-        if GIDSignIn.sharedInstance.handle(url) {
-            return
-        }
-        
-        handleInAppNavigation(url)
-    }
-    
-    func handleInAppNavigation(_ url: URL) {
-        if url.host() != "web.index-it.app" {
-            return
-        }
-        
-        // Extract the path components, ignoring the domain for Universal Links
-        let pathComponents = url.pathComponents.filter { $0 != "/" && !$0.isEmpty }
-        guard pathComponents.count >= 1 else { return }
-        
-        // Rest of your URL parsing logic remains the same
-        let section = pathComponents[0]
-        
-        switch section {
-        case "create-item":
-            navigationManager.navigateToTab(.lists, showCreateSheet: true)
-        case "create-task":
-            navigationManager.navigateToTab(.tasks, showCreateSheet: true)
-        case "lists":
-            if let listId = pathComponents[safe: 1] {
-                print(listId)
-                navigationManager.push(navigationRoute: .listRoute(listId: listId))
-            } else {
-                navigationManager.navigateToTab(.lists)
-            }
-        case "tasks":
-            navigationManager.navigateToTab(.tasks)
-        case "settings":
-            navigationManager.navigateToTab(.settings)
-        default:
-            return
+    private func registerFirebaseToken(ixApiClient: IxApiClient) async {
+        do {
+            let firebaseMessagingToken = try await Messaging.messaging().token()
+            try await ixApiClient.sendNotificationRegistrationToken(token: firebaseMessagingToken)
+        } catch {
+            log.error("Failed sending firebase messaging token to server: \(error)")
         }
     }
+    
     
     var body: some Scene {
         WindowGroup {
-            MainView(authStatus: $authStatus)
-                .environmentObject(navigationManager)
+            MainView(authStatus: authenticationHelper.localAuthStatus)
+                .onChange(of: authenticationHelper.backendAuthStatus, initial: true) { _, newBackendAuthStatus in
+                    onBackendAuthStatusChange(newBackendAuthStatus)
+                }
+                .onChange(of: authenticationHelper.localAuthStatus, initial: true) { _, newLocalAuthStatus in
+                    onLocalAuthStatusChange(newLocalAuthStatus)
+                }
+                .onChange(of: user, initial: true) { _, newLocalUser in
+                    if let newLocalUser = newLocalUser {
+                        authenticationHelper.setLocalAuthStatus(.authenticated(user: newLocalUser))
+                    } else {
+                        authenticationHelper.setLocalAuthStatus(.unauthenticated)
+                    }
+                }
                 .environmentObject(authNavigationManager)
-                .environmentObject(ixApiClient)
+                .environmentObject(navigationManager)
                 .environmentObject(errorService)
+                .environment(\.ixApiClient, ixApiClient)
                 .modelContainer(modelContainer)
-                .onReceive(ixApiClient.$authenticationStatus) { newValue in
-                    handleNewNetworkAuthStatus(networkAuthStatus: newValue)
-                }
-                .onChange(of: user, initial: true) { _, newValue in
-                    handleNewAppStorageUser(user: newValue)
-                }
+                .defaultAppStorage(UserDefaults(suiteName: IxIdentifiers.APP_GROUP)!)
                 .alertPresentationWindow(service: errorService)
-                .onOpenURL(perform: { url in
-                    handleIncomingURL(url)
-                })
+                .onReceive(NotificationCenter.default.publisher(for: .navigateToTasks)) { notification in
+                    navigationManager.navigateToTab(.tasks)
+                }
+                .onOpenURL { url in
+                    if GIDSignIn.sharedInstance.handle(url) {
+                        return
+                    }
+                    
+                    UniversalLinksHelper.handleUniversalLink(url, navigationManager: navigationManager)
+                }
                 .environment(\.openURL, OpenURLAction { url in
-                    self.urlToOpen = url
+                    self.urlToPresentInSafariView = url
                     self.presentingSafariView = true
                     return .handled
                 })
-                .sheet(isPresented: $presentingSafariView, onDismiss: { self.urlToOpen = nil }) { [urlToOpen] in
-                    if let url = urlToOpen {
+                .sheet(isPresented: $presentingSafariView, onDismiss: { self.urlToPresentInSafariView = nil }) { [urlToPresentInSafariView] in
+                    if let url = urlToPresentInSafariView {
                         SafariView(url: url)
                     }
-                }
-                .onReceive(NotificationCenter.default.publisher(for: .navigateToTasks)) { notification in
-                    navigationManager.navigateToTab(.tasks)
                 }
         }
     }

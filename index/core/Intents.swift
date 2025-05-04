@@ -9,6 +9,7 @@ import AppIntents
 import SwiftUI
 import SwiftData
 import WidgetKit
+import IxCoreKit
 
 struct CreateTaskIntent: AppIntent {
     static var title: LocalizedStringResource = "Create Task"
@@ -17,7 +18,7 @@ struct CreateTaskIntent: AppIntent {
     func perform() async throws -> some IntentResult & OpensIntent {
         // Construct the URL to open the app on the create task page
         guard let url = URL(string: "https://web.index-it.app/create-task") else {
-            throw IxError.runtimeError("Couldn't create app intent url")
+            throw URLError(.badURL)
         }
         
         return .result(opensIntent: OpenURLIntent(url))
@@ -32,7 +33,7 @@ struct CreateListItemIntent: AppIntent {
     
     func perform() async throws -> some IntentResult & OpensIntent {
         guard let url = URL(string: "https://web.index-it.app/create-item") else {
-            throw IxError.runtimeError("Couldn't create app intent url")
+            throw URLError(.badURL)
         }
         
         return .result(opensIntent: OpenURLIntent(url))

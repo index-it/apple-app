@@ -21,6 +21,10 @@ public final class ErrorStateService: ObservableObject {
         alerts.removeAll { $0.id == id }
     }
     
+    public func clear() {
+        alerts.removeAll()
+    }
+    
     public func hasAlert(id: ErrorAlert.ID) -> Bool {
         alerts.contains { $0.id == id }
     }

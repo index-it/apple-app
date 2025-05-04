@@ -13,5 +13,4 @@ enum NavigationRoute: Hashable {
     case accountSettings;
     case proSettings;
     case about;
-//    case GetPro
 }

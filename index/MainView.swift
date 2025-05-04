@@ -7,22 +7,22 @@
 
 import SwiftUI
 import SwiftData
+import IxCoreKit
 
 struct MainView: View {
     @EnvironmentObject var navigationManager: NavigationManager
-    @EnvironmentObject var ixApiClient: IxApiClient
     
-    @Binding var authStatus: AuthStatus
+    let authStatus: AuthStatus
 
     var body: some View {
         NavigationStack(path: $navigationManager.path) {
             Group {
                 switch authStatus {
-                case .Loading:
+                case .loading:
                     SplashScreen()
-                case .Unauthenticated:
+                case .unauthenticated:
                     SocialLoginScreen()
-                case .Authenticated:
+                case .authenticated:
                     HomeScreen()
                 }
             }.navigationDestination(for: NavigationRoute.self) { destination in
@@ -41,12 +41,4 @@ struct MainView: View {
             }
         }
     }
-}
-
-#Preview {
-    @Previewable @State var authStatus = AuthStatus.Loading
-    
-    MainView(authStatus: $authStatus)
-        .environmentObject(NavigationManager())
-        .environmentObject(IxApiClient())
 }

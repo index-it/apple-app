@@ -11,6 +11,7 @@ import MCEmojiPicker
 struct ListFormSheet: View {
     @Binding var showSheet: Bool
     
+    @AppStorage()
     @AppStorage(AppStorageKeys.logged_in_user) private var user: User?
     @State private var showPaywall = false
     

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		090499B62DC52D9800E9AE3D /* IxCoreKit in Frameworks */ = {isa = PBXBuildFile; productRef = 090499B52DC52D9800E9AE3D /* IxCoreKit */; };
 		0915C1692CB80DA1003CF70B /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 0915C1682CB80DA1003CF70B /* GoogleSignIn */; };
 		0915C16B2CB80DA1003CF70B /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 0915C16A2CB80DA1003CF70B /* GoogleSignInSwift */; };
 		092F90AF2D7296A300760176 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 092F90AE2D7296A300760176 /* RevenueCat */; };
@@ -60,6 +61,7 @@
 		092FE7C52D7F3C8200F38388 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		093287D92C9C811200A0717E /* index.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = index.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0973F6F72D86E1BF0034BE63 /* indexWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = indexWidgetExtension.entitlements; sourceTree = "<group>"; };
+		09B6252C2DBF8AE900E60C6E /* IxCoreKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = IxCoreKit; sourceTree = "<group>"; };
 		09F48F3B2D7E623D00CA50AC /* indexShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = indexShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -81,44 +83,7 @@
 		092FE7E42D7F428700F38388 /* Exceptions for "index" folder in "indexWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				core/date/IxDateUtils.swift,
-				core/extensions/DateExtentions.swift,
 				core/Intents.swift,
-				core/IxError.swift,
-				core/IxKinds.swift,
-				data/ModelContainerProvider.swift,
-				data/models/AuthStatus.swift,
-				data/models/EntityType.swift,
-				data/models/IxList.swift,
-				data/models/IxListCategory.swift,
-				data/models/IxListItem.swift,
-				data/models/IxListPermission.swift,
-				data/models/IxTask.swift,
-				data/models/ProFeature.swift,
-				data/models/User.swift,
-				data/models/UserCreationSource.swift,
-				data/models/WelcomeAction.swift,
-				data/network/IxApiClient.swift,
-				data/network/IxApiClientException.swift,
-				data/network/IxCookieStorageProvider.swift,
-				data/network/models/IxListSingleUserAccessInfo.swift,
-				data/network/models/NetworkList.swift,
-				data/network/models/NetworkListCategory.swift,
-				data/network/models/NetworkListItem.swift,
-				data/network/models/NetworkListItemContent.swift,
-				data/network/models/NetworkSuggestions.swift,
-				data/network/models/NetworkTask.swift,
-				data/network/models/NetworkUser.swift,
-				data/network/request/EmailAndPasswordReqBody.swift,
-				data/network/request/ListCategoryCreateOrEditReqBody.swift,
-				data/network/request/ListContentUpdateReqBody.swift,
-				data/network/request/ListCreateOrEditReqBody.swift,
-				data/network/request/ListGiveUserAccessReqBody.swift,
-				data/network/request/ListItemCreateOrEditReqBody.swift,
-				data/network/request/ListRemoveUserAccessReqBody.swift,
-				data/network/request/TaskCreateOrEditReqBody.swift,
-				data/network/response/WelcomeActionResponse.swift,
-				data/network/SyncRegister.swift,
 				"GoogleService-Info.plist",
 			);
 			target = 092FE7C12D7F3C8200F38388 /* indexWidgetExtension */;
@@ -133,44 +98,7 @@
 		09EA31C12D7E69F3003FD174 /* Exceptions for "index" folder in "indexShareExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				core/date/IxDateUtils.swift,
-				core/extensions/DateExtentions.swift,
 				core/Intents.swift,
-				core/IxError.swift,
-				core/IxKinds.swift,
-				data/ModelContainerProvider.swift,
-				data/models/AuthStatus.swift,
-				data/models/EntityType.swift,
-				data/models/IxList.swift,
-				data/models/IxListCategory.swift,
-				data/models/IxListItem.swift,
-				data/models/IxListPermission.swift,
-				data/models/IxTask.swift,
-				data/models/ProFeature.swift,
-				data/models/User.swift,
-				data/models/UserCreationSource.swift,
-				data/models/WelcomeAction.swift,
-				data/network/IxApiClient.swift,
-				data/network/IxApiClientException.swift,
-				data/network/IxCookieStorageProvider.swift,
-				data/network/models/IxListSingleUserAccessInfo.swift,
-				data/network/models/NetworkList.swift,
-				data/network/models/NetworkListCategory.swift,
-				data/network/models/NetworkListItem.swift,
-				data/network/models/NetworkListItemContent.swift,
-				data/network/models/NetworkSuggestions.swift,
-				data/network/models/NetworkTask.swift,
-				data/network/models/NetworkUser.swift,
-				data/network/request/EmailAndPasswordReqBody.swift,
-				data/network/request/ListCategoryCreateOrEditReqBody.swift,
-				data/network/request/ListContentUpdateReqBody.swift,
-				data/network/request/ListCreateOrEditReqBody.swift,
-				data/network/request/ListGiveUserAccessReqBody.swift,
-				data/network/request/ListItemCreateOrEditReqBody.swift,
-				data/network/request/ListRemoveUserAccessReqBody.swift,
-				data/network/request/TaskCreateOrEditReqBody.swift,
-				data/network/response/WelcomeActionResponse.swift,
-				data/network/SyncRegister.swift,
 				"GoogleService-Info.plist",
 				view/controls/AddListItemFormSheet.swift,
 			);
@@ -234,6 +162,7 @@
 				0915C1692CB80DA1003CF70B /* GoogleSignIn in Frameworks */,
 				0932EB3B2CEB6BBF00321EEE /* DynamicColor in Frameworks */,
 				092F90AF2D7296A300760176 /* RevenueCat in Frameworks */,
+				090499B62DC52D9800E9AE3D /* IxCoreKit in Frameworks */,
 				092F90B12D7296A300760176 /* RevenueCatUI in Frameworks */,
 				0915C16B2CB80DA1003CF70B /* GoogleSignInSwift in Frameworks */,
 				0992A7412D8A44B400EF7B33 /* FirebaseCore in Frameworks */,
@@ -254,6 +183,7 @@
 		093287D02C9C811200A0717E = {
 			isa = PBXGroup;
 			children = (
+				09B6252C2DBF8AE900E60C6E /* IxCoreKit */,
 				0973F6F72D86E1BF0034BE63 /* indexWidgetExtension.entitlements */,
 				093287DB2C9C811200A0717E /* index */,
 				09F48F3C2D7E623D00CA50AC /* indexShareExtension */,
@@ -336,6 +266,7 @@
 				092FE7BC2D7F2BCC00F38388 /* Starscream */,
 				0992A7402D8A44B400EF7B33 /* FirebaseCore */,
 				0992A7422D8A44BB00EF7B33 /* FirebaseMessaging */,
+				090499B52DC52D9800E9AE3D /* IxCoreKit */,
 			);
 			productName = index;
 			productReference = 093287D92C9C811200A0717E /* index.app */;
@@ -482,7 +413,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = indexWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 79VJQ9DB34;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = indexWidget/Info.plist;
@@ -512,7 +443,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = indexWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 79VJQ9DB34;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = indexWidget/Info.plist;
@@ -657,7 +588,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = index/index.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"index/Preview Content\"";
 				DEVELOPMENT_TEAM = 79VJQ9DB34;
 				ENABLE_PREVIEWS = YES;
@@ -679,7 +610,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.index-it.index";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -699,7 +630,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = index/index.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"index/Preview Content\"";
 				DEVELOPMENT_TEAM = 79VJQ9DB34;
 				ENABLE_PREVIEWS = YES;
@@ -721,7 +652,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.index-it.index";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -739,7 +670,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = indexShareExtension/indexShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 79VJQ9DB34;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = indexShareExtension/Info.plist;
@@ -767,7 +698,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = indexShareExtension/indexShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 79VJQ9DB34;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = indexShareExtension/Info.plist;
@@ -884,6 +815,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		090499B52DC52D9800E9AE3D /* IxCoreKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = IxCoreKit;
+		};
 		0915C1682CB80DA1003CF70B /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 0915C1672CB80DA1003CF70B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;

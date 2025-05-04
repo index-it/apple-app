@@ -7,71 +7,79 @@
 
 import SwiftUI
 
+
+@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
 extension Color {
-    // MARK: hex support
-    init(hex: String) throws {
-        do {
-            let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-            var int: UInt64 = 0
-            Scanner(string: hex).scanHexInt64(&int)
-            let a, r, g, b: UInt64
-            switch hex.count {
-            case 3: // RGB (12-bit)
-                (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-            case 6: // RGB (24-bit)
-                (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-            case 8: // ARGB (32-bit)
-                (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-            default:
-                (a, r, g, b) = (1, 1, 1, 0)
-            }
-            
-            self.init(
-                .sRGB,
-                red: Double(r) / 255,
-                green: Double(g) / 255,
-                blue:  Double(b) / 255,
-                opacity: Double(a) / 255
-            )
-        } catch {
-            throw IxError.runtimeError("Invalid hex string")
-        }
+    /**
+     Creates a color from an hex string (e.g. "#3498db"). The RGBA string are also supported (e.g. "#3498dbff").
+
+     If the given hex string is invalid the initialiser will create a black color.
+
+     - parameter hexString: A hexa-decimal color string representation.
+     */
+    init(hexString: String) {
+      let hexString                 = hexString.trimmingCharacters(in: .whitespacesAndNewlines)
+      let scanner                   = Scanner(string: hexString)
+      scanner.charactersToBeSkipped = CharacterSet(charactersIn: "#")
+
+      var color: UInt64 = 0
+
+      if scanner.scanHexInt64(&color) {
+        self.init(hex: color, useOpacity: hexString.count > 7)
+      }
+      else {
+        self.init(hex: 0x000000)
+      }
     }
     
-    init(hex: String, fallback: Color) {
-        do {
-            let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-            var int: UInt64 = 0
-            Scanner(string: hex).scanHexInt64(&int)
-            let a, r, g, b: UInt64
-            switch hex.count {
-            case 3: // RGB (12-bit)
-                (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-            case 6: // RGB (24-bit)
-                (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-            case 8: // ARGB (32-bit)
-                (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-            default:
-                (a, r, g, b) = (1, 1, 1, 0)
-            }
-            
-            self.init(
-                .sRGB,
-                red: Double(r) / 255,
-                green: Double(g) / 255,
-                blue:  Double(b) / 255,
-                opacity: Double(a) / 255
-            )
-        } catch {
-            self.init(fallback)
-        }
+    /**
+     Creates a color from an hex string (e.g. "#3498db"). The RGBA string are also supported (e.g. "#3498dbff").
+
+     If the given hex string is invalid the initialiser will return nil.
+
+     - parameter hexString: A hexa-decimal color string representation.
+     */
+    init?(unsecureHexString: String) {
+      let hexString                 = unsecureHexString.trimmingCharacters(in: .whitespacesAndNewlines)
+      let scanner                   = Scanner(string: hexString)
+      scanner.charactersToBeSkipped = CharacterSet(charactersIn: "#")
+
+      var color: UInt64 = 0
+
+      if scanner.scanHexInt64(&color) {
+        self.init(hex: color, useOpacity: hexString.count > 7)
+      } else {
+        return nil
+      }
+    }
+
+    /**
+     Creates a color from an hex integer (e.g. 0x3498db).
+
+     - parameter hex: A hexa-decimal UInt64 that represents a color.
+     - parameter opacityChannel: If true the given hex-decimal UInt64 includes the opacity channel (e.g. 0xFF0000FF).
+     */
+    init(hex: UInt64, useOpacity opacityChannel: Bool = false) {
+      let mask      = UInt64(0xFF)
+      let cappedHex = !opacityChannel && hex > 0xffffff ? 0xffffff : hex
+
+      let r = cappedHex >> (opacityChannel ? 24 : 16) & mask
+      let g = cappedHex >> (opacityChannel ? 16 : 8) & mask
+      let b = cappedHex >> (opacityChannel ? 8 : 0) & mask
+      let o = opacityChannel ? cappedHex & mask : 255
+
+      let red     = Double(r) / 255.0
+      let green   = Double(g) / 255.0
+      let blue    = Double(b) / 255.0
+      let opacity = Double(o) / 255.0
+
+      self.init(red: red, green: green, blue: blue, opacity: opacity)
     }
     
     func hexString() -> String {
         return UIColor(self).toHexString()
     }
     
-    // MARK: light, dark & contrast
     var light: Self {
         var environment = EnvironmentValues()
         environment.colorScheme = .light
@@ -98,25 +106,12 @@ extension Color {
         // Calculate the perceptive luminance (luma)
         let luma = (0.299 * red) + (0.587 * green) + (0.114 * blue)
         
-        return luma <= 0.6
+        return luma > 0.6
     }
     
     /// Returns the best contrast color (black or white) for the given color.
     func contrastColor() -> Color {
-        // Convert the Color to a UIColor to access its RGB components.
-        let uiColor = UIColor(self)
-        var red: CGFloat = 0
-        var green: CGFloat = 0
-        var blue: CGFloat = 0
-        var alpha: CGFloat = 0
-        
-        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        
-        // Calculate the perceptive luminance (luma)
-        let luma = (0.299 * red) + (0.587 * green) + (0.114 * blue)
-        
-        // Return black for bright colors, white for dark colors
-        return luma > 0.6 ? .black : .white
+        return self.isLight() ? .black : .white
     }
 
 }
@@ -133,14 +128,10 @@ extension UIColor {
 
 extension String {
     func toColor(fallback: Color) -> Color {
-        return .init(hex: self, fallback: fallback)
+        return .init(hexString: self)
     }
     
     func toColorOrNil() -> Color? {
-        do {
-            return try .init(hex: self)
-        } catch {
-            return nil
-        }
+        return Color(unsecureHexString: self)
     }
 }

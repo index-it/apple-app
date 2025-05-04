@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import IxCoreKit
 
 struct AddListItemFormSheet: View {
     @EnvironmentObject private var ixApiClient: IxApiClient

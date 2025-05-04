@@ -9,9 +9,10 @@ import SwiftUI
 import FirebaseCore
 import FirebaseMessaging
 import RevenueCat
+import IxCoreKit
 
 class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate {
-    private let ixApiClient = IxApiClient()
+    private let ixApiClient = IxApiClient { _ in }
     
     // Application initialization
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
