@@ -7,10 +7,11 @@
 
 import Foundation
 import SwiftUI
+import IxCoreKit
 
 struct PasswordRegisterScreen: View {
+    @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject var authNavigationManager: AuthNavigationManager
-    @EnvironmentObject var ixApiClient: IxApiClient
     @EnvironmentObject private var errorService: ErrorStateService
 
     var email: String
@@ -43,7 +44,7 @@ struct PasswordRegisterScreen: View {
                 }
             }
             
-            authNavigationManager.push(navigationRoute: .EmailVerification(email: email, password: password, verificationEmailSent: true))
+            authNavigationManager.push(.EmailVerification(email: email, password: password, verificationEmailSent: true))
         } catch IxApiClientError.EmailOrPasswordFormatInvalid {
             loading = false
             errorService.insert(.customMessage(message: "Email or password formats are invalid, please make sure you provided a valid email and that your password contains at least an uppercase character, a lowercase one and a number. Additionally, the length must be between 8-100 characters!"))

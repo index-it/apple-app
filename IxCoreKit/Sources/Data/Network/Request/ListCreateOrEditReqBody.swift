@@ -9,6 +9,7 @@ struct ListCreateOrEditReqBody: Codable {
     let name: String
     let icon: String
     let color: String
+    let archived: Bool
     let is_public: Bool
     
     enum CodingKeys: String, CodingKey {

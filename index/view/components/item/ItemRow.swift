@@ -7,6 +7,7 @@
 
 import SwiftUI
 import DynamicColor
+import IxCoreKit
 
 struct ItemRow: View {
     @Environment(\.colorScheme) var colorScheme

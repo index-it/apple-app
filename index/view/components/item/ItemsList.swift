@@ -7,13 +7,14 @@
 
 import SwiftUI
 import SwiftData
+import IxCoreKit
 
 struct ItemsList: View {
     private var listId: String
     private var listColor: Color
     private var category: IxListCategory?
     
-    private var itemFilter: ItemFilter
+    private var showCompleted: Bool
     private var onClearItemFilter: () -> Void
     
     private var onCreateItem: () -> Void
@@ -29,16 +30,16 @@ struct ItemsList: View {
     
     private var color: Color {
         guard let category = category else { return listColor }
-        return Color(hexString: category.color)
+        return category.color.toColor()
     }
     
     init(
         listId: String,
         listColor: Color,
         category: IxListCategory?,
-        itemFilter: ItemFilter,
-        itemSorting: ItemSorting,
-        itemReverseSorting: Bool,
+        showCompleted: Bool,
+        sorting: ItemsSorting,
+        sortOrder: SortOrder,
         onClearItemFilter: @escaping () -> Void,
         onCreateItem: @escaping () -> Void,
         onOpenNotes: @escaping (IxListItem) -> Void,
@@ -51,7 +52,7 @@ struct ItemsList: View {
         self.listId = listId
         self.listColor = listColor
         self.category = category
-        self.itemFilter = itemFilter
+        self.showCompleted = showCompleted
         self.onClearItemFilter = onClearItemFilter
         self.onCreateItem = onCreateItem
         
@@ -66,33 +67,24 @@ struct ItemsList: View {
         
         var filterPredicate = #Predicate<IxListItem> { _ in true }
         
-        if itemFilter == .uncompleted {
+        if !showCompleted {
             filterPredicate = #Predicate<IxListItem> { item in
-                item.list_id == listId && item.category_id == categoryId && item.completed == false
+                item.listId == listId && item.categoryId == categoryId && item.completed == false
             }
-        } else if itemFilter == .all {
-            filterPredicate = #Predicate<IxListItem> { item in
-                item.list_id == listId && item.category_id == categoryId
-            }
-        } else if itemFilter == .completed {
-            filterPredicate = #Predicate<IxListItem> { item in
-                item.list_id == listId && item.category_id == categoryId && item.completed == true
-            }
-        }
-        
-        let sortOrder = if itemReverseSorting {
-            SortOrder.reverse
         } else {
-            SortOrder.forward
+            filterPredicate = #Predicate<IxListItem> { item in
+                item.listId == listId && item.categoryId == categoryId
+            }
         }
         
-        let sortDescriptor = switch itemSorting {
+        // TODO: Manual
+        let sortDescriptor = switch sorting {
         case .name:
             SortDescriptor(\IxListItem.name, order: sortOrder)
-        case .creation:
-            SortDescriptor(\IxListItem.created_at, order: sortOrder)
-        case .edit:
-            SortDescriptor(\IxListItem.edited_at, order: sortOrder)
+        case .creationDate:
+            SortDescriptor(\IxListItem.createdAt, order: sortOrder)
+        case .manual:
+            SortDescriptor(\IxListItem.editedAt, order: sortOrder)
         }
        
         _items = Query(filter: filterPredicate, sort: [SortDescriptor(\IxListItem.completed), sortDescriptor])
@@ -133,19 +125,11 @@ struct ItemsList: View {
                     } description: {
                         Text(category == nil ? "There are no uncategorized items" : "There are no items in this category") // TODO
                     } actions: {
-                        if itemFilter == .completed {
-                            Button {
-                                onClearItemFilter()
-                            } label: {
-                                Label("Clear filters", systemImage: "xmark")
-                            }.buttonStyle(.borderedProminent)
-                        } else {
-                            Button {
-                                onCreateItem()
-                            } label: {
-                                Label("Create item", systemImage: "plus")
-                            }.buttonStyle(.borderedProminent)
-                        }
+                        Button {
+                            onCreateItem()
+                        } label: {
+                            Label("Create item", systemImage: "plus")
+                        }.buttonStyle(.borderedProminent)
                     }
                     
                     Spacer()
@@ -153,12 +137,4 @@ struct ItemsList: View {
             }
         }
     }
-}
-
-#Preview {
-//    ItemsDisplayer(
-//        listId: "1",
-//        categoryId: nil,
-//        withCompleted: false
-//    )
 }

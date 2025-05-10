@@ -10,7 +10,7 @@ import Foundation
 class AuthNavigationManager: ObservableObject {
     @Published var path: [AuthNavigationRoute] = []
     
-    func push(navigationRoute: AuthNavigationRoute) {
+    func push(_ navigationRoute: AuthNavigationRoute) {
         path.append(navigationRoute)
     }
     

@@ -41,7 +41,6 @@ struct CategoryFormSheet: View {
     var body: some View {
         NavigationView {
             VStack {
-                
                 Form {
                     Section {
                         TextField(namePlaceholder, text: $name)
@@ -58,8 +57,6 @@ struct CategoryFormSheet: View {
                         Text("Scroll horizontally for more colors")
                     }
                 }
-                
-          
             }
             .background(Color(UIColor.systemGroupedBackground))
             .frame(maxHeight: .infinity, alignment: .top)

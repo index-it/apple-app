@@ -20,6 +20,8 @@
 		0992A7412D8A44B400EF7B33 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0992A7402D8A44B400EF7B33 /* FirebaseCore */; };
 		0992A7432D8A44BB00EF7B33 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 0992A7422D8A44BB00EF7B33 /* FirebaseMessaging */; };
 		099487EA2CEBC59500B3FC57 /* MCEmojiPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 099487E92CEBC59500B3FC57 /* MCEmojiPicker */; };
+		09D9117F2DCB63730087D915 /* IxCoreKit in Frameworks */ = {isa = PBXBuildFile; productRef = 09D9117E2DCB63730087D915 /* IxCoreKit */; };
+		09D911812DCB63770087D915 /* IxCoreKit in Frameworks */ = {isa = PBXBuildFile; productRef = 09D911802DCB63770087D915 /* IxCoreKit */; };
 		09F48F452D7E623D00CA50AC /* indexShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 09F48F3B2D7E623D00CA50AC /* indexShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -148,6 +150,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				09D911812DCB63770087D915 /* IxCoreKit in Frameworks */,
 				092FE7C62D7F3C8200F38388 /* SwiftUI.framework in Frameworks */,
 				092FE7C42D7F3C8200F38388 /* WidgetKit.framework in Frameworks */,
 			);
@@ -174,6 +177,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				09D9117F2DCB63730087D915 /* IxCoreKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -232,6 +236,7 @@
 			);
 			name = indexWidgetExtension;
 			packageProductDependencies = (
+				09D911802DCB63770087D915 /* IxCoreKit */,
 			);
 			productName = indexWidgetExtension;
 			productReference = 092FE7C22D7F3C8200F38388 /* indexWidgetExtension.appex */;
@@ -289,6 +294,7 @@
 			);
 			name = indexShareExtension;
 			packageProductDependencies = (
+				09D9117E2DCB63730087D915 /* IxCoreKit */,
 			);
 			productName = indexShareExtension;
 			productReference = 09F48F3B2D7E623D00CA50AC /* indexShareExtension.appex */;
@@ -863,6 +869,14 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 099487E82CEBC59500B3FC57 /* XCRemoteSwiftPackageReference "MCEmojiPicker" */;
 			productName = MCEmojiPicker;
+		};
+		09D9117E2DCB63730087D915 /* IxCoreKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = IxCoreKit;
+		};
+		09D911802DCB63770087D915 /* IxCoreKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = IxCoreKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

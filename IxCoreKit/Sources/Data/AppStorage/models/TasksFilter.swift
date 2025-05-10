@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum TasksFilter: CaseIterable, Identifiable {
+public enum TasksFilter: String, CaseIterable, Identifiable {
     case completed
     case uncompleted
         

@@ -7,9 +7,7 @@
 
 import SwiftUI
 
-
-@available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-extension Color {
+public extension Color {
     /**
      Creates a color from an hex string (e.g. "#3498db"). The RGBA string are also supported (e.g. "#3498dbff").
 
@@ -76,8 +74,14 @@ extension Color {
       self.init(red: red, green: green, blue: blue, opacity: opacity)
     }
     
-    func hexString() -> String {
-        return UIColor(self).toHexString()
+    var hexString: String {
+        let cg = UIColor(self).cgColor
+        let components = cg.components
+        let r: CGFloat = components?[0] ?? 0.0
+        let g: CGFloat = components?[1] ?? 0.0
+        let b: CGFloat = components?[2] ?? 0.0
+
+        return String.init(format: "#%02lX%02lX%02lX", lroundf(Float(r * 255)), lroundf(Float(g * 255)), lroundf(Float(b * 255)))
     }
     
     var light: Self {
@@ -116,18 +120,19 @@ extension Color {
 
 }
 
+// TODO: Add to app target
 extension Color: @retroactive Identifiable {
-    public var id: String { self.hexString() }
+    public var id: String { self.hexString }
 }
 
-extension UIColor {
+public extension UIColor {
     func toColor() -> Color {
         return Color(self)
     }
 }
 
-extension String {
-    func toColor(fallback: Color) -> Color {
+public extension String {
+    func toColor() -> Color {
         return .init(hexString: self)
     }
     

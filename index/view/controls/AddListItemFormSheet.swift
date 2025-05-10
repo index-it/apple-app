@@ -10,7 +10,7 @@ import SwiftData
 import IxCoreKit
 
 struct AddListItemFormSheet: View {
-    @EnvironmentObject private var ixApiClient: IxApiClient
+    @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @Environment(\.modelContext) private var context
 
     @State private var name: String

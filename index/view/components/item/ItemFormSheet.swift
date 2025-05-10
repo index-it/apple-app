@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import IxCoreKit
 
 struct ItemFormSheet: View {
     @Binding var showSheet: Bool
@@ -105,25 +106,5 @@ struct ItemFormSheet: View {
                 isNameFocused = true
             }
         }
-    }
-}
-
-#Preview {
-    @Previewable @State var show = true
-
-    ItemFormSheet(
-        showSheet: $show,
-        name: "",
-        category: nil,
-        link: nil,
-        note: nil,
-        categories: [
-            IxListCategory.loading(),
-            IxListCategory.loading(),
-            IxListCategory.loading()
-        ],
-        namePlaceholder: "Item name"
-    ) { name, category, link, note in
-        // Handle save action
     }
 }

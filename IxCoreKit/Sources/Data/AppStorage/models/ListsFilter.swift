@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum ListsFilter: CaseIterable, Identifiable {
+public enum ListsFilter: String, CaseIterable, Identifiable, Sendable {
     case all
     case ownedByMe
     case sharedWithMe

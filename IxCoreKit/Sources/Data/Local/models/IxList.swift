@@ -5,7 +5,7 @@
 //  Created by Giulio Pimenoff Verdolin on 18/11/24.
 //
 
-import Foundation
+import SwiftUI
 import SwiftData
 
 @Model
@@ -15,18 +15,20 @@ public class IxList {
     public var name: String
     public var icon: String
     public var color: String
+    public var archived: Bool
     public var isPublic: Bool
     public var viewers: [String]
     public var editors: [String]
     public var createdAt: Int64
     public var editedAt: Int64?
     
-    public init(id: String, userId: String, name: String, emoji: String, color: String, isPublic: Bool, viewers: [String], editors: [String], createdAt: Int64, editedAt: Int64? = nil) {
+    public init(id: String, userId: String, name: String, emoji: String, color: String, archived: Bool, isPublic: Bool, viewers: [String], editors: [String], createdAt: Int64, editedAt: Int64? = nil) {
         self.id = id
         self.userId = userId
         self.name = name
         self.icon = emoji
         self.color = color
+        self.archived = archived
         self.isPublic = isPublic
         self.viewers = viewers
         self.editors = editors
@@ -41,6 +43,7 @@ public class IxList {
             name: networkList.name,
             emoji: networkList.icon,
             color: networkList.color,
+            archived: networkList.archived,
             isPublic: networkList.is_public,
             viewers: networkList.viewers,
             editors: networkList.editors,
@@ -48,6 +51,7 @@ public class IxList {
             editedAt: networkList.edited_at
         )
     }
+    
     
     public var isShared: Bool {
         self.isPublic || !self.viewers.isEmpty || !self.editors.isEmpty
@@ -63,5 +67,43 @@ public class IxList {
         } else {
             return nil
         }
+    }
+    
+    public static func mock(
+        name: String,
+        emoji: String,
+        color: String,
+        archived: Bool = false,
+        isPublic: Bool = false
+    ) -> IxList {
+        return IxList(
+            id: UUID().uuidString,
+            userId: UUID().uuidString,
+            name: name,
+            emoji: emoji,
+            color: color,
+            archived: archived,
+            isPublic: isPublic,
+            viewers: [],
+            editors: [],
+            createdAt: Date.now.currentTimeMillis(),
+            editedAt: nil
+        )
+    }
+    
+    public static func loading() -> IxList {
+        return IxList(
+            id: UUID().uuidString,
+            userId: UUID().uuidString,
+            name: NSLocalizedString("Loading...", comment: "List name loading"),
+            emoji: "🔄",
+            color: Color.accentColor.hexString,
+            archived: false,
+            isPublic: false,
+            viewers: [],
+            editors: [],
+            createdAt: Date.now.currentTimeMillis(),
+            editedAt: nil
+        )
     }
 }

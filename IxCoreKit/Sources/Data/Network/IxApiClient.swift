@@ -515,14 +515,14 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.InvalidData`: If the parameters are invalid
     /// - `IxApiClientError.ProRequired`
     /// - `IxApiClientError.Unknown`
-    public func createList(name: String, icon: String, color: String, is_public: Bool) async throws -> IxList {
+    public func createList(name: String, icon: String, color: String, archived: Bool, is_public: Bool) async throws -> IxList {
         let url = Self.baseUrl.appendingPathComponent("/lists")
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let body = ListCreateOrEditReqBody(name: name, icon: icon, color: color, is_public: is_public)
+        let body = ListCreateOrEditReqBody(name: name, icon: icon, color: color, archived: archived, is_public: is_public)
         request.httpBody = try JSONEncoder().encode(body)
         
         let (data, response) = try await urlSession.data(for: request)
@@ -583,9 +583,9 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.MissingPermission`: If the user lacks permission to edit the list.
     /// - `IxApiClientError.NotFound`: If the list with the specified ID is not found.
     /// - `IxApiClientError.Unknown`: For unexpected errors.
-    public func editList(id: String, name: String, icon: String, color: String, is_public: Bool) async throws -> IxList {
+    public func editList(id: String, name: String, icon: String, color: String, archived: Bool, is_public: Bool) async throws -> IxList {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(id)")
-        let requestBody = ListCreateOrEditReqBody(name: name, icon: icon, color: color, is_public: is_public)
+        let requestBody = ListCreateOrEditReqBody(name: name, icon: icon, color: color, archived: archived, is_public: is_public)
         
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"

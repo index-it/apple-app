@@ -8,14 +8,15 @@
 import SwiftUI
 import SwiftData
 import WidgetKit
+import IxCoreKit
 
 struct TasksTabView: View {
-    @EnvironmentObject private var navigationManager: NavigationManager
-    @EnvironmentObject private var ixApiClient: IxApiClient
-    @EnvironmentObject private var errorService: ErrorStateService
     @Environment(\.modelContext) private var context
+    @ForcedEnvironment(\.ixApiClient) private var ixApiClient
+    @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var errorService: ErrorStateService
     
-    @AppStorage(AppStorageKeys.logged_in_user) var user: User?
+    @AppStorage(AppStorageKeys.loggedInUser) var user: User?
     @State private var showPaywall = false
     
     // MARK: Date
@@ -31,9 +32,8 @@ struct TasksTabView: View {
     @State private var showDeleteConfirmationDialog = false
     
     // MARK: Sorting and filtering
-    @AppStorage(AppStorageKeys.task_sorting) private var sorting: TaskSorting = AppStorageKeys.Defaults.task_sorting
-    @AppStorage(AppStorageKeys.task_reverse_sorting) private var reverseSorting = AppStorageKeys.Defaults.task_reverse_sorting
-    @AppStorage(AppStorageKeys.task_filter) private var filter: TaskFilter = .uncompleted
+    @AppStorage(AppStorageKeys.Tasks.sorting) private var sorting = AppStorageKeys.Defaults.tasksSorting
+    @AppStorage(AppStorageKeys.Tasks.sortingOrder) private var reverseSorting = AppStorageKeys.Defaults.tasksSortOrder
     
     private func saveTask(_ task: IxTask) async throws {
         try context.transaction {
@@ -156,9 +156,9 @@ struct TasksTabView: View {
         NavigationView {
             TaskListView
                 .navigationTitle("Your tasks")
-                .floatingActionButton("plus", action: {
+                .floatingActionButton("plus") {
                     navigationManager.showCreateTaskSheet = true
-                })
+                }
                 .paywallCover(isPresented: $showPaywall)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -176,10 +176,10 @@ struct TasksTabView: View {
                             }
                             .navigationTitle("Completed tasks")
                             .onAppear {
-                                let shouldSync = SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.COMPLETED_TASKS)
-                                
-                                if shouldSync {
-                                    Task {
+                                Task {
+                                    let shouldSync = await SyncRegister.shared.hasExpired(SyncResource.completedTasks)
+                                    
+                                    if shouldSync {
                                         await fetchTasks(completion: true)
                                     }
                                 }
@@ -189,20 +189,20 @@ struct TasksTabView: View {
                         }
                     }
                     
-                    ToolbarItem(placement: .secondaryAction) {
-                        Picker(selection: $sorting) {
-                            ForEach(TaskSorting.allCases) { filter in
-                                Text(filter.rawValue)
-                                    .tag(filter)
-                            }
-                        } label: {
-                            Label("Sorting", systemImage: "arrow.up.arrow.down")
-                        }.pickerStyle(.menu)
-                    }
-                    
-                    ToolbarItem(placement: .secondaryAction) {
-                        Toggle("Reverse", isOn: $reverseSorting)
-                    }
+//                    ToolbarItem(placement: .secondaryAction) {
+//                        Picker(selection: $sorting) {
+//                            ForEach(TasksSorting.allCases) { filter in
+//                                Text(filter.label)
+//                                    .tag(filter)
+//                            }
+//                        } label: {
+//                            Label("Sorting", systemImage: "arrow.up.arrow.down")
+//                        }.pickerStyle(.menu)
+//                    }
+//                    
+//                    ToolbarItem(placement: .secondaryAction) {
+//                        Toggle("Reverse", isOn: $reverseSorting)
+//                    }
                 }
                 .confirmationDialog(
                     Text("Confirm deletion"),
@@ -233,61 +233,58 @@ struct TasksTabView: View {
                         Text("Are you sure you want to delete the\(selectedTask?.rrule != nil ? " recurring" : "") task \(selectedTask?.name ?? "")?")
                     }
                 )
-                .sheet(
-                    isPresented: $navigationManager.showCreateTaskSheet,
-                    content: { [taskCreationDueDate] in
-                        TaskFormSheet(
-                            showSheet: $navigationManager.showCreateTaskSheet,
-                            name: "",
-                            description: nil,
-                            priority: nil,
-                            dueDate: taskCreationDueDate,
-                            rrule: nil,
-                            reminders: [],
-                            itemId: nil,
-                            subtasks: [],
-                            namePlaceholder: "Task name"
-                        ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
-                            Task {
-                                await createTask(name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
-                            }
-                        }
-                    }
-                )
-                .sheet(
-                    isPresented: $showEditSheet,
-                    content: {
-                        TaskFormSheet(
-                            showSheet: $showEditSheet,
-                            name: selectedTask?.name ?? "",
-                            description: selectedTask?.task_description,
-                            priority: selectedTask?.priority,
-                            dueDate: selectedTask?.due_date,
-                            rrule: selectedTask?.rrule,
-                            reminders: selectedTask?.reminders ?? [],
-                            itemId: selectedTask?.item_id,
-                            subtasks: selectedTask?.subtasks ?? [],
-                            namePlaceholder: taskCreationNamePlaceholder
-                        ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
-                            Task {
-                                if let selectedTask = selectedTask {
-                                    await editTask(id: selectedTask.id, name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
-                                }
-                            }
-                        }
-                    }
-                )
-        }.onAppear {
+//                .sheet(
+//                    isPresented: $navigationManager.showCreateTaskSheet,
+//                    content: { [taskCreationDueDate] in
+//                        TaskFormSheet(
+//                            showSheet: $navigationManager.showCreateTaskSheet,
+//                            name: "",
+//                            description: nil,
+//                            priority: nil,
+//                            dueDate: taskCreationDueDate,
+//                            rrule: nil,
+//                            reminders: [],
+//                            itemId: nil,
+//                            subtasks: [],
+//                            namePlaceholder: "Task name"
+//                        ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
+//                            Task {
+//                                await createTask(name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
+//                            }
+//                        }
+//                    }
+//                )
+//                .sheet(
+//                    isPresented: $showEditSheet,
+//                    content: {
+//                        TaskFormSheet(
+//                            showSheet: $showEditSheet,
+//                            name: selectedTask?.name ?? "",
+//                            description: selectedTask?.task_description,
+//                            priority: selectedTask?.priority,
+//                            dueDate: selectedTask?.due_date,
+//                            rrule: selectedTask?.rrule,
+//                            reminders: selectedTask?.reminders ?? [],
+//                            itemId: selectedTask?.item_id,
+//                            subtasks: selectedTask?.subtasks ?? [],
+//                            namePlaceholder: taskCreationNamePlaceholder
+//                        ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
+//                            Task {
+//                                if let selectedTask = selectedTask {
+//                                    await editTask(id: selectedTask.id, name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
+//                                }
+//                            }
+//                        }
+//                    }
+//                )
+        }
+        .onAppear {
             Task {
-                let shouldSync = SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.TASKS)
+                let shouldSync = await SyncRegister.shared.hasExpired(SyncResource.tasks)
                 
                 if (shouldSync) {
                     await fetchTasks(completion: false)
                 }
-            }
-            
-            Task {
-                await fetchTaskTemplateSuggestion()
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name.NSCalendarDayChanged).receive(on: DispatchQueue.main)) { _ in

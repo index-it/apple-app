@@ -11,29 +11,24 @@ import FirebaseMessaging
 import RevenueCat
 import IxCoreKit
 
-class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate {
+/// Responsible for initializing third party services
+class AppDelegate: NSObject, UIApplicationDelegate {
     private let ixApiClient = IxApiClient { _ in }
     
     // Application initialization
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        Purchases.logLevel = .debug
-        Purchases.configure(withAPIKey: "appl_nPoYUABJDUWtNxeVeGCrIxTnPJA")
-        
         FirebaseApp.configure()
-        Messaging.messaging().delegate = self
+        RevenueCatHelper.configure()
         
+        Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
         
         return true
     }
     
-    // Since we use SwiftUI we need to manually update the apns token for Firebase messaging
-    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        Messaging.messaging().apnsToken = deviceToken
-    }
-    
     // Handle app opening from a notification when the app is not in foreground
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        // TODO: Handle better in the notification thing
         if let _ = userInfo["task-id"] as? String {
             handleTaskNotification()
         }
@@ -41,6 +36,13 @@ class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate {
         // Notify Firebase about the received notification for analytics
         Messaging.messaging().appDidReceiveMessage(userInfo)
         completionHandler(.newData)
+    }
+}
+
+extension AppDelegate: MessagingDelegate {
+    // Since we use SwiftUI we need to manually update the apns token for Firebase messaging
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        Messaging.messaging().apnsToken = deviceToken
     }
     
     // Send new firebase token to Index backend
@@ -58,17 +60,15 @@ class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate {
 }
 
 extension AppDelegate: UNUserNotificationCenterDelegate {
-    // Handle notification when the app is in foreground, this doesn't handle the user tap
+    // Handle notification when the app is in foreground, this doesn't handle the user tap, it just tells the app which notification presentation options to use
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
-        let userInfo = notification.request.content.userInfo
-        print(userInfo)
         return [[.sound, .badge, .banner]]
     }
     
-    // Handle user tap on notification
+    // Handle user tap on notification when app is in foreground
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
         let userInfo = response.notification.request.content.userInfo
-        print(userInfo)
+        // TODO: Handle in notification thing
         if let _ = userInfo["task-id"] as? String {
             handleTaskNotification()
         }

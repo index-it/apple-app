@@ -9,6 +9,7 @@ import os
 import SwiftUI
 import SwiftData
 import GoogleSignIn
+import FirebaseCore
 import FirebaseMessaging
 import RevenueCat
 import IxCoreKit
@@ -16,7 +17,7 @@ import IxCoreKit
 fileprivate let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "AppEntrypoint")
 
 ///
-/// ## Authentication logic
+/// ## Authentication
 ///
 /// **AuthenticationHelper**
 /// Simple class that holds the status of network and local authentication values
@@ -32,6 +33,17 @@ fileprivate let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category:
 /// Local authentication source of truth is the @AppStorage user value
 /// We react to its changes and simply sets the new status in the AuthenticationHelper
 ///
+/// ## Navigation
+/// We use two different classes to handle authentication
+/// - authentication: we have a navigation manager just for the authentication flow
+/// - standard: this handles all navigation for the signed in user
+///
+/// **Why?**
+/// We need to detach the two things, as an example:
+/// The user has never logged into the app, opens a link for a public index list.
+/// We need to authenticate the user first, and then navigate him to that list authomatically.
+///
+/// Easier way to do this was simply having two navigation stacks, so we do not need to restore state back and forth after authenticating, which could be quite an hassle expecially since we would need to wire up the navigation and authentication managers.
 @main
 struct indexApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
@@ -124,13 +136,12 @@ struct indexApp: App {
             log.debug("loading user from AppStorage")
         case .unauthenticated:
             log.debug("user not locally authenticated, AppStorage user is nil")
-            navigationManager.clear()
+            authNavigationManager.clear()
             errorService.clear()
         case .authenticated(user: let user):
             log.debug("received user from AppStorage - id: \(user.id) - email: \(user.email)")
             errorService.clear()
             authNavigationManager.clear()
-            navigationManager.clear()
         }
     }
     
@@ -167,9 +178,6 @@ struct indexApp: App {
                 .modelContainer(modelContainer)
                 .defaultAppStorage(UserDefaults(suiteName: IxIdentifiers.APP_GROUP)!)
                 .alertPresentationWindow(service: errorService)
-                .onReceive(NotificationCenter.default.publisher(for: .navigateToTasks)) { notification in
-                    navigationManager.navigateToTab(.tasks)
-                }
                 .onOpenURL { url in
                     if GIDSignIn.sharedInstance.handle(url) {
                         return

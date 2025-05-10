@@ -6,12 +6,13 @@
 //
 import SwiftUI
 import SwiftData
+import IxCoreKit
 
 struct CategoryPicker: View {
     @Query private var categories: [IxListCategory]
     
     @Binding private var selectedCategory: IxListCategory?
-    private var hideDefaultCategory: Bool
+    private var hideUncategorized: Bool
     
     private var onCreate: () -> Void
     private var onEdit: (_ category: IxListCategory) -> Void
@@ -20,36 +21,31 @@ struct CategoryPicker: View {
     init(
         listId: String,
         selectedCategory: Binding<IxListCategory?>,
-        categorySorting: CategorySorting,
-        categoryReverseSorting: Bool,
-        hideDefaultCategory: Bool,
+        sorting: CategoriesSorting,
+        sortOrder: SortOrder,
+        hideUncategorized: Bool,
         onCreate: @escaping () -> Void,
         onEdit: @escaping (_ category: IxListCategory) -> Void,
         onDelete: @escaping (_ category: IxListCategory) -> Void
     ) {
         self._selectedCategory = selectedCategory
-        self.hideDefaultCategory = hideDefaultCategory
+        self.hideUncategorized = hideUncategorized
         self.onCreate = onCreate
         self.onEdit = onEdit
         self.onDelete = onDelete
         
         let filterPredicate = #Predicate<IxListCategory> { category in
-            category.list_id == listId
+            category.listId == listId
         }
         
-        let sortOrder = if categoryReverseSorting {
-            SortOrder.reverse
-        } else {
-            SortOrder.forward
-        }
-        
-        let sortDescriptor = switch categorySorting {
+        // TODO: Manual
+        let sortDescriptor = switch sorting {
         case .name:
             SortDescriptor(\IxListCategory.name, order: sortOrder)
-        case .creation:
-            SortDescriptor(\IxListCategory.created_at, order: sortOrder)
-        case .edit:
-            SortDescriptor(\IxListCategory.edited_at, order: sortOrder)
+        case .creationDate:
+            SortDescriptor(\IxListCategory.createdAt, order: sortOrder)
+        case .manual:
+            SortDescriptor(\IxListCategory.editedAt, order: sortOrder)
         }
         
         _categories = Query(filter: filterPredicate, sort: [sortDescriptor])
@@ -93,7 +89,7 @@ struct CategoryPicker: View {
                 }
             }
             
-            if !hideDefaultCategory {
+            if !hideUncategorized {
                 Button {
                     selectedCategory = nil
                 } label: {
@@ -118,30 +114,14 @@ struct CategoryPicker: View {
                 .background(UIColor.secondarySystemFill.toColor())
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         }.onChange(of: categories, initial: true) { _, newCategories in
-            if hideDefaultCategory && selectedCategory == nil {
+            if hideUncategorized && selectedCategory == nil {
                 selectedCategory = newCategories.first
             }
-        }.onChange(of: hideDefaultCategory) { _, newValue in
+        }.onChange(of: hideUncategorized) { _, newValue in
             if newValue && selectedCategory == nil {
                 selectedCategory = categories.first
             }
         }
-    }
-}
-
-#Preview {
-    CategoryPicker(
-        listId: "",
-        selectedCategory: .constant(nil),
-        categorySorting: .name,
-        categoryReverseSorting: false,
-        hideDefaultCategory: false
-    ) {
-        
-    } onEdit: { category in
-        
-    } onDelete: { category in
-        
     }
 }
 

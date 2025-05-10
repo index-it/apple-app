@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum TasksSorting: CaseIterable, Identifiable {
+public enum TasksSorting: String, CaseIterable, Identifiable, Sendable {
     case name
     case priority
     case creation

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CompletedTasksScreen: View {
-    @EnvironmentObject private var ixApiClient: IxApiClient
+    @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var errorService: ErrorStateService
     @Environment(\.modelContext) private var context
 

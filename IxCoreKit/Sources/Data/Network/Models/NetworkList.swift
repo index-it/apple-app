@@ -13,6 +13,7 @@ public struct NetworkList: Codable {
     public let name: String
     public let icon: String
     public let color: String
+    public let archived: Bool
     public let is_public: Bool
     public let viewers: [String]
     public let editors: [String]
@@ -25,6 +26,7 @@ public struct NetworkList: Codable {
         case name
         case icon
         case color
+        case archived
         case is_public = "public"
         case viewers
         case editors

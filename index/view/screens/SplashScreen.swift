@@ -11,8 +11,8 @@ struct SplashScreen: View {
     var body: some View {
         HStack {
             ProgressView()
-//            Text("authenticating...")
-        }.meshGradientBackground()
+        }
+//        .meshGradientBackground() // might be too much ui just to flash a loading screen
     }
 }
 

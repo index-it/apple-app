@@ -16,14 +16,14 @@ public enum AppStorageKeys {
     public enum Lists {
         public static let filter = "lists_filter"
         public static let sorting = "lists_sorting"
-        public static let sortingOrder = "lists_sorting_order"
+        public static let sortOrder = "lists_sorting_order"
     }
     
     public enum Items {
         public static func sorting(_ listId: String) -> String {
             return "items_sorting/\(listId)"
         }
-        public static func sortingOrder(_ listId: String) -> String {
+        public static func sortOrder(_ listId: String) -> String {
             return "items_sorting_order/\(listId)"
         }
         public static func show_completed(_ listId: String) -> String {
@@ -35,37 +35,37 @@ public enum AppStorageKeys {
         public static func hideUncategorized(_ listId: String) -> String {
             return "hide_uncategorized/\(listId)"
         }
-        public static func filter(for listId: String) -> String {
+        public static func filter(_ listId: String) -> String {
             return "categories_filter/\(listId)"
         }
-        public static func sorting(for listId: String) -> String {
+        public static func sorting(_ listId: String) -> String {
             return "categories_sorting/\(listId)"
         }
-        public static func sortingOrder(for listId: String) -> String {
+        public static func sortOrder(_ listId: String) -> String {
             return "categories_sorting_order/\(listId)"
         }
     }
     
     public enum Tasks {
         public static let sorting = "tasks_sorting"
-        public static let sortingOrder = "tasks_sorting_order"
+        public static let sortOrder = "tasks_sorting_order"
     }
     
     /// Default values for AppStorage keys
     public enum Defaults {
         public static let listsFilter = ListsFilter.all
         public static let listsSorting = ListsSorting.creationDate
-        public static let listsSortingOrder = SortingOrder.newestFirst
+        public static let listsSortOrder = SortOrder.reverse
         
         public static let itemsSorting = ItemsSorting.creationDate
-        public static let itemsSortingOrder = SortingOrder.newestFirst
+        public static let itemsSortOrder = SortOrder.reverse
         public static let itemsShowCompleted = false
         
         public static let hideUncategorized = false
         public static let categoriesSorting = CategoriesSorting.creationDate
-        public static let categoriesSortingOrder = SortingOrder.newestFirst
+        public static let categoriesSortOrder = SortOrder.reverse
         
         public static let tasksSorting = TasksSorting.priority
-        public static let tasksSortingOrder = SortingOrder.newestFirst
+        public static let tasksSortOrder = SortOrder.reverse
     }
 }

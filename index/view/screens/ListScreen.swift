@@ -8,19 +8,18 @@
 import SwiftUI
 import SwiftData
 import WidgetKit
+import IxCoreKit
 
 struct ListScreen: View {
-    @EnvironmentObject private var ixApiClient: IxApiClient
-    @EnvironmentObject private var navigationManager: NavigationManager
-    @EnvironmentObject private var errorService: ErrorStateService
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
+    @ForcedEnvironment(\.ixApiClient) private var ixApiClient
+    @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var errorService: ErrorStateService
     
     @State private var showPaywall = false
     
     private var listId: String
-    
-    @AppStorage(AppStorageKeys.colors_suggestions) var colorsSuggested: [Color] = AppStorageKeys.Defaults.colors
     
     // MARK: List
     @Query private var lists: [IxList]
@@ -34,9 +33,6 @@ struct ListScreen: View {
     @State private var showItemMovedToNextCategoryToast = false
     @State private var showItemMovedToPreviousCategoryToast = false
     
-    // TODO: improve ItemsDisplayer performance
-//    @State private var debouncedSelectedCategory: IxListCategory? = nil
-
     @State private var showCategoryEditSheet = false
     
     // MARK: Category creation
@@ -62,30 +58,34 @@ struct ListScreen: View {
     @State private var showTaskCreationSheet = false
     
     // MARK: Item filters and sorting
-    @AppStorage(AppStorageKeys.item_filter) private var itemFilter = AppStorageKeys.Defaults.item_filter
-    @AppStorage(AppStorageKeys.item_sorting) private var itemSorting = AppStorageKeys.Defaults.item_sorting
-    @AppStorage(AppStorageKeys.item_reverse_sorting) private var itemReverseSorting = AppStorageKeys.Defaults.item_reverse_sorting
+    @AppStorage private var showCompletedItems: Bool
+    @AppStorage private var itemSorting: ItemsSorting
+    @AppStorage private var itemsSortOrder: SortOrder
     
     // MARK: Category filters and sorting
-    @AppStorage private var hideDefaultCategory: Bool
-    @AppStorage(AppStorageKeys.category_sorting) private var categorySorting = AppStorageKeys.Defaults.category_sorting
-    @AppStorage(AppStorageKeys.category_reverse_sorting) private var categoryReverseSorting = AppStorageKeys.Defaults.category_reverse_sorting
+    @AppStorage private var hideUncategorized: Bool
+    @AppStorage private var categoriesSorting: CategoriesSorting
+    @AppStorage private var categoriesSortOrder: SortOrder
     
     private var contentColor: Color {
         guard let selectedCategory = selectedCategory else {
-            if list.user_id == "loading" {
-                return Color.accentColor
-            } else {
-                return list.color.toColor(fallback: .accentColor)
-            }
+            return list.color.toColor()
         }
         
-        return selectedCategory.color.toColor(fallback: .accentColor)
+        return selectedCategory.color.toColor()
     }
 
     init(listId: String) {
         self.listId = listId
-        _hideDefaultCategory = AppStorage(wrappedValue: AppStorageKeys.Defaults.hide_default_category, AppStorageKeys.hide_default_category(listId))
+        
+        // MARK: AppStorage init
+        _showCompletedItems = AppStorage(wrappedValue: AppStorageKeys.Defaults.itemsShowCompleted, AppStorageKeys.Items.show_completed(listId))
+        _itemSorting = AppStorage(wrappedValue: AppStorageKeys.Defaults.itemsSorting, AppStorageKeys.Items.sorting(listId))
+        _itemsSortOrder = AppStorage(wrappedValue: AppStorageKeys.Defaults.itemsSortOrder, AppStorageKeys.Items.sortingOrder(listId))
+        
+        _hideUncategorized = AppStorage(wrappedValue: AppStorageKeys.Defaults.hideUncategorized, AppStorageKeys.Categories.hideUncategorized(listId))
+        _categoriesSorting = AppStorage(wrappedValue: AppStorageKeys.Defaults.categoriesSorting, AppStorageKeys.Categories.sorting(listId))
+        _categoriesSortOrder = AppStorage(wrappedValue: AppStorageKeys.Defaults.categoriesSortOrder, AppStorageKeys.Categories.sortingOrder(listId))
         
         // MARK: List query
         var listDescriptor = FetchDescriptor<IxList>(
@@ -99,7 +99,7 @@ struct ListScreen: View {
         // MARK: Categories query
         let listCategoryDescriptor = FetchDescriptor<IxListCategory>(
             predicate: #Predicate { category in
-                category.list_id == listId
+                category.listId == listId
             }
         )
         _categories = Query(listCategoryDescriptor)

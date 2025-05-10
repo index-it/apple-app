@@ -7,6 +7,7 @@
 
 import SwiftUI
 import DynamicColor
+import IxCoreKit
 
 struct ListCard: View {
     var list: IxList

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum CategoriesSorting: CaseIterable, Identifiable {
+public enum CategoriesSorting: String, CaseIterable, Identifiable, Sendable {
     case name
     case creationDate
     case manual

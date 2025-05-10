@@ -7,10 +7,11 @@
 
 import Foundation
 import SwiftUI
+import IxCoreKit
 
 struct PasswordLoginScreen: View {
+    @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject var authNavigationManager: AuthNavigationManager
-    @EnvironmentObject var ixApiClient: IxApiClient
     @EnvironmentObject private var errorService: ErrorStateService
 
     var email: String
@@ -36,7 +37,7 @@ struct PasswordLoginScreen: View {
             errorService.insert(.customMessage(title: "Invalid credentials", message: "The password is incorrect, try again."))
         } catch IxApiClientError.EmailNotVerified {
             loading = false
-            authNavigationManager.push(navigationRoute: .EmailVerification(email: email, password: password, verificationEmailSent: false))
+            authNavigationManager.push(.EmailVerification(email: email, password: password, verificationEmailSent: false))
         } catch {
             loading = false
             errorService.insert(.localizedError(title: nil, error: error))

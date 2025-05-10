@@ -6,11 +6,11 @@
 //
 
 import SwiftUI
+import IxCoreKit
 
 struct HomeScreen: View {
     @EnvironmentObject var navigationManager: NavigationManager
-    
-    @AppStorage(AppStorageKeys.onboarding_showed) private var onboardingShowed: Bool = false
+    @AppStorage(AppStorageKeys.onboardingShowed) private var onboardingShowed: Bool = false
 
     var body: some View {
         TabView(selection: $navigationManager.selectedHomeTab) {

@@ -7,22 +7,22 @@
 
 import SwiftUI
 import RevenueCat
+import IxCoreKit
 
 struct SettingsTabView: View {
-    @EnvironmentObject private var ixApiClient: IxApiClient
-    @EnvironmentObject private var errorService: ErrorStateService
-    @EnvironmentObject private var navigationManager: NavigationManager
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
+    @ForcedEnvironment(\.ixApiClient) private var ixApiClient
+    @EnvironmentObject private var errorService: ErrorStateService
+    @EnvironmentObject private var navigationManager: NavigationManager
 
-    @AppStorage(AppStorageKeys.logged_in_user) var user: User?
+    @AppStorage(AppStorageKeys.loggedInUser) var user: User?
     
     @State private var showOnboarding = false
     @State private var showPaywall = false
     
     @State private var manageSubscriptionLoading: Bool = false
 
-    
     private func manageSubscriptions() {
         manageSubscriptionLoading = true
         

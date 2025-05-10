@@ -6,9 +6,10 @@
 //
 
 import SwiftUI
+import IxCoreKit
 
 struct EmailVerificationScreen: View {
-    @EnvironmentObject var ixApiClient: IxApiClient
+    @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var errorService: ErrorStateService
 
     var email: String

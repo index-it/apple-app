@@ -7,11 +7,12 @@
 
 import Foundation
 import SwiftUI
+import IxCoreKit
 
 struct EmailLoginScreen: View {
     @Environment(\.dismiss) private var dismiss
+    @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject var authNavigationManager: AuthNavigationManager
-    @EnvironmentObject var ixApiClient: IxApiClient
     @EnvironmentObject private var errorService: ErrorStateService
 
     @State private var email: String = ""
@@ -30,9 +31,9 @@ struct EmailLoginScreen: View {
             
             switch welcomeAction {
             case .LOGIN:
-                authNavigationManager.push(navigationRoute: .PasswordLogin(email: email))
+                authNavigationManager.push(.PasswordLogin(email: email))
             case .REGISTER:
-                authNavigationManager.push(navigationRoute: .PasswordRegister(email: email))
+                authNavigationManager.push(.PasswordRegister(email: email))
             }
         } catch {
             loading = false
@@ -97,14 +98,5 @@ struct EmailLoginScreen: View {
 }
 
 #Preview {
-//    @Previewable @State var show = true
-//    VStack {
-//        
-//    }.sheet(isPresented: $show) {
-//        NavigationStack {
-//            EmailLoginScreen()
-//        }
-//    }
-    
     EmailLoginScreen()
 }

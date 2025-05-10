@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AccountSettingsView: View {
-    @EnvironmentObject private var ixApiClient: IxApiClient
+    @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var errorService: ErrorStateService
     @EnvironmentObject private var navigationManager: NavigationManager
     @Environment(\.modelContext) private var context

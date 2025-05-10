@@ -9,7 +9,7 @@ import SwiftUI
 import RevenueCat
 
 struct PaywallView: View {
-    @EnvironmentObject private var ixApiClient: IxApiClient
+    @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var errorService: ErrorStateService
     

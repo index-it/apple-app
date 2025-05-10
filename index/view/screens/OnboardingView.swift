@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import IxCoreKit
 
 struct OnboardingPage {
     let title: String
@@ -30,10 +31,10 @@ struct OnboardingView: View {
         .init(title: "Enjoy the app!", description: "Hey, my name is Giulio. I'm a spaghetti coder from Italy and currently it's just me developing this app :>\n\nIf you like the idea of the app and wanna support the development, feel free to purchase the pro version!\n\nThank you for reading this ❤️\nEnjoy using Index!", id: .thanks)
     ]
     static private var lists: [IxList] = [
-        IxList.loading(name: "Travel ideas", emoji: "🌋", color: "#000000"),
-        IxList.loading(name: "Ideas", emoji: "💡", color: "#167E54"),
-        IxList.loading(name: "Goals", emoji: "🧭", color: "#B4211C"),
-        IxList.loading(name: "Sailing", emoji: "⛵", color: "#0249BD")
+        IxList.mock(name: "Travel ideas", emoji: "🌋", color: "#000000"),
+        IxList.mock(name: "Ideas", emoji: "💡", color: "#167E54"),
+        IxList.mock(name: "Goals", emoji: "🧭", color: "#B4211C"),
+        IxList.mock(name: "Sailing", emoji: "⛵", color: "#0249BD")
     ]
     
     private let itemsImages = [

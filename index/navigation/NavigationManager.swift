@@ -10,10 +10,8 @@ import Foundation
 class NavigationManager: ObservableObject {
     @Published var path: [NavigationRoute] = []
     @Published var selectedHomeTab: HomeTab = .lists
-    @Published var showCreateTaskSheet = false
-    @Published var showCreateItemSheet = false
 
-    func push(navigationRoute: NavigationRoute) {
+    func push(_ navigationRoute: NavigationRoute) {
         path.append(navigationRoute)
     }
     
@@ -25,18 +23,8 @@ class NavigationManager: ObservableObject {
         path.removeAll()
     }
     
-    func navigateToTab(_ homeTab: HomeTab, showCreateSheet: Bool = false) {
+    func navigateToTab(_ homeTab: HomeTab) {
         selectedHomeTab = homeTab
-        showCreateItemSheet = false
-        showCreateTaskSheet = false
-        
-        if showCreateSheet {
-            if homeTab == .lists {
-                showCreateItemSheet = showCreateSheet
-            } else if homeTab == .tasks {
-                showCreateTaskSheet = showCreateSheet
-            }
-        }
         
         clear()
     }

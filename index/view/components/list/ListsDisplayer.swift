@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import IxCoreKit
 
 struct ListsDisplayer: View {
     @Query private var lists: [IxList]
@@ -25,7 +26,7 @@ struct ListsDisplayer: View {
         userId: String,
         filter: ListFilter,
         sorting: ListSorting,
-        reverseSorting: Bool,
+        sortOrder: SortOrder,
         onFilterClear: @escaping () -> (),
         onCreation: @escaping () -> Void,
         onListCardTap: @escaping (_: IxList) -> Void,
@@ -50,15 +51,15 @@ struct ListsDisplayer: View {
         
         if filter == .owner {
             filterPredicate = #Predicate<IxList> { list in
-                list.user_id == userId
+                list.userId == userId
             }
         } else if filter == .shared {
             filterPredicate = #Predicate<IxList> { list in
-                list.user_id != userId
+                list.userId != userId
             }
         }
         
-        let sortOrder = if reverseSorting {
+        let sortOrder = if sortingOrder == .newestFirst {
             SortOrder.reverse
         } else {
             SortOrder.forward

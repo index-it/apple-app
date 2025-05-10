@@ -8,15 +8,15 @@
 import SwiftUI
 import SwiftData
 import MCEmojiPicker
+import IxCoreKit
 
 struct ListsTabView: View {
-    @EnvironmentObject private var navigationManager: NavigationManager
-    @EnvironmentObject private var ixApiClient: IxApiClient
-    @EnvironmentObject private var errorService: ErrorStateService
     @Environment(\.modelContext) private var context
+    @ForcedEnvironment(\.ixApiClient) private var ixApiClient
+    @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var errorService: ErrorStateService
     
-    @AppStorage(AppStorageKeys.logged_in_user) var user: User?
-    @AppStorage(AppStorageKeys.colors_suggestions) var colorsSuggested: [Color] = AppStorageKeys.Defaults.colors
+    @AppStorage(AppStorageKeys.loggedInUser) var user: User?
     
     @Query private var lists: [IxList]
     
@@ -24,9 +24,8 @@ struct ListsTabView: View {
     
     // MARK: List creation
     @State private var showCreationSheet = false
-    @State private var newListNamePlaceholder: String? = nil
-    @State private var newListColor: Color? = nil
-    @State private var newListEmoji: String = String.randomEmoji()
+    @State private var newListColor: Color = ColorHelper.randomIxColor()
+    @State private var newListEmoji: String = EmojiHelper.randomEmoji()
     
     // MARK: Selected list
     @State private var selectedList: IxList? = nil
@@ -34,10 +33,10 @@ struct ListsTabView: View {
     @State private var showDeleteConfirmationDialog = false
     
     // MARK: Sorting and filtering
-    @AppStorage(AppStorageKeys.list_sorting) private var sorting: ListSorting = AppStorageKeys.Defaults.list_sorting
-    @AppStorage(AppStorageKeys.list_reverse_sorting) private var reverseSorting = AppStorageKeys.Defaults.list_reverse_sorting
-    @AppStorage(AppStorageKeys.list_filter) private var filter: ListFilter = AppStorageKeys.Defaults.list_filter
-
+    @AppStorage(AppStorageKeys.Lists.sorting) private var sorting = AppStorageKeys.Defaults.listsSorting
+    @AppStorage(AppStorageKeys.Lists.sortingOrder) private var sortingOrder = AppStorageKeys.Defaults.listsSortOrder
+    @AppStorage(AppStorageKeys.Lists.filter) private var filter = AppStorageKeys.Defaults.listsFilter
+    
     // MARK: Share sheet
     @State private var selectedListUsersWithAccess: [IxListSingleUserAccessInfo] = []
     @State private var showShareSheet = false
@@ -55,28 +54,8 @@ struct ListsTabView: View {
         }
     }
     
-    // MARK: - Suggestions
-    func fetchListTemplateSuggestion() async {
-        do {
-            let template = try await ixApiClient.getListTemplateSuggestion()
-            
-            newListNamePlaceholder = template.name
-            newListColor = Color(hexString: template.color)
-        } catch {
-            
-        }
-    }
-    
-    func fetchColorsSuggestion() async {
-        do {
-            colorsSuggested = try await ixApiClient.getColorsSuggestion().map { Color(hexString: $0) }
-        } catch {
-            
-        }
-    }
-    
     // MARK: - List CRUD
-    func fetchLists() async {
+    private func fetchLists() async {
         do {
             let lists = try await ixApiClient.getLists()
             
@@ -92,9 +71,9 @@ struct ListsTabView: View {
         }
     }
     
-    func createList(name: String, color: Color, emoji: String, isPublic: Bool) async {
+    private func createList(name: String, color: Color, emoji: String, isPublic: Bool) async {
         do {
-            let list = try await ixApiClient.createList(name: name, icon: emoji, color: color.hexString(), is_public: isPublic)
+            let list = try await ixApiClient.createList(name: name, icon: emoji, color: color.hexString, is_public: isPublic)
             
             try await saveList(list)
         } catch IxApiClientError.ProRequired(_) {
@@ -104,9 +83,9 @@ struct ListsTabView: View {
         }
     }
     
-    func editList(id: String, name: String, color: Color, emoji: String, isPublic: Bool) async {
+    private func editList(id: String, name: String, color: Color, emoji: String, archived: Bool, isPublic: Bool) async {
         do {
-            let list = try await ixApiClient.editList(id: id, name: name, icon: emoji, color: color.hexString(), is_public: isPublic)
+            let list = try await ixApiClient.editList(id: id, name: name, icon: emoji, color: color.hexString, archived: archived, is_public: isPublic)
             
             try await saveList(list)
         } catch {
@@ -114,7 +93,7 @@ struct ListsTabView: View {
         }
     }
     
-    func deleteList(id: String) async {
+    private func deleteList(id: String) async {
         do {
             try await ixApiClient.deleteList(id: id)
             try context.transaction {
@@ -133,7 +112,7 @@ struct ListsTabView: View {
     
     
     // MARK: - LIST SHARING FUNCTIONS
-    func leaveList(id: String) async {
+    private func leaveList(id: String) async {
         do {
             try await ixApiClient.leaveList(id: id)
             try context.transaction {
@@ -150,7 +129,7 @@ struct ListsTabView: View {
         }
     }
     
-    func editListPublic(isPublic: Bool) async {
+    private func editListPublic(isPublic: Bool) async {
         if let selectedList {
             do {
                 loadingSelectedListPublic = true
@@ -167,7 +146,7 @@ struct ListsTabView: View {
         }
     }
     
-    func fetchListUsersWthAccess(listId: String) async {
+    private func fetchListUsersWthAccess(listId: String) async {
         do {
             loadingSelectedListUsers = true
             selectedListUsersWithAccess = try await ixApiClient.getListUsersWithAccess(id: listId)
@@ -178,7 +157,7 @@ struct ListsTabView: View {
         }
     }
     
-    func inviteUser(email: String, editor: Bool) async {
+    private func inviteUser(email: String, editor: Bool) async {
         if let selectedList {
             do {
                 loadingSelectedListUserInvite = true
@@ -195,8 +174,8 @@ struct ListsTabView: View {
             }
         }
     }
-
-    func editUserPermissions(email: String, editor: Bool) async {
+    
+    private func editUserPermissions(email: String, editor: Bool) async {
         if let selectedList {
             do {
                 loadingSelectedListUserEditOrRevokePermissions = selectedListUsersWithAccess.first(where: { user in
@@ -219,7 +198,7 @@ struct ListsTabView: View {
         }
     }
     
-    func revokeUserAccessFromList(userId: String) async {
+    private func revokeUserAccessFromList(userId: String) async {
         if let selectedList {
             do {
                 loadingSelectedListUserEditOrRevokePermissions = userId
@@ -240,64 +219,21 @@ struct ListsTabView: View {
     
     var body: some View {
         NavigationView {
-            ListsDisplayer(
-                userId: user?.id ?? "",
-                filter: filter,
-                sorting: sorting,
-                reverseSorting: reverseSorting,
-                onFilterClear: {
-                    filter = .all
-                },
-                onCreation: {
-                    showCreationSheet = true
-                },
-                onListCardTap: { list in
-                    navigationManager.push(navigationRoute: .listRoute(listId: list.id))
-                },
-                onShare: { list in
-                    selectedList = list
-                    if list.user_id == user?.id {
-                        Task {
-                            await fetchListUsersWthAccess(listId: list.id)
-                        }
-                        showShareSheet = true
+            ListsDisplayerView
+                .navigationTitle("Your lists")
+                .floatingActionButton("plus") {
+                    if let user = user, !user.has_pro && lists.count >= 7 {
+                        showPaywall = true
                     } else {
-                        showLeaveListConfirmation = true
+                        showCreationSheet = true
                     }
-                    
-                },
-                onEdit: { list in
-                    selectedList = list
-                    showEditSheet = true
-                },
-                onDelete: { list in
-                    selectedList = list
-                    showDeleteConfirmationDialog = true
-                },
-                onLeave: { list in
-                    selectedList = list
-                    showLeaveListConfirmation = true
                 }
-            ).navigationTitle("Your lists")
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            if let user = user, !user.has_pro && lists.count >= 7 {
-                                showPaywall = true
-                            } else {
-                                showCreationSheet = true
-                            }
-                        } label: {
-                            Image(systemName: "plus.circle")
-                        }
-                    }
-                    
-                    ToolbarItem(placement: .topBarTrailing) {
-                       
                         Menu {
                             Picker(selection: $filter) {
-                                ForEach(ListFilter.allCases) { filter in
-                                    Text(filter.rawValue)
+                                ForEach(ListsFilter.allCases) { filter in
+                                    Text(filter.label)
                                         .tag(filter)
                                 }
                             } label: {
@@ -306,15 +242,13 @@ struct ListsTabView: View {
                             
                             Section {
                                 Picker(selection: $sorting) {
-                                    ForEach(ListSorting.allCases) { filter in
-                                        Text(filter.rawValue)
+                                    ForEach(ListsSorting.allCases) { filter in
+                                        Text(filter.label)
                                             .tag(filter)
                                     }
                                 } label: {
                                     Label("Sorting", systemImage: "arrow.up.arrow.down")
                                 }.pickerStyle(.menu)
-                                
-                                Toggle("Reverse", isOn: $reverseSorting)
                             }
                         } label: {
                             Label("Options", systemImage: "ellipsis.circle")
@@ -323,11 +257,6 @@ struct ListsTabView: View {
                     }
                 }
                 .paywallCover(isPresented: $showPaywall)
-                .sheet(isPresented: $navigationManager.showCreateItemSheet) {
-                    AddListItemFormSheet {
-                        navigationManager.showCreateItemSheet = false
-                    }.presentationDetents([.large])
-                }
                 .sheet(isPresented: $showShareSheet) {
                     ListSharingSheet(
                         showSheet: $showShareSheet,
@@ -360,31 +289,31 @@ struct ListsTabView: View {
                     ListFormSheet(
                         showSheet: $showCreationSheet,
                         name: "",
-                        color: newListColor ?? Color.green,
+                        color: newListColor,
                         emoji: newListEmoji,
                         isPublic: false,
-                        namePlaceholder: newListNamePlaceholder ?? "List name",
-                        colors: colorsSuggested
+                        namePlaceholder: "List name",
+                        colors: ColorHelper.ixColors
                     ) { name, color, emoji, isPublic in
                         Task {
                             await createList(name: name, color: color, emoji: emoji, isPublic: isPublic)
                         }
                     }
-                        .presentationDetents([.large])
+                    .presentationDetents([.large])
                 }
                 .sheet(isPresented: $showEditSheet) {
                     ListFormSheet(
                         showSheet: $showEditSheet,
                         name: selectedList?.name ?? "",
-                        color: selectedList?.color.toColor(fallback: .green) ?? Color.green,
-                        emoji: selectedList?.icon ?? String.randomEmoji(),
-                        isPublic: selectedList?.is_public ?? false,
-                        namePlaceholder: newListNamePlaceholder ?? "List name",
-                        colors: colorsSuggested
+                        color: selectedList?.color.toColor() ?? Color.accentColor,
+                        emoji: selectedList?.icon ?? EmojiHelper.randomEmoji(),
+                        isPublic: selectedList?.isPublic ?? false,
+                        namePlaceholder: "List name",
+                        colors: ColorHelper.ixColors
                     ) { name, color, emoji, isPublic in
                         if let selectedList {
                             Task {
-                                await editList(id: selectedList.id, name: name, color: color, emoji: emoji, isPublic: isPublic)
+                                await editList(id: selectedList.id, name: name, color: color, emoji: emoji, archived: selectedList.archived, isPublic: isPublic)
                             }
                         }
                     }.presentationDetents([.large])
@@ -431,47 +360,70 @@ struct ListsTabView: View {
                         Text("The list \(selectedList?.name ?? "") was shared with you! Do you want to leave the list and lose access to it?")
                     }
                 )
-        }.onAppear {
+        }
+        .onAppear {
             Task {
-                let shouldSync = SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.LISTS)
+                let shouldSync = await SyncRegister.shared.hasExpired(SyncResource.lists)
                 
                 if (shouldSync) {
                     await fetchLists()
                 }
             }
-            
-            Task {
-                await fetchListTemplateSuggestion()
-            }
-            
-            Task {
-                let shouldSync = SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.SUGGESTION_COLORS)
-                
-                if shouldSync {
-                    await fetchColorsSuggestion()
-                }
-            }
-        }.onChange(of: showCreationSheet, initial: true) {
+        }
+        .onChange(of: showCreationSheet) {
             if showCreationSheet {
-                newListEmoji = String.randomEmoji()
-                
-                Task {
-                    await fetchListTemplateSuggestion()
-                }
+                newListEmoji = EmojiHelper.randomEmoji()
+                newListColor = ColorHelper.randomIxColor()
             }
         }
     }
     
     
+    private var ListsDisplayerView: some View {
+        ListsDisplayer(
+            userId: user?.id ?? "",
+            filter: filter,
+            sorting: sorting,
+            sortingOrder: sortingOrder,
+            onFilterClear: {
+                filter = .all
+            },
+            onCreation: {
+                showCreationSheet = true
+            },
+            onListCardTap: { list in
+                navigationManager.push(.listRoute(listId: list.id))
+            },
+            onShare: { list in
+                selectedList = list
+                if list.user_id == user?.id {
+                    Task {
+                        await fetchListUsersWthAccess(listId: list.id)
+                    }
+                    showShareSheet = true
+                } else {
+                    showLeaveListConfirmation = true
+                }
+                
+            },
+            onArchive: { list in
+                Task {
+                    await editList(id: list.id, name: list.name, color: list.color, emoji: list.emoji, archived: true, isPublic: list.isPublic)
+                }
+            },
+            onEdit: { list in
+                selectedList = list
+                showEditSheet = true
+            },
+            onDelete: { list in
+                selectedList = list
+                showDeleteConfirmationDialog = true
+            },
+            onLeave: { list in
+                selectedList = list
+                showLeaveListConfirmation = true
+            }
+        )
+    }
 }
 
-#Preview {
-    @Previewable @StateObject var ixApiClient = IxApiClient()
-    @Previewable @StateObject var errorService = ErrorStateService()
-    @Previewable @StateObject var navigationManager = NavigationManager()
-
-    ListsTabView()
-        .environmentObject(ixApiClient)
-        .environmentObject(errorService)
-        .environmentObject(navigationManager)
-}

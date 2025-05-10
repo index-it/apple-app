@@ -10,13 +10,17 @@ import SwiftUI
 import AuthenticationServices
 import GoogleSignInSwift
 import GoogleSignIn
+import IxCoreKit
+import os
+
+fileprivate let log = Logger(subsystem: IxSubsystems.APP, category: "SocialLoginScreen")
 
 struct SocialLoginScreen: View {
+    @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var authNavigationManager: AuthNavigationManager
-    @EnvironmentObject private var ixApiClient: IxApiClient
     @EnvironmentObject private var errorService: ErrorStateService
     
-    @State private var socialLoginViewModel = SignInWithAppleController()
+    @State private var signInWithAppleController = SignInWithAppleController()
     
     @State private var showingEmailSheet = false
     
@@ -43,14 +47,14 @@ struct SocialLoginScreen: View {
     }
     
     private func loginWithApple() {
-        socialLoginViewModel.setup(ixApiClient: ixApiClient, errorService: errorService)
+        signInWithAppleController.setup(ixApiClient: ixApiClient, errorService: errorService)
         
         let request = ASAuthorizationAppleIDProvider().createRequest()
         request.requestedScopes = [.email]
         
         let controller = ASAuthorizationController(authorizationRequests: [request])
-        controller.delegate = socialLoginViewModel
-        controller.presentationContextProvider = socialLoginViewModel
+        controller.delegate = signInWithAppleController
+        controller.presentationContextProvider = signInWithAppleController
         controller.performRequests()
     }
     
@@ -123,28 +127,28 @@ struct SocialLoginScreen: View {
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
             }.frame(maxHeight: .infinity, alignment: .bottom)
-        }.meshGradientBackground()
-            .sheet(isPresented: $showingEmailSheet) {
-                NavigationStack(path: $authNavigationManager.path) {
-                    EmailLoginScreen()
-                        .navigationDestination(for: AuthNavigationRoute.self) { destination in
-                            switch destination {
-                            case let .PasswordLogin(email: email):
-                                PasswordLoginScreen(email: email)
-                            case let .PasswordRegister(email: email):
-                                PasswordRegisterScreen(email: email)
-                            case let .EmailVerification(email: email, password: password, verificationEmailSent: verificationEmailSent):
-                                EmailVerificationScreen(email: email, password: password, verificationEmailSent: verificationEmailSent)
-                            }
+        }
+        .meshGradientBackground()
+        .sheet(isPresented: $showingEmailSheet) {
+            NavigationStack(path: $authNavigationManager.path) {
+                EmailLoginScreen()
+                    .navigationDestination(for: AuthNavigationRoute.self) { destination in
+                        switch destination {
+                        case let .PasswordLogin(email: email):
+                            PasswordLoginScreen(email: email)
+                        case let .PasswordRegister(email: email):
+                            PasswordRegisterScreen(email: email)
+                        case let .EmailVerification(email: email, password: password, verificationEmailSent: verificationEmailSent):
+                            EmailVerificationScreen(email: email, password: password, verificationEmailSent: verificationEmailSent)
                         }
-                }
+                    }
             }
+        }
     }
 }
 
 /// Remember to call the `setup` function before using!
-@Observable
-class SignInWithAppleController: NSObject, ASAuthorizationControllerDelegate {
+fileprivate class SignInWithAppleController: NSObject, ASAuthorizationControllerDelegate {
     private var ixApiClient: IxApiClient?
     private var errorService: ErrorStateService?
     
@@ -155,29 +159,50 @@ class SignInWithAppleController: NSObject, ASAuthorizationControllerDelegate {
     
     func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
         guard let ixApiClient, let errorService else {
-            print("IxApiClient or ErrorStateService is not initialized, remember to call the setup() function before using this class")
+            log.error("IxApiClient or ErrorStateService is not initialized, remember to call the setup() function before using this class")
             return
         }
         
         if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
            let token = appleIDCredential.identityToken,
-           let idToken = String(data: token, encoding: .utf8){
+           let idToken = String(data: token, encoding: .utf8) {
             Task {
                 do {
                     try await ixApiClient.loginWithApple(idToken: idToken)
                 } catch IxApiClientError.EmailNotVerified {
                     errorService.insert(.customMessage(title: "Apple email not verified", message: "Your Apple email is not verified, please verify the email of your Apple account before using it to login."))
                 } catch {
-                    errorService.insert(.customMessage(title: "Error", message: "Couldn't login via Apple, please use another method or try again later"))
+                    handleUnknownError(error: error)
                 }
             }
         } else {
-            errorService.insert(.customMessage(title: "Error", message: "Couldn't login via Apple, please use another method or try again later"))
+            handleUnknownError()
         }
     }
 
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
-        // can ignore
+        guard let ixApiClient, let errorService else {
+            log.error("IxApiClient or ErrorStateService is not initialized, remember to call the setup() function before using this class")
+            return
+        }
+        
+        if let authError = error as? ASAuthorizationError {
+            switch authError.code {
+            case .canceled:
+                // can ignore it
+            default:
+                handleUnknownError(error: error)
+            }
+        } else {
+            handleUnknownError(error: error)
+        }
+    }
+    
+    private func handleUnknownError(error: Error? = nil) {
+        guard let errorService = errorService else { return }
+        
+        errorService.insert(.customMessage(title: "Error", message: "Couldn't login via Apple, please use another method or try again later"))
+        log.error("Login with apple failed: \(error)")
     }
 }
 
