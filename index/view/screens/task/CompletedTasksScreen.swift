@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import IxCoreKit
 
 struct CompletedTasksScreen: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
@@ -44,10 +45,10 @@ struct CompletedTasksScreen: View {
             }
             .navigationTitle("Completed tasks")
             .onAppear {
-                let shouldSync = SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.COMPLETED_TASKS)
-                
-                if shouldSync {
-                    Task {
+                Task {
+                    let shouldSync = await SyncRegister.shared.hasExpired(SyncResource.completedTasks)
+                    
+                    if shouldSync {
                         await fetchTasks()
                     }
                 }

@@ -23,7 +23,7 @@ struct UniversalLinksHelper {
         switch section {
         case IxUniversalLinks.Sections.lists:
             if let listId = pathComponents[safe: 1] {
-                navigationManager.push(navigationRoute: .listRoute(listId: listId))
+                navigationManager.push(.listRoute(listId: listId))
             } else {
                 navigationManager.navigateToTab(.lists)
             }

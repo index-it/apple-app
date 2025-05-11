@@ -31,4 +31,8 @@ public struct DateHelper {
         public static let taskSectionHeading = makeFormatter(format: "EEEE")
         public static let taskSectionSubheading = makeFormatter(format: "d MMMM")
     }
+    
+    public static func reminderOffsetToUtc(_ offset: Int64) -> Int64 {
+        return offset - Int64(TimeZone.current.secondsFromGMT() * 1000)
+    }
 }

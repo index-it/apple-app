@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import EventKit
+import IxCoreKit
 
 // MARK: Models
 
@@ -72,7 +73,7 @@ struct TaskFormSheet: View {
     // MARK: View props
     @Binding var showSheet: Bool
     
-    @AppStorage(AppStorageKeys.logged_in_user) private var user: User?
+    @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
     @State private var showPaywall = false
     
     @FocusState private var isNameFocused: Bool
@@ -487,7 +488,6 @@ struct TaskFormSheet: View {
                                     yearlyWeekdayFrequency = .last
                                 }
                             }
-                        }
                         
                         if let end = rule.recurrenceEnd {
                             if let endDate = end.endDate {
@@ -512,7 +512,7 @@ struct TaskFormSheet: View {
             reminders.append(
                 IxTaskReminder(
                     daysBefore: Int64(createReminderDays),
-                    timeOffset: Int64(IxDateUtils.reminderOffsetToUtc(Int64(timeOffset)))
+                    timeOffset: Int64(DateHelper.reminderOffsetToUtc(Int64(timeOffset)))
                 )
             )
         }
@@ -635,7 +635,7 @@ struct TaskFormSheet: View {
                 Text("Date")
                 
                 if let dueDate = dueDate {
-                    Text(IxDateUtils.Formatters.shared.taskDueDatePicker.string(from: dueDate))
+                    Text(DateHelper.Formatters.taskDueDatePicker.string(from: dueDate))
                 }
             } icon: {
                 Image(systemName: "calendar")
@@ -683,7 +683,7 @@ struct TaskFormSheet: View {
     var existingRemindersSection: some View {
         Section {
             ForEach(Array(reminders.enumerated()), id: \.offset) { index, reminder in
-                let dayText = reminder.days_before == 0 ? "On the same day" : "\(reminder.days_before) day\(reminder.days_before > 1 ? "s" : "") before"
+                let dayText = reminder.daysBefore == 0 ? "On the same day" : "\(reminder.daysBefore) day\(reminder.daysBefore > 1 ? "s" : "") before"
                 
                 Text("\(dayText) at \(reminder.hourAndMinuteString())")
                     .swipeActions(allowsFullSwipe: true) {

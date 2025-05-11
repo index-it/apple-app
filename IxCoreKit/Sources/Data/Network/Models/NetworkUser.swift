@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct NetworkUser: Codable, Equatable {
+public struct NetworkUser: Codable, Equatable, Sendable {
     public var id: String
     public var email: String
     public var has_pro: Bool

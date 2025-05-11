@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct NetworkTask: Codable {
+public struct NetworkTask: Codable, Sendable {
     public let id: String
     public let user_id: String
     public let item_id: String?
@@ -24,12 +24,12 @@ public struct NetworkTask: Codable {
     public let completed_at: Int64?
 }
 
-public struct NetworkSubTask: Codable {
+public struct NetworkSubTask: Codable, Sendable {
     public let name: String
     public let completed: Bool
 }
 
-public struct NetworkTaskReminder: Codable {
+public struct NetworkTaskReminder: Codable, Sendable {
     public let days_before: Int64
     public let time_offset: Int64
 }

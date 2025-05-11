@@ -9,6 +9,7 @@ import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
 import SwiftData
+import IxCoreKit
 
 @objc(ShareViewController)
 class ShareViewController: UIViewController {

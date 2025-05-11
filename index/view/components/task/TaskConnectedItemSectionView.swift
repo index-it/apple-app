@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import SwiftData
+import IxCoreKit
 
 struct TaskConnectedItemSectionView: View {
     private var item: IxListItem?
@@ -22,8 +23,8 @@ struct TaskConnectedItemSectionView: View {
         self.item = item
         self.onDelete = onDelete
         
-        let categoryId = item?.category_id
-        let listId = item?.list_id
+        let categoryId = item?.categoryId
+        let listId = item?.listId
         
         if let listId = listId {
             var listDescriptor: FetchDescriptor<IxList>

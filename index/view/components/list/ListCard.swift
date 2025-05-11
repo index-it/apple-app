@@ -50,7 +50,7 @@ struct ListCard: View {
                                     .frame(width: 30, height: 30)
                                 
                                 Image(systemName: "ellipsis")
-                                    .foregroundColor(list.color.toColor(fallback: .white).contrastColor())
+                                    .foregroundColor(list.color.toColor().contrastColor())
                                     .fontWeight(.semibold)
                                     .font(.title3)
                             }
@@ -61,17 +61,17 @@ struct ListCard: View {
                 Spacer()
                 
                 HStack {
-                    if (list.isShared()) {
+                    if (list.isShared) {
                         Image(systemName: "person.2.fill")
                             .font(.title3)
-                            .foregroundStyle(list.color.toColor(fallback: .white).contrastColor())
+                            .foregroundStyle(list.color.toColor().contrastColor())
                             .onTapGesture(perform: onShare)
                     }
                     
                     Text(list.name)
                         .font(.title3)
                         .fontWeight(.semibold)
-                        .foregroundStyle(list.color.toColor(fallback: .white).contrastColor())
+                        .foregroundStyle(list.color.toColor().contrastColor())
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
@@ -93,7 +93,7 @@ struct ListCard: View {
             .frame(height: 110)
         }
         .if(!withInteractions, transform: { view in
-            view.shadow(color: Color(hexString: list.color).opacity(0.5), radius: 10)
+            view.shadow(color: list.color.toColor().opacity(0.5), radius: 10)
         })
         .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: 20))
         .if(withInteractions) { view in
@@ -119,23 +119,4 @@ struct ListCard: View {
             }
         }
     }
-}
-
-#Preview {
-    let sampleList = IxList(
-        id: "1",
-        userId: "user123",
-        name: "Email Album Art",
-        emoji: "🌟",
-        color: "#FF5733", // Sample color
-        isPublic: true,
-        viewers: ["user456", "user789"],
-        editors: ["user123"],
-        createdAt: 1697836800,
-        editedAt: nil
-    )
-    
-    ListCard(list: sampleList, owner: false, onTap: {}, onShare: {}, onEdit: {}, onDelete: {}, onLeave: {}, withInteractions: false)
-        .padding()
-        .frame(width: 250)
 }

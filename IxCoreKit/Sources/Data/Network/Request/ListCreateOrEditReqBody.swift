@@ -16,6 +16,7 @@ struct ListCreateOrEditReqBody: Codable {
         case name
         case icon
         case color
+        case archived
         case is_public = "public"
     }
 }

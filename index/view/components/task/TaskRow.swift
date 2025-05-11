@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import IxCoreKit
 
 struct TaskRow: View {
     private var task: IxTask
@@ -38,7 +39,7 @@ struct TaskRow: View {
         self.onCompletionToggle = onCompletionToggle
         self.onDelete = onDelete
         
-        let itemId = task.item_id
+        let itemId = task.itemId
         var itemDescriptor: FetchDescriptor<IxListItem>
         
         if itemId != nil {
@@ -113,7 +114,7 @@ struct TaskRowContentView: View {
         self.onCompletionToggle = onCompletionToggle
         self.onDelete = onDelete
         
-        let listId = item?.list_id
+        let listId = item?.listId
         var listDescriptor: FetchDescriptor<IxList>
         
         if (listId != nil) {
@@ -132,7 +133,7 @@ struct TaskRowContentView: View {
         _taskItemList = Query(listDescriptor)
         
         
-        let categoryId = item?.category_id
+        let categoryId = item?.categoryId
         var categoryDescriptor: FetchDescriptor<IxListCategory>
         
         if (categoryId != nil) {
@@ -184,7 +185,7 @@ struct TaskRowContentView: View {
                     }
                     
                     if showDate {
-                        Text(task.dueDateString())
+                        Text(task.taskRowDate)
                             .foregroundStyle(redDate ? .red : .secondary)
                             .textCase(.uppercase)
                             .font(.caption)
@@ -222,32 +223,5 @@ struct TaskRowContentView: View {
         }
             .frame(maxWidth: .infinity, alignment: .leading)
             .foregroundStyle(taskItemList.first?.color.toColorOrNil()?.contrastColor() ?? UIColor.label.toColor())
-    }
-}
-
-#Preview {
-    @State var tasks: [IxTask] = [
-        IxTask(id: "id1", userId: "id", itemId: nil, name: "Buy Gocciole", description: "at the Conad today", subtasks: [IxSubTask(name: "Pavesi", completed: false), IxSubTask(name: "Choco", completed: true), IxSubTask(name: "Another", completed: false)], dueDate: .now, rrule: nil, completed: true, priority: 2, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: Int64(Date.now.addingTimeInterval(60 * 60 * 24 * -2).timeIntervalSince1970 * 1000)),
-        
-        IxTask(id: "id2", userId: "id", itemId: nil, name: "Buy more Gocciole", description: "at the Conad today", subtasks: [], dueDate: nil, rrule: "", completed: false, priority: 1, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
-        
-        IxTask(id: "id3", userId: "id", itemId: nil, name: "Clean kitchen", description: "Before guests arrive", subtasks: [IxSubTask(name: "Sweep", completed: false), IxSubTask(name: "Mop", completed: false)], dueDate: .now.addingTimeInterval(86400), rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
-        
-        IxTask(id: "id4", userId: "id", itemId: nil, name: "Finish homework", description: "Math and Physics", subtasks: [IxSubTask(name: "Math problems", completed: true), IxSubTask(name: "Physics report", completed: false)], dueDate: .now.addingTimeInterval(172800), rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
-        
-        IxTask(id: "id5", userId: "id", itemId: nil, name: "Call mechanic", description: "Car check-up", subtasks: [], dueDate: nil, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil)
-    ]
-    
-    List {
-        ForEach($tasks, id: \.id) { $task in
-            TaskRow(task: task, showDate: task.due_date != nil, redDate: false, subtasksMaxWidth: UIScreen.main.bounds.width / 2) { task in
-                // Handle task open
-            } onCompletionToggle: { task in
-                task.completed.toggle()
-            } onDelete: { task in
-                // Handle delete
-            }
-        }
-
     }
 }

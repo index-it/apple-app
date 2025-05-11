@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import IxCoreKit
 
 struct ShareExtensionView: View {
     @State private var name: String
@@ -25,7 +26,7 @@ struct ShareExtensionView: View {
             selectedCategoryId: nil,
             onCancel: close
         )
-        .environmentObject(IxApiClient())
+        .environment(\.ixApiClient, IxApiClient() { _ in })
     }
 
     func close() {

@@ -10,6 +10,7 @@ import SwiftUI
 import WidgetKit
 
 struct CreateTaskWidgetControl: ControlWidget {
+    // TODO: Move to IxKinds
     static let kind: String = "app.index-it.index.createTaskWidget"
 
     var body: some ControlWidgetConfiguration {

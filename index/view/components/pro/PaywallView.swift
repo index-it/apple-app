@@ -7,6 +7,7 @@
 
 import SwiftUI
 import RevenueCat
+import IxCoreKit
 
 struct PaywallView: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient

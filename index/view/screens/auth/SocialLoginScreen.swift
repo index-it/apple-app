@@ -189,7 +189,7 @@ fileprivate class SignInWithAppleController: NSObject, ASAuthorizationController
         if let authError = error as? ASAuthorizationError {
             switch authError.code {
             case .canceled:
-                // can ignore it
+                break
             default:
                 handleUnknownError(error: error)
             }

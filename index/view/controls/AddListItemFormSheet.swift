@@ -67,7 +67,7 @@ struct AddListItemFormSheet: View {
                 try context.delete(
                     model: IxListCategory.self,
                     where: #Predicate { category in
-                        category.list_id == listId
+                        category.listId == listId
                     }
                 )
 
@@ -133,7 +133,7 @@ struct AddListItemFormSheet: View {
                     Picker(selection: $selectedCategoryId) {
                         Text("No category").tag(nil as String?)
 
-                        ForEach(categories.filter { cat in cat.list_id == selectedListId }.sorted{ $0.name < $1.name }, id: \.id) { category in
+                        ForEach(categories.filter { cat in cat.listId == selectedListId }.sorted{ $0.name < $1.name }, id: \.id) { category in
                             Text(category.name).tag(category.id)
                         }
                     } label: {
@@ -164,8 +164,8 @@ struct AddListItemFormSheet: View {
             }
         }
         .onAppear {
-            if SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.LISTS, threshold: syncThreeshold) {
-                Task {
+            Task {
+                if await SyncRegister.shared.hasExpired(SyncResource.lists, threshold: syncThreeshold) {
                     await fetchLists()
                 }
             }
@@ -178,23 +178,11 @@ struct AddListItemFormSheet: View {
         .onChange(of: selectedListId) { _, newValue in
             selectedCategoryId = nil
 
-            if SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.list(newValue), threshold: syncThreeshold) {
-                Task {
+            Task {
+                if await SyncRegister.shared.hasExpired(SyncResource.list(newValue), threshold: syncThreeshold) {
                     await fetchCategories(listId: newValue)
                 }
             }
         }
     }
-}
-
-#Preview {
-    AddListItemFormSheet(
-        name: "",
-        link: nil,
-        note: nil,
-        selectedListId: "",
-        selectedCategoryId: nil,
-        onCancel: {}
-    ).environmentObject(IxApiClient())
-        
 }

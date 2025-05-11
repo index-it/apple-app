@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import IxCoreKit
 
 struct AccountSettingsView: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
@@ -15,7 +16,7 @@ struct AccountSettingsView: View {
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) private var dismiss
     
-    @AppStorage(AppStorageKeys.logged_in_user) var user: User?
+    @AppStorage(AppStorageKeys.loggedInUser) var user: User?
     
     @State private var showChangePasswordAlert = false
     @State private var newPassword = ""

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import IxCoreKit
 
 struct CompletedTasksList: View {
     private var onOpen: (_ task: IxTask) -> ()
@@ -28,7 +29,7 @@ struct CompletedTasksList: View {
             task.completed
         }
         
-        _tasks = Query(filter: filterPredicate, sort: [SortDescriptor(\IxTask.completed_at, order: .reverse)])
+        _tasks = Query(filter: filterPredicate, sort: [SortDescriptor(\IxTask.completedAt, order: .reverse)])
     }
     
     var body: some View {

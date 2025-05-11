@@ -69,7 +69,7 @@ struct SettingsTabView: View {
                     
                     Section {
                         Button {
-                            navigationManager.push(navigationRoute: .accountSettings)
+                            navigationManager.push(.accountSettings)
                         } label: {
                             HStack {
                                 Label("Account", systemImage: "person.fill")
@@ -85,7 +85,7 @@ struct SettingsTabView: View {
                         
                         if let user = user, user.has_pro {
                             Button {
-                                navigationManager.push(navigationRoute: .proSettings)
+                                navigationManager.push(.proSettings)
                             } label: {
                                 HStack {
                                     Label("Pro", systemImage: "crown.fill")
@@ -116,7 +116,7 @@ struct SettingsTabView: View {
                         }.tint(.primary)
                         
                         Button {
-                            navigationManager.push(navigationRoute: .about)
+                            navigationManager.push(.about)
                         } label: {
                             HStack {
                                 Label("About & Feedback", systemImage: "heart.fill")

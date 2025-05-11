@@ -33,21 +33,12 @@ struct TasksTabView: View {
     
     // MARK: Sorting and filtering
     @AppStorage(AppStorageKeys.Tasks.sorting) private var sorting = AppStorageKeys.Defaults.tasksSorting
-    @AppStorage(AppStorageKeys.Tasks.sortingOrder) private var reverseSorting = AppStorageKeys.Defaults.tasksSortOrder
+    @AppStorage(AppStorageKeys.Tasks.sortOrder) private var sortOrder = AppStorageKeys.Defaults.tasksSortOrder
     
     private func saveTask(_ task: IxTask) async throws {
         try context.transaction {
             context.insert(task)
         }
-    }
-    
-    // MARK: - Suggestions
-    func fetchTaskTemplateSuggestion() async {
-        do {
-            let template = try await ixApiClient.getTaskTemplateSuggestion()
-            
-            taskCreationNamePlaceholder = template.name
-        } catch {}
     }
     
     // MARK: - Task CRUD
@@ -157,7 +148,7 @@ struct TasksTabView: View {
             TaskListView
                 .navigationTitle("Your tasks")
                 .floatingActionButton("plus") {
-                    navigationManager.showCreateTaskSheet = true
+                    // TODO
                 }
                 .paywallCover(isPresented: $showPaywall)
                 .toolbar {
@@ -302,17 +293,18 @@ struct TasksTabView: View {
                     laterThanDateFilter: false,
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
-                    taskReverseSorting: reverseSorting) { task in
-                        selectedTask = task
-                        showEditSheet = true
-                    } onCompletionToggle: { task in
-                        Task {
-                            await setTaskCompletion(id: task.id, completed: !task.completed)
-                        }
-                    } onDelete: { task in
-                        selectedTask = task
-                        showDeleteConfirmationDialog = true
+                    sortOrder: sortOrder
+                ) { task in
+                    selectedTask = task
+                    showEditSheet = true
+                } onCompletionToggle: { task in
+                    Task {
+                        await setTaskCompletion(id: task.id, completed: !task.completed)
                     }
+                } onDelete: { task in
+                    selectedTask = task
+                    showDeleteConfirmationDialog = true
+                }
             } header: {
                 Text("Today")
                     .fontWeight(.semibold)
@@ -321,19 +313,20 @@ struct TasksTabView: View {
                     .textCase(nil)
                     .onTapGesture {
                         taskCreationDueDate = todayDate
-                        navigationManager.showCreateTaskSheet = true
+                        // TODO
+//                        navigationManager.showCreateTaskSheet = true
                     }
             }
             
             Section {
                 TasksList(
-                    dateFilter: todayDate.addingTimeInterval(IxDateUtils.oneDayMillis),
+                    dateFilter: todayDate.addingTimeInterval(DateHelper.oneDaySeconds),
                     noDateFilter: false,
                     earlierThanDateFilter: false,
                     laterThanDateFilter: false,
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
-                    taskReverseSorting: reverseSorting) { task in
+                    sortOrder: sortOrder) { task in
                         selectedTask = task
                         showEditSheet = true
                     } onCompletionToggle: { task in
@@ -345,7 +338,7 @@ struct TasksTabView: View {
                         showDeleteConfirmationDialog = true
                     }
             } header: {
-                let date = todayDate.addingTimeInterval(IxDateUtils.oneDayMillis)
+                let date = todayDate.addingTimeInterval(DateHelper.oneDaySeconds)
                 
                 VStack(alignment: .leading) {
                     Text("Tomorrow")
@@ -354,25 +347,25 @@ struct TasksTabView: View {
                         .foregroundStyle(UIColor.label.toColor())
                         .textCase(nil)
                     
-                    Text(IxDateUtils.Formatters.shared.taskSectionSubheading.string(from: date))
+                    Text(DateHelper.Formatters.taskSectionSubheading.string(from: date))
                         .font(.caption)
                         .multilineTextAlignment(.leading)
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    navigationManager.showCreateTaskSheet = true
+//                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
             Section {
                 TasksList(
-                    dateFilter: todayDate.addingTimeInterval(IxDateUtils.twoDayMillis),
+                    dateFilter: todayDate.addingTimeInterval(DateHelper.twoDaySeconds),
                     noDateFilter: false,
                     earlierThanDateFilter: false,
                     laterThanDateFilter: false,
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
-                    taskReverseSorting: reverseSorting) { task in
+                    sortOrder: sortOrder) { task in
                         selectedTask = task
                         showEditSheet = true
                     } onCompletionToggle: { task in
@@ -384,33 +377,33 @@ struct TasksTabView: View {
                         showDeleteConfirmationDialog = true
                     }
             } header: {
-                let date = todayDate.addingTimeInterval(IxDateUtils.twoDayMillis)
+                let date = todayDate.addingTimeInterval(DateHelper.twoDaySeconds)
                 
                 VStack(alignment: .leading) {
-                    Text(IxDateUtils.Formatters.shared.taskSectionHeading.string(from: date))
+                    Text(DateHelper.Formatters.taskSectionHeading.string(from: date))
                         .fontWeight(.semibold)
                         .font(.title2)
                         .foregroundStyle(UIColor.label.toColor())
                         .textCase(nil)
                     
-                    Text(IxDateUtils.Formatters.shared.taskSectionSubheading.string(from: date))
+                    Text(DateHelper.Formatters.taskSectionSubheading.string(from: date))
                         .font(.caption)
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    navigationManager.showCreateTaskSheet = true
+//                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
             Section {
                 TasksList(
-                    dateFilter: todayDate.addingTimeInterval(IxDateUtils.threeDayMillis),
+                    dateFilter: todayDate.addingTimeInterval(DateHelper.threeDaySeconds),
                     noDateFilter: false,
                     earlierThanDateFilter: false,
                     laterThanDateFilter: false,
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
-                    taskReverseSorting: reverseSorting) { task in
+                    sortOrder: sortOrder) { task in
                         selectedTask = task
                         showEditSheet = true
                     } onCompletionToggle: { task in
@@ -422,33 +415,33 @@ struct TasksTabView: View {
                         showDeleteConfirmationDialog = true
                     }
             } header: {
-                let date = todayDate.addingTimeInterval(IxDateUtils.threeDayMillis)
+                let date = todayDate.addingTimeInterval(DateHelper.threeDaySeconds)
                 
                 VStack(alignment: .leading) {
-                    Text(IxDateUtils.Formatters.shared.taskSectionHeading.string(from: date))
+                    Text(DateHelper.Formatters.taskSectionHeading.string(from: date))
                         .fontWeight(.semibold)
                         .font(.title2)
                         .foregroundStyle(UIColor.label.toColor())
                         .textCase(nil)
                     
-                    Text(IxDateUtils.Formatters.shared.taskSectionSubheading.string(from: date))
+                    Text(DateHelper.Formatters.taskSectionSubheading.string(from: date))
                         .font(.caption)
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    navigationManager.showCreateTaskSheet = true
+//                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
             Section {
                 TasksList(
-                    dateFilter: todayDate.addingTimeInterval(IxDateUtils.fourDayMillis),
+                    dateFilter: todayDate.addingTimeInterval(DateHelper.fourDaySeconds),
                     noDateFilter: false,
                     earlierThanDateFilter: false,
                     laterThanDateFilter: false,
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
-                    taskReverseSorting: reverseSorting) { task in
+                    sortOrder: sortOrder) { task in
                         selectedTask = task
                         showEditSheet = true
                     } onCompletionToggle: { task in
@@ -460,33 +453,33 @@ struct TasksTabView: View {
                         showDeleteConfirmationDialog = true
                     }
             } header: {
-                let date = todayDate.addingTimeInterval(IxDateUtils.fourDayMillis)
+                let date = todayDate.addingTimeInterval(DateHelper.fourDaySeconds)
                 
                 VStack(alignment: .leading) {
-                    Text(IxDateUtils.Formatters.shared.taskSectionHeading.string(from: date))
+                    Text(DateHelper.Formatters.taskSectionHeading.string(from: date))
                         .fontWeight(.semibold)
                         .font(.title2)
                         .foregroundStyle(UIColor.label.toColor())
                         .textCase(nil)
                     
-                    Text(IxDateUtils.Formatters.shared.taskSectionSubheading.string(from: date))
+                    Text(DateHelper.Formatters.taskSectionSubheading.string(from: date))
                         .font(.caption)
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    navigationManager.showCreateTaskSheet = true
+//                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
             Section {
                 TasksList(
-                    dateFilter: todayDate.addingTimeInterval(IxDateUtils.fiveDayMillis),
+                    dateFilter: todayDate.addingTimeInterval(DateHelper.fiveDaySeconds),
                     noDateFilter: false,
                     earlierThanDateFilter: false,
                     laterThanDateFilter: false,
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
-                    taskReverseSorting: reverseSorting) { task in
+                    sortOrder: sortOrder) { task in
                         selectedTask = task
                         showEditSheet = true
                     } onCompletionToggle: { task in
@@ -498,33 +491,33 @@ struct TasksTabView: View {
                         showDeleteConfirmationDialog = true
                     }
             } header: {
-                let date = todayDate.addingTimeInterval(IxDateUtils.fiveDayMillis)
+                let date = todayDate.addingTimeInterval(DateHelper.fiveDaySeconds)
                 
                 VStack(alignment: .leading) {
-                    Text(IxDateUtils.Formatters.shared.taskSectionHeading.string(from: date))
+                    Text(DateHelper.Formatters.taskSectionHeading.string(from: date))
                         .fontWeight(.semibold)
                         .font(.title2)
                         .foregroundStyle(UIColor.label.toColor())
                         .textCase(nil)
                     
-                    Text(IxDateUtils.Formatters.shared.taskSectionSubheading.string(from: date))
+                    Text(DateHelper.Formatters.taskSectionSubheading.string(from: date))
                         .font(.caption)
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    navigationManager.showCreateTaskSheet = true
+//                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
             Section {
                 TasksList(
-                    dateFilter: todayDate.addingTimeInterval(IxDateUtils.sixDayMillis),
+                    dateFilter: todayDate.addingTimeInterval(DateHelper.sixDaySeconds),
                     noDateFilter: false,
                     earlierThanDateFilter: false,
                     laterThanDateFilter: false,
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
-                    taskReverseSorting: reverseSorting) { task in
+                    sortOrder: sortOrder) { task in
                         selectedTask = task
                         showEditSheet = true
                     } onCompletionToggle: { task in
@@ -536,33 +529,33 @@ struct TasksTabView: View {
                         showDeleteConfirmationDialog = true
                     }
             } header: {
-                let date = todayDate.addingTimeInterval(IxDateUtils.sixDayMillis)
+                let date = todayDate.addingTimeInterval(DateHelper.sixDaySeconds)
                 
                 VStack(alignment: .leading) {
-                    Text(IxDateUtils.Formatters.shared.taskSectionHeading.string(from: date))
+                    Text(DateHelper.Formatters.taskSectionHeading.string(from: date))
                         .fontWeight(.semibold)
                         .font(.title2)
                         .foregroundStyle(UIColor.label.toColor())
                         .textCase(nil)
                     
-                    Text(IxDateUtils.Formatters.shared.taskSectionSubheading.string(from: date))
+                    Text(DateHelper.Formatters.taskSectionSubheading.string(from: date))
                         .font(.caption)
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    navigationManager.showCreateTaskSheet = true
+//                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
             Section {
                 TasksList(
-                    dateFilter: todayDate.addingTimeInterval(IxDateUtils.sevenDayMillis),
+                    dateFilter: todayDate.addingTimeInterval(DateHelper.sevenDaySeconds),
                     noDateFilter: false,
                     earlierThanDateFilter: false,
                     laterThanDateFilter: true,
                     taskFilter: .uncompleted,
                     taskSorting: sorting,
-                    taskReverseSorting: reverseSorting) { task in
+                    sortOrder: sortOrder) { task in
                         selectedTask = task
                         showEditSheet = true
                     } onCompletionToggle: { task in
@@ -580,17 +573,10 @@ struct TasksTabView: View {
                     .foregroundStyle(UIColor.label.toColor())
                     .textCase(nil)
                     .onTapGesture {
-                        taskCreationDueDate = todayDate.addingTimeInterval(IxDateUtils.sevenDayMillis)
-                        navigationManager.showCreateTaskSheet = true
+                        taskCreationDueDate = todayDate.addingTimeInterval(DateHelper.sevenDaySeconds)
+//                        navigationManager.showCreateTaskSheet = true
                     }
             }
         }
     }
-}
-
-#Preview {
-    TasksTabView()
-        .environmentObject(IxApiClient())
-        .environmentObject(ErrorStateService())
-        .environmentObject(NavigationManager())
 }

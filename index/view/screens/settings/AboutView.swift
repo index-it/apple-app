@@ -7,6 +7,7 @@
 
 import SwiftUI
 import StoreKit
+import IxCoreKit
 
 struct AboutView: View {
     @Environment(\.openURL) var openURL
@@ -14,7 +15,7 @@ struct AboutView: View {
     
     @State private var showPaywall = false
     
-    @AppStorage(AppStorageKeys.logged_in_user) private var user: User?
+    @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
     
     var body: some View {
         NavigationView {

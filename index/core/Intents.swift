@@ -10,6 +10,7 @@ import SwiftUI
 import SwiftData
 import WidgetKit
 import IxCoreKit
+import IxCoreKit
 
 struct CreateTaskIntent: AppIntent {
     static var title: LocalizedStringResource = "Create Task"
@@ -64,7 +65,7 @@ struct CompleteTaskIntent: AppIntent {
             return .result()
         }
         
-        let ixApiClient = IxApiClient()
+        let ixApiClient = IxApiClient() { _ in }
         let modelContext = await ModelContext(ModelContainerProvider.shared)
         modelContext.author = "widget"
         

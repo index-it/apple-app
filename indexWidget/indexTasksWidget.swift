@@ -8,6 +8,7 @@
 import SwiftUI
 import WidgetKit
 import SwiftData
+import IxCoreKit
 
 struct TodayTasksWidget: Widget {
     let kind: String = IxKinds.tasksWidget
@@ -242,7 +243,7 @@ struct TodayTasksProvider: TimelineProvider {
             
             // Create the timeline entry with fetched tasks
             let entry = TodayTasksEntry(date: Date(), tasks: tasks.filter({
-                $0.due_date == nil || calendar.compare($0.due_date!, to: now, toGranularity: .day).rawValue <= 0
+                $0.dueDate == nil || calendar.compare($0.dueDate!, to: now, toGranularity: .day).rawValue <= 0
             }))
             
             // Update every hour or when the widget refreshes

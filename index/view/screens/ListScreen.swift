@@ -40,7 +40,7 @@ struct ListScreen: View {
     @State private var newCategoryName = ""
     @State private var newCategoryNamePlaceholder = "Category name"
     @State private var newCategoryColor = Color.accentColor
-
+    
     // MARK: Selected item
     @State private var selectedItem: IxListItem? = nil
     @State private var showItemEditSheet = false
@@ -74,18 +74,18 @@ struct ListScreen: View {
         
         return selectedCategory.color.toColor()
     }
-
+    
     init(listId: String) {
         self.listId = listId
         
         // MARK: AppStorage init
         _showCompletedItems = AppStorage(wrappedValue: AppStorageKeys.Defaults.itemsShowCompleted, AppStorageKeys.Items.show_completed(listId))
         _itemSorting = AppStorage(wrappedValue: AppStorageKeys.Defaults.itemsSorting, AppStorageKeys.Items.sorting(listId))
-        _itemsSortOrder = AppStorage(wrappedValue: AppStorageKeys.Defaults.itemsSortOrder, AppStorageKeys.Items.sortingOrder(listId))
+        _itemsSortOrder = AppStorage(wrappedValue: AppStorageKeys.Defaults.itemsSortOrder, AppStorageKeys.Items.sortOrder(listId))
         
         _hideUncategorized = AppStorage(wrappedValue: AppStorageKeys.Defaults.hideUncategorized, AppStorageKeys.Categories.hideUncategorized(listId))
         _categoriesSorting = AppStorage(wrappedValue: AppStorageKeys.Defaults.categoriesSorting, AppStorageKeys.Categories.sorting(listId))
-        _categoriesSortOrder = AppStorage(wrappedValue: AppStorageKeys.Defaults.categoriesSortOrder, AppStorageKeys.Categories.sortingOrder(listId))
+        _categoriesSortOrder = AppStorage(wrappedValue: AppStorageKeys.Defaults.categoriesSortOrder, AppStorageKeys.Categories.sortOrder(listId))
         
         // MARK: List query
         var listDescriptor = FetchDescriptor<IxList>(
@@ -142,7 +142,7 @@ struct ListScreen: View {
                 try context.delete(
                     model: IxListCategory.self,
                     where: #Predicate { category in
-                        category.list_id == listId
+                        category.listId == listId
                     }
                 )
                 
@@ -163,7 +163,7 @@ struct ListScreen: View {
                 try context.delete(
                     model: IxListItem.self,
                     where: #Predicate { item in
-                        item.list_id == listId
+                        item.listId == listId
                     }
                 )
                 
@@ -173,34 +173,6 @@ struct ListScreen: View {
             }
         } catch {
             errorService.insert(.localizedError(title: "Error loading list items", error: error))
-        }
-    }
-    
-    // MARK: - Suggestions
-    func fetchColorsSuggestion() async {
-        do {
-            colorsSuggested = try await ixApiClient.getColorsSuggestion().map { Color(hexString: $0) }
-        } catch {
-            
-        }
-    }
-    
-    func fetchItemTemplateSuggestion() async {
-        do {
-            let template = try await ixApiClient.getItemTemplateSuggestion()
-            newItemNamePlaceholder = template.name
-        } catch {
-            
-        }
-    }
-    
-    func fetchCategoryTemplateSuggestion() async {
-        do {
-            let template = try await ixApiClient.getCategoryTemplateSuggestion()
-            newCategoryNamePlaceholder = template.name
-            newCategoryColor = Color(hexString: template.color)
-        } catch {
-            
         }
     }
     
@@ -256,7 +228,7 @@ struct ListScreen: View {
     // MARK: - Category CRUD
     func createCategory(listId: String, name: String, color: Color) async {
         do {
-            let category = try await ixApiClient.createCategory(listId: listId, name: name, color: color.hexString())
+            let category = try await ixApiClient.createCategory(listId: listId, name: name, color: color.hexString)
             
             try await saveCategory(category)
             
@@ -270,7 +242,7 @@ struct ListScreen: View {
     
     func editCategory(listId: String, categoryId: String, name: String, color: Color) async {
         do {
-            let category = try await ixApiClient.updateListCategory(listId: listId, categoryId: categoryId, name: name, color: color.hexString())
+            let category = try await ixApiClient.updateListCategory(listId: listId, categoryId: categoryId, name: name, color: color.hexString)
             
             try await saveCategory(category)
         } catch {
@@ -328,164 +300,160 @@ struct ListScreen: View {
     
     var body: some View {
         ScreenContent
-            .sheet(
-                isPresented: $showItemCreationSheet,
-                content: {
-                    ItemFormSheet(
-                        showSheet: $showItemCreationSheet,
-                        name: "",
-                        category: selectedCategory,
-                        link: nil,
-                        note: nil,
-                        categories: categories,
-                        namePlaceholder: newItemNamePlaceholder
-                    ) { name, category, link, note in
-                        Task {
-                            await createItem(listId: listId, name: name, categoryId: category?.id, link: link, note: note)
-                        }
-                    }
-            })
-            .sheet(
-                isPresented: $showItemEditSheet,
-                content: { [selectedItem] in
-                    ItemFormSheet(
-                        showSheet: $showItemEditSheet,
-                        name: selectedItem?.name ?? "",
-                        category: categories.first { c in c.id == selectedItem?.category_id
-                        },
-                        link: selectedItem?.link,
-                        note: selectedItem?.note,
-                        categories: categories,
-                        namePlaceholder: newItemNamePlaceholder) { name, category, link, note in
-                            Task {
-                                if let selectedItem = selectedItem {
-                                    await editItem(listId: listId, itemId: selectedItem.id, name: name, categoryId: category?.id, link: link, note: note)
-                                }
-                            }
-                        }
-            })
-            .sheet(
-                isPresented: $showCategoryCreationSheet,
-                content: {
-                    CategoryFormSheet(
-                        showSheet: $showCategoryCreationSheet,
-                        name: newCategoryName,
-                        color: newCategoryColor,
-                        namePlaceholder: newCategoryNamePlaceholder,
-                        colors: colorsSuggested
-                    ) { name, color in
-                        Task {
-                            await createCategory(listId: listId, name: name, color: color)
-                        }
-                    }
-            })
-            .sheet(
-                isPresented: $showCategoryEditSheet,
-                content: { [selectedCategory] in
-                    CategoryFormSheet(
-                        showSheet: $showCategoryEditSheet,
-                        name: selectedCategory?.name ?? "",
-                        color: Color(hexString: selectedCategory?.color ?? Color.accentColor.hexString()),
-                        namePlaceholder: newCategoryNamePlaceholder,
-                        colors: colorsSuggested
-                    ) { name, color in
-                        Task {
-                            if let category = selectedCategory {
-                                await editCategory(listId: listId, categoryId: category.id, name: name, color: color)
-                            }
-                        }
-                    }
-            })
-            .sheet(isPresented: $showItemNotePopover) { [selectedItem] in
-                NavigationView {
-                    ScrollView(showsIndicators: false) {
-                        Text(selectedItem?.note ?? "This item has no notes in it")
-                            .navigationTitle("Notes")
-                            .navigationBarTitleDisplayMode(.inline)
-                            .toolbar {
-                                ToolbarItem(placement: .topBarTrailing) {
-                                    Button("Done") {
-                                        showItemNotePopover = false
-                                    }
-                                }
-                            }
-                    }.padding()
-                }.presentationDetents([.medium, .large])
-                    .presentationDragIndicator(.hidden)
-            }
-            .sheet(
-                isPresented: $showTaskCreationSheet,
-                content: { [selectedItem] in
-                    TaskFormSheet(
-                        showSheet: $showTaskCreationSheet,
-                        name: selectedItem?.name ?? "",
-                        description: selectedItem?.note,
-                        priority: nil,
-                        dueDate: nil,
-                        rrule: nil,
-                        reminders: [],
-                        itemId: selectedItem?.id,
-                        subtasks: [],
-                        namePlaceholder: "Task name"
-                    ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
-                        Task {
-                            await createTask(name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
-                        }
-                    }
-                }
-            )
+        //            .sheet(
+        //                isPresented: $showItemCreationSheet,
+        //                content: {
+        //                    ItemFormSheet(
+        //                        showSheet: $showItemCreationSheet,
+        //                        name: "",
+        //                        category: selectedCategory,
+        //                        link: nil,
+        //                        note: nil,
+        //                        categories: categories,
+        //                        namePlaceholder: newItemNamePlaceholder
+        //                    ) { name, category, link, note in
+        //                        Task {
+        //                            await createItem(listId: listId, name: name, categoryId: category?.id, link: link, note: note)
+        //                        }
+        //                    }
+        //            })
+        //            .sheet(
+        //                isPresented: $showItemEditSheet,
+        //                content: { [selectedItem] in
+        //                    ItemFormSheet(
+        //                        showSheet: $showItemEditSheet,
+        //                        name: selectedItem?.name ?? "",
+        //                        category: categories.first { c in c.id == selectedItem?.categoryId
+        //                        },
+        //                        link: selectedItem?.link,
+        //                        note: selectedItem?.note,
+        //                        categories: categories,
+        //                        namePlaceholder: newItemNamePlaceholder) { name, category, link, note in
+        //                            Task {
+        //                                if let selectedItem = selectedItem {
+        //                                    await editItem(listId: listId, itemId: selectedItem.id, name: name, categoryId: category?.id, link: link, note: note)
+        //                                }
+        //                            }
+        //                        }
+        //            })
+        //            .sheet(
+        //                isPresented: $showCategoryCreationSheet,
+        //                content: {
+        //                    CategoryFormSheet(
+        //                        showSheet: $showCategoryCreationSheet,
+        //                        name: newCategoryName,
+        //                        color: newCategoryColor,
+        //                        namePlaceholder: newCategoryNamePlaceholder,
+        //                        colors: ColorHelper.ixColors
+        //                    ) { name, color in
+        //                        Task {
+        //                            await createCategory(listId: listId, name: name, color: color)
+        //                        }
+        //                    }
+        //            })
+        //            .sheet(
+        //                isPresented: $showCategoryEditSheet,
+        //                content: { [selectedCategory] in
+        //                    CategoryFormSheet(
+        //                        showSheet: $showCategoryEditSheet,
+        //                        name: selectedCategory?.name ?? "",
+        //                        color: Color(hexString: selectedCategory?.color ?? Color.accentColor.hexString()),
+        //                        namePlaceholder: newCategoryNamePlaceholder,
+        //                        colors: ColorHelper.ixColors
+        //                    ) { name, color in
+        //                        Task {
+        //                            if let category = selectedCategory {
+        //                                await editCategory(listId: listId, categoryId: category.id, name: name, color: color)
+        //                            }
+        //                        }
+        //                    }
+        //            })
+        //            .sheet(isPresented: $showItemNotePopover) { [selectedItem] in
+        //                NavigationView {
+        //                    ScrollView(showsIndicators: false) {
+        //                        Text(selectedItem?.note ?? "This item has no notes in it")
+        //                            .navigationTitle("Notes")
+        //                            .navigationBarTitleDisplayMode(.inline)
+        //                            .toolbar {
+        //                                ToolbarItem(placement: .topBarTrailing) {
+        //                                    Button("Done") {
+        //                                        showItemNotePopover = false
+        //                                    }
+        //                                }
+        //                            }
+        //                    }.padding()
+        //                }.presentationDetents([.medium, .large])
+        //                    .presentationDragIndicator(.hidden)
+        //            }
+        //            .sheet(
+        //                isPresented: $showTaskCreationSheet,
+        //                content: { [selectedItem] in
+        //                    TaskFormSheet(
+        //                        showSheet: $showTaskCreationSheet,
+        //                        name: selectedItem?.name ?? "",
+        //                        description: selectedItem?.note,
+        //                        priority: nil,
+        //                        dueDate: nil,
+        //                        rrule: nil,
+        //                        reminders: [],
+        //                        itemId: selectedItem?.id,
+        //                        subtasks: [],
+        //                        namePlaceholder: "Task name"
+        //                    ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
+        //                        Task {
+        //                            await createTask(name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
+        //                        }
+        //                    }
+        //                }
+        //            )
             .navigationTitle(list.name)
             .paywallCover(isPresented: $showPaywall)
             .toolbar {
                 // MARK: - Toolbar
                 ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Section {
-                            Toggle("Show completed", isOn: Binding(
-                                get: {
-                                    itemFilter == .all
-                                }, set: { newValue in
-                                    if newValue {
-                                        itemFilter = .all
-                                    } else {
-                                        itemFilter = .uncompleted
-                                    }
-                                }
-                            ))
-                            
-                            Picker(selection: $itemSorting) {
-                                ForEach(ItemSorting.allCases) { sort in
-                                    Text(sort.rawValue)
-                                        .tag(sort)
-                                }
-                            } label: {
-                                Label("Items sorting", systemImage: "arrow.up.arrow.down")
-                            }.pickerStyle(.menu)
-                            
-                            Toggle("Items reverse sorting", isOn: $itemReverseSorting)
-                        }
-                        
-                        Section {
-                            Toggle("Hide default category", isOn: $hideDefaultCategory)
-                            
-                            Picker(selection: $categorySorting) {
-                                ForEach(CategorySorting.allCases) { sort in
-                                    Text(sort.rawValue)
-                                        .tag(sort)
-                                }
-                            } label: {
-                                Label("Categories sorting", systemImage: "arrow.up.arrow.down")
-                            }.pickerStyle(.menu)
-                            
-                            Toggle("Categories reverse sorting", isOn: $categoryReverseSorting)
-                        }
-                    
-                    } label: {
-                        Label("Options", systemImage: "ellipsis.circle")
-                            .labelStyle(.iconOnly)
-                    }
+                    //                    Menu {
+                    //                        Section {
+                    //                            Toggle("Show completed", isOn: Binding(
+                    //                                get: {
+                    //                                    showCompletedItems
+                    //                                }, set: { newValue in
+                    //                                    showCompletedItems = newValue
+                    //                                }
+                    //                            ))
+                    //
+                    //                            Picker(selection: $itemSorting) {
+                    //                                ForEach(ItemsSorting.allCases) { sort in
+                    //                                    Text(sort.label)
+                    //                                        .tag(sort)
+                    //                                }
+                    //                            } label: {
+                    //                                Label("Items sorting", systemImage: "arrow.up.arrow.down")
+                    //                            }.pickerStyle(.menu)
+                    //
+                    //                            Toggle("Items reverse sorting", isOn: $item)
+                    //                        }
+                    //
+                    //                        Section {
+                    //                            Toggle("Hide default category", isOn: $hideDefaultCategory)
+                    //
+                    //                            Picker(selection: $categorySorting) {
+                    //                                ForEach(CategorySorting.allCases) { sort in
+                    //                                    Text(sort.rawValue)
+                    //                                        .tag(sort)
+                    //                                }
+                    //                            } label: {
+                    //                                Label("Categories sorting", systemImage: "arrow.up.arrow.down")
+                    //                            }.pickerStyle(.menu)
+                    //
+                    //                            Toggle("Categories reverse sorting", isOn: $categoryReverseSorting)
+                    //                        }
+                    //
+                    //                    } label: {
+                    //                        Label("Options", systemImage: "ellipsis.circle")
+                    //                            .labelStyle(.iconOnly)
+                    //                    }
+                    //                }
                 }
-                
                 ToolbarItem(placement: .bottomBar) {
                     HStack {
                         Button {
@@ -502,38 +470,33 @@ struct ListScreen: View {
                         CategoryPicker(
                             listId: listId,
                             selectedCategory: $selectedCategory,
-                            categorySorting: categorySorting,
-                            categoryReverseSorting: categoryReverseSorting,
-                            hideDefaultCategory: hideDefaultCategory) {
-                                showCategoryCreationSheet = true
-                            } onEdit: { category in
-                                selectedCategory = category
-                                showCategoryEditSheet = true
-                            } onDelete: { category in
-                                Task {
-                                    await deleteCategory(listId: listId, categoryId: category.id)
-                                }
+                            sorting: categoriesSorting,
+                            sortOrder: categoriesSortOrder,
+                            hideUncategorized: hideUncategorized
+                        ) {
+                            showCategoryCreationSheet = true
+                        } onEdit: { category in
+                            selectedCategory = category
+                            showCategoryEditSheet = true
+                        } onDelete: { category in
+                            Task {
+                                await deleteCategory(listId: listId, categoryId: category.id)
                             }
+                        }
                     }.padding(.top)
                 }
             }
             .onAppear {
-                if SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.list(listId)) {
-                    Task {
-                        await fetchList()
-                    }
-                    Task {
-                        await fetchCategories()
-                    }
-                    Task {
-                        await fetchItems()
-                    }
-                    
-                    Task {
-                        let shouldSync = SyncRegister.shared.getCheckAndUpdate(SyncRegister.ResourceNames.SUGGESTION_COLORS)
-                        
-                        if shouldSync {
-                            await fetchColorsSuggestion()
+                Task {
+                    if await SyncRegister.shared.hasExpired(SyncResource.list(listId)) {
+                        Task {
+                            await fetchList()
+                        }
+                        Task {
+                            await fetchCategories()
+                        }
+                        Task {
+                            await fetchItems()
                         }
                     }
                 }
@@ -548,15 +511,15 @@ struct ListScreen: View {
             }
     }
     
-    private var ScreenContent: some View {
+    var ScreenContent: some View {
         ItemsList(
             listId: listId,
             listColor: contentColor,
             category: selectedCategory,
-            itemFilter: itemFilter,
-            itemSorting: itemSorting,
-            itemReverseSorting: itemReverseSorting) {
-                itemFilter = .uncompleted
+            showCompleted: showCompletedItems,
+            sorting: itemSorting,
+            sortOrder: itemsSortOrder) {
+                showCompletedItems = false
             } onCreateItem: {
                 showItemCreationSheet = true
             } onOpenNotes: { item in
@@ -572,7 +535,7 @@ struct ListScreen: View {
                 }
             } onCompletionChange: { item, completion in
                 Task {
-                    await setItemCompletion(listId: item.list_id, itemId: item.id, completed: completion)
+                    await setItemCompletion(listId: item.listId, itemId: item.id, completed: completion)
                 }
             } onCreateTask: { item in
                 selectedItem = item
@@ -586,11 +549,4 @@ struct ListScreen: View {
                 }
             }
     }
-}
-
-#Preview {
-    ListScreen(listId: "123")
-        .environmentObject(IxApiClient())
-        .environmentObject(NavigationManager())
-        .environmentObject(ErrorStateService())
 }

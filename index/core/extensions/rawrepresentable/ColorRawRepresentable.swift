@@ -13,7 +13,7 @@ extension Color: @retroactive RawRepresentable {
     }
 
     public var rawValue: String {
-        return self.hexString()
+        return self.hexString
     }
 }
 
@@ -27,6 +27,6 @@ extension Color: Codable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        try container.encode(self.hexString())
-    }
+        try container.encode(self.hexString)
+    } 
 }

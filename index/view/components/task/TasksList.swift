@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import IxCoreKit
 
 struct TasksList: View {
     private var dateFilter: Date?
@@ -25,9 +26,9 @@ struct TasksList: View {
         noDateFilter: Bool,
         earlierThanDateFilter: Bool,
         laterThanDateFilter: Bool,
-        taskFilter: TaskFilter,
-        taskSorting: TaskSorting,
-        taskReverseSorting: Bool,
+        taskFilter: TasksFilter,
+        taskSorting: TasksSorting,
+        sortOrder: SortOrder,
         onOpen: @escaping (_: IxTask) -> Void,
         onCompletionToggle: @escaping (_: IxTask) -> Void,
         onDelete: @escaping (_: IxTask) -> Void
@@ -78,16 +79,16 @@ struct TasksList: View {
 //            }
         }
         
-        let sortOrder = taskSorting == .priority ? (taskReverseSorting ? SortOrder.forward : SortOrder.reverse) : (taskReverseSorting ? SortOrder.reverse : SortOrder.forward)
-        
         let sortDescriptor: SortDescriptor<IxTask>
         switch taskSorting {
         case .name:
             sortDescriptor = SortDescriptor(\IxTask.name, order: sortOrder)
         case .priority:
             sortDescriptor = SortDescriptor(\IxTask.priority, order: sortOrder)
+        case .manual:
+            sortDescriptor = SortDescriptor(\IxTask.priority, order: sortOrder)
         case .creation:
-            sortDescriptor = SortDescriptor(\IxTask.created_at, order: sortOrder)
+            sortDescriptor = SortDescriptor(\IxTask.createdAt, order: sortOrder)
         }
        
         _tasks = Query(filter: filterPredicate, sort: [sortDescriptor])
@@ -103,18 +104,18 @@ struct TasksList: View {
         let subtasksMaxWidth = UIScreen.main.bounds.width / 3
         
         ForEach(tasks.filter {
-            (dateFilter != nil && $0.due_date != nil && calendar.isDate($0.due_date!, inSameDayAs: dateFilter!)) ||
-            (noDateFilter && $0.due_date == nil) ||
-            (earlierThanDateFilter && $0.due_date != nil && dateFilter != nil && calendar.compare($0.due_date!, to: dateFilter!, toGranularity: .day) == .orderedAscending) ||
-            (laterThanDateFilter && $0.due_date != nil && dateFilter != nil && calendar.compare($0.due_date!, to: dateFilter!, toGranularity: .day) == .orderedDescending)
+            (dateFilter != nil && $0.dueDate != nil && calendar.isDate($0.dueDate!, inSameDayAs: dateFilter!)) ||
+            (noDateFilter && $0.dueDate == nil) ||
+            (earlierThanDateFilter && $0.dueDate != nil && dateFilter != nil && calendar.compare($0.dueDate!, to: dateFilter!, toGranularity: .day) == .orderedAscending) ||
+            (laterThanDateFilter && $0.dueDate != nil && dateFilter != nil && calendar.compare($0.dueDate!, to: dateFilter!, toGranularity: .day) == .orderedDescending)
         }) { task in
             
-            let dateComparison = task.due_date != nil ? calendar.compare(task.due_date!, to: dateFilter!, toGranularity: .day) : ComparisonResult.orderedSame
+            let dateComparison = task.dueDate != nil ? calendar.compare(task.dueDate!, to: dateFilter!, toGranularity: .day) : ComparisonResult.orderedSame
             
             TaskRow(
                 task: task,
-                showDate: (task.due_date != nil && dateComparison == .orderedAscending) || (task.due_date != nil && dateFilter != nil && dateComparison == .orderedDescending),
-                redDate: task.due_date != nil && dateComparison == .orderedAscending,
+                showDate: (task.dueDate != nil && dateComparison == .orderedAscending) || (task.dueDate != nil && dateFilter != nil && dateComparison == .orderedDescending),
+                redDate: task.dueDate != nil && dateComparison == .orderedAscending,
                 subtasksMaxWidth: subtasksMaxWidth,
                 onOpen: onOpen,
                 onCompletionToggle: onCompletionToggle,
@@ -135,21 +136,4 @@ struct TasksList: View {
             }
         }
     }
-}
-
-#Preview {
-    TasksList(
-        dateFilter: nil,
-        noDateFilter: false,
-        earlierThanDateFilter: false,
-        laterThanDateFilter: false,
-        taskFilter: .uncompleted,
-        taskSorting: .name,
-        taskReverseSorting: false) { task in
-            
-        } onCompletionToggle: { task in
-            
-        } onDelete: { task in
-            
-        }
 }

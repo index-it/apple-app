@@ -7,12 +7,12 @@
 
 import SwiftUI
 import MCEmojiPicker
+import IxCoreKit
 
 struct ListFormSheet: View {
     @Binding var showSheet: Bool
     
-    @AppStorage()
-    @AppStorage(AppStorageKeys.logged_in_user) private var user: User?
+    @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
     @State private var showPaywall = false
     
     @State private var showEmojiPicker = false
@@ -58,7 +58,7 @@ struct ListFormSheet: View {
         NavigationView {
             VStack {
                 VStack {
-                    ListCard(list: IxList.loading(name: name.isEmpty ? namePlaceholder : name, emoji: emoji, color: color.hexString()), owner: false, onTap: {}, onShare: {}, onEdit: {}, onDelete: {}, onLeave: {}, withInteractions: false)
+                    ListCard(list: IxList.mock(name: name.isEmpty ? namePlaceholder : name, emoji: emoji, color: color.hexString), owner: false, onTap: {}, onShare: {}, onEdit: {}, onDelete: {}, onLeave: {}, withInteractions: false)
                         .frame(maxWidth: 200)
                         .padding()
                     
@@ -156,21 +156,5 @@ struct ListFormSheet: View {
                 }
                 .paywallCover(isPresented: $showPaywall)
         }
-    }
-}
-
-#Preview {
-    @Previewable @State var show = true
-
-    ListFormSheet(
-        showSheet: $show,
-        name: "",
-        color: Color.cyan,
-        emoji: String.randomEmoji(),
-        isPublic: false,
-        namePlaceholder: "List name",
-        colors: [.red, .green, .blue, .yellow, .pink, .purple]
-    ) { name, color, emoji, isPublic in
-        
     }
 }

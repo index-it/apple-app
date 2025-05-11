@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import IxCoreKit
 
 struct ListSharingSheet: View {
     @State private var navPath: [ListShareSheetNavigationRoute] = []
@@ -19,7 +20,7 @@ struct ListSharingSheet: View {
         addUserEmail.contains("@") && addUserEmail.contains(".") && addUserEmail.count >= 5
     }
     
-    @AppStorage(AppStorageKeys.logged_in_user) private var user: User?
+    @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
     @State private var showPaywall = false
     
     @State private var isPublic: Bool
@@ -247,32 +248,4 @@ struct ListSharingSheet: View {
     var EditSheet: some View {
         EmptyView()
     }
-}
-
-#Preview {
-    @Previewable @State var show = true
-    @Previewable @State var showUserInvitationSuccessAlert = false
-    @Previewable @State var loadingPublic = true
-    @Previewable @State var loadingUsers = true
-    @Previewable @State var loadingUserInvite = true
-    @Previewable @State var loadingUserEditOrDelete: String? = "1"
-    @Previewable @State var users: [IxListSingleUserAccessInfo] = [
-        IxListSingleUserAccessInfo(user_id: "1", email: "test@index-it.app", editor: false)
-    ]
-    
-    
-    ListSharingSheet(
-        showSheet: $show,
-        showUserInvitationSuccessAlert: $showUserInvitationSuccessAlert,
-        loadingPublic: $loadingPublic,
-        loadingUsers: $loadingUsers,
-        loadingUserInvite: $loadingUserInvite,
-        loadingUserEditOrDelete: $loadingUserEditOrDelete,
-        isPublic: false,
-        usersWithAccess: $users,
-        onPublicChange: { _ in },
-        onUserInvite: { _, _ in },
-        onUserEditEditorPermission: { _,_  in },
-        onUserRevokeAccess: { _ in }
-    )
 }

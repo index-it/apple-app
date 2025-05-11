@@ -34,7 +34,7 @@ struct ListsTabView: View {
     
     // MARK: Sorting and filtering
     @AppStorage(AppStorageKeys.Lists.sorting) private var sorting = AppStorageKeys.Defaults.listsSorting
-    @AppStorage(AppStorageKeys.Lists.sortingOrder) private var sortingOrder = AppStorageKeys.Defaults.listsSortOrder
+    @AppStorage(AppStorageKeys.Lists.sortOrder) private var sortingOrder = AppStorageKeys.Defaults.listsSortOrder
     @AppStorage(AppStorageKeys.Lists.filter) private var filter = AppStorageKeys.Defaults.listsFilter
     
     // MARK: Share sheet
@@ -73,7 +73,7 @@ struct ListsTabView: View {
     
     private func createList(name: String, color: Color, emoji: String, isPublic: Bool) async {
         do {
-            let list = try await ixApiClient.createList(name: name, icon: emoji, color: color.hexString, is_public: isPublic)
+            let list = try await ixApiClient.createList(name: name, icon: emoji, color: color.hexString, archived: false, is_public: isPublic)
             
             try await saveList(list)
         } catch IxApiClientError.ProRequired(_) {
@@ -83,9 +83,9 @@ struct ListsTabView: View {
         }
     }
     
-    private func editList(id: String, name: String, color: Color, emoji: String, archived: Bool, isPublic: Bool) async {
+    private func editList(id: String, name: String, color: String, emoji: String, archived: Bool, isPublic: Bool) async {
         do {
-            let list = try await ixApiClient.editList(id: id, name: name, icon: emoji, color: color.hexString, archived: archived, is_public: isPublic)
+            let list = try await ixApiClient.editList(id: id, name: name, icon: emoji, color: color, archived: archived, is_public: isPublic)
             
             try await saveList(list)
         } catch {
@@ -133,7 +133,7 @@ struct ListsTabView: View {
         if let selectedList {
             do {
                 loadingSelectedListPublic = true
-                let list = try await ixApiClient.editList(id: selectedList.id, name: selectedList.name, icon: selectedList.icon, color: selectedList.color, is_public: isPublic)
+                let list = try await ixApiClient.editList(id: selectedList.id, name: selectedList.name, icon: selectedList.icon, color: selectedList.color, archived: selectedList.archived, is_public: isPublic)
                 
                 loadingSelectedListPublic = false
                 
@@ -228,34 +228,34 @@ struct ListsTabView: View {
                         showCreationSheet = true
                     }
                 }
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Menu {
-                            Picker(selection: $filter) {
-                                ForEach(ListsFilter.allCases) { filter in
-                                    Text(filter.label)
-                                        .tag(filter)
-                                }
-                            } label: {
-                                Label("Filter", systemImage: "line.3.horizontal.decrease")
-                            }.pickerStyle(.menu)
-                            
-                            Section {
-                                Picker(selection: $sorting) {
-                                    ForEach(ListsSorting.allCases) { filter in
-                                        Text(filter.label)
-                                            .tag(filter)
-                                    }
-                                } label: {
-                                    Label("Sorting", systemImage: "arrow.up.arrow.down")
-                                }.pickerStyle(.menu)
-                            }
-                        } label: {
-                            Label("Options", systemImage: "ellipsis.circle")
-                                .labelStyle(.iconOnly)
-                        }
-                    }
-                }
+//                .toolbar {
+//                    ToolbarItem(placement: .topBarTrailing) {
+//                        Menu {
+//                            Picker(selection: $filter) {
+//                                ForEach(ListsFilter.allCases) { filter in
+//                                    Text(filter.label)
+//                                        .tag(filter)
+//                                }
+//                            } label: {
+//                                Label("Filter", systemImage: "line.3.horizontal.decrease")
+//                            }.pickerStyle(.menu)
+//                            
+//                            Section {
+//                                Picker(selection: $sorting) {
+//                                    ForEach(ListsSorting.allCases) { filter in
+//                                        Text(filter.label)
+//                                            .tag(filter)
+//                                    }
+//                                } label: {
+//                                    Label("Sorting", systemImage: "arrow.up.arrow.down")
+//                                }.pickerStyle(.menu)
+//                            }
+//                        } label: {
+//                            Label("Options", systemImage: "ellipsis.circle")
+//                                .labelStyle(.iconOnly)
+//                        }
+//                    }
+//                }
                 .paywallCover(isPresented: $showPaywall)
                 .sheet(isPresented: $showShareSheet) {
                     ListSharingSheet(
@@ -265,7 +265,7 @@ struct ListsTabView: View {
                         loadingUsers: $loadingSelectedListUsers,
                         loadingUserInvite: $loadingSelectedListUserInvite,
                         loadingUserEditOrDelete: $loadingSelectedListUserEditOrRevokePermissions,
-                        isPublic: $selectedList.wrappedValue?.is_public ?? false,
+                        isPublic: $selectedList.wrappedValue?.isPublic ?? false,
                         usersWithAccess: $selectedListUsersWithAccess
                     ) { isPublic in
                         Task {
@@ -313,7 +313,7 @@ struct ListsTabView: View {
                     ) { name, color, emoji, isPublic in
                         if let selectedList {
                             Task {
-                                await editList(id: selectedList.id, name: name, color: color, emoji: emoji, archived: selectedList.archived, isPublic: isPublic)
+                                await editList(id: selectedList.id, name: name, color: color.hexString, emoji: emoji, archived: selectedList.archived, isPublic: isPublic)
                             }
                         }
                     }.presentationDetents([.large])
@@ -384,7 +384,7 @@ struct ListsTabView: View {
             userId: user?.id ?? "",
             filter: filter,
             sorting: sorting,
-            sortingOrder: sortingOrder,
+            sortOrder: sortingOrder,
             onFilterClear: {
                 filter = .all
             },
@@ -396,7 +396,7 @@ struct ListsTabView: View {
             },
             onShare: { list in
                 selectedList = list
-                if list.user_id == user?.id {
+                if list.userId == user?.id {
                     Task {
                         await fetchListUsersWthAccess(listId: list.id)
                     }
@@ -408,7 +408,7 @@ struct ListsTabView: View {
             },
             onArchive: { list in
                 Task {
-                    await editList(id: list.id, name: list.name, color: list.color, emoji: list.emoji, archived: true, isPublic: list.isPublic)
+                    await editList(id: list.id, name: list.name, color: list.color, emoji: list.icon, archived: true, isPublic: list.isPublic)
                 }
             },
             onEdit: { list in

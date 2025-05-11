@@ -5,16 +5,17 @@
 //  Created by Giulio Pimenoff Verdolin on 04/05/25.
 //
 
+import SwiftUI
 
 @propertyWrapper
 public struct ForcedEnvironment<Value>: DynamicProperty {
     @Environment private var env: Value?
     
-    init(_ keyPath: KeyPath<EnvironmentValues, Value?>) {
+    public init(_ keyPath: KeyPath<EnvironmentValues, Value?>) {
         _env = Environment(keyPath)
     }
     
-    var wrappedValue: Value {
+    public var wrappedValue: Value {
         if let env {
             return env
         } else {

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct NetworkList: Codable {
+public struct NetworkList: Codable, Sendable {
     public let id: String
     public let user_id: String
     public let name: String

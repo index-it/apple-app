@@ -165,8 +165,3 @@ struct PasswordRegisterScreen: View {
     }
 }
 
-#Preview {
-    PasswordRegisterScreen(email: "test@gmail.com")
-        .environmentObject(AuthNavigationManager())
-        .environmentObject(IxApiClient())
-}

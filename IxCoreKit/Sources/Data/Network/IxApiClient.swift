@@ -75,7 +75,7 @@ public final class IxApiClient: Sendable {
     ///
     /// ### Throws
     /// - `IxApiClientError.Unknown`
-    public func welcomeAction(email: String) async throws -> WelcomeAction {
+    @Sendable public func welcomeAction(email: String) async throws -> WelcomeAction {
         let url = Self.baseUrl
             .appendingPathComponent("/welcome-action")
             .appending(queryItems: [URLQueryItem(name: "email", value: email)])
@@ -101,7 +101,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.EmailOrPasswordFormatInvalid`
     /// - `IxApiClientError.UnusableEmail`
     /// - `IxApiClientError.Unknown`
-    public func register(email: String, password: String) async throws -> Bool {
+    @Sendable public func register(email: String, password: String) async throws -> Bool {
         let url = Self.baseUrl.appendingPathComponent("/register")
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
@@ -137,7 +137,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.Unauthenticated`: If the user is not authenticated.
     /// - `IxApiClientError.TooManyRequests`: If too many verification email requests have been sent.
     /// - `IxApiClientError.Unknown`: If an unknown error occurs.
-    public func sendVerificationEmail(email: String, password: String) async throws -> Bool {
+    @Sendable public func sendVerificationEmail(email: String, password: String) async throws -> Bool {
         let url = Self.baseUrl.appendingPathComponent("/send-verification-email")
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
@@ -171,7 +171,7 @@ public final class IxApiClient: Sendable {
     /// ### Throws
     /// - `IxApiClientError.Unauthenticated`: If the user is not authenticated.
     /// - `IxApiClientError.Unknown`: If an unknown error occurs.
-    public func isEmailVerified(email: String, password: String) async throws -> Bool {
+    @Sendable public func isEmailVerified(email: String, password: String) async throws -> Bool {
         let url = Self.baseUrl.appendingPathComponent("/is-email-verified")
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
@@ -202,7 +202,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.NotFound`: If the email does not exist.
     /// - `IxApiClientError.TooManyRequests`: If too many password reset requests have been sent.
     /// - `IxApiClientError.Unknown`: If an unknown error occurs.
-    public func passwordForgotten(email: String) async throws {
+    @Sendable public func passwordForgotten(email: String) async throws {
         let url = Self.baseUrl
             .appendingPathComponent("/password-forgotten")
             .appending(queryItems: [URLQueryItem(name: "email", value: email)])
@@ -233,7 +233,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.Unauthenticated` credentials invalid
     /// - `IxApiClientError.EmailNotVerified` user hasn't verified its email yet, required to login
     /// - `IxApiClientError.Unknown`
-    public func login(email: String, password: String) async throws {
+    @Sendable public func login(email: String, password: String) async throws {
         let url = Self.baseUrl.appendingPathComponent("/login")
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
@@ -266,7 +266,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.Unauthenticated` idToken invalid
     /// - `IxApiClientError.EmailNotVerifieid` user hasn't verified its email yet, required to login
     /// - `IxApiClientError.Unknown`
-    public func loginWithGoogle(idToken: String) async throws {
+    @Sendable public func loginWithGoogle(idToken: String) async throws {
         let url = Self.baseUrl.appendingPathComponent("login-with-google")
             .appending(queryItems: [URLQueryItem(name: "token_id", value: idToken)])
         let req = URLRequest(url: url)
@@ -295,7 +295,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.Unauthenticated` idToken invalid
     /// - `IxApiClientError.EmailNotVerifieid` user hasn't verified its email yet, required to login
     /// - `IxApiClientError.Unknown`
-    public func loginWithApple(idToken: String) async throws {
+    @Sendable public func loginWithApple(idToken: String) async throws {
         let url = Self.baseUrl.appendingPathComponent("login-with-apple")
             .appending(queryItems: [URLQueryItem(name: "token_id", value: idToken)])
         let req = URLRequest(url: url)
@@ -326,7 +326,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.InvalidData`: If the new password does not meet the required format.
     /// - `IxApiClientError.NotFound`: If the user is not found.
     /// - `IxApiClientError.Unknown`: For unexpected errors.
-    public func changePassword(newPassword: String) async throws {
+    @Sendable public func changePassword(newPassword: String) async throws {
         let url = Self.baseUrl.appendingPathComponent("/me/password")
         
         var request = URLRequest(url: url)
@@ -357,7 +357,7 @@ public final class IxApiClient: Sendable {
     ///
     /// ### Throws:
     /// - `IxApiClientError.Unknown`: For unexpected errors.
-    public func deleteLoggedInUser() async throws {
+    @Sendable public func deleteLoggedInUser() async throws {
         let url = Self.baseUrl.appendingPathComponent("/me")
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
@@ -378,7 +378,7 @@ public final class IxApiClient: Sendable {
     ///
     /// ### Throws:
     /// - `IxApiClientError.Unknown`: For unexpected errors.
-    public func sendNotificationRegistrationToken(token: String) async throws {
+    @Sendable public func sendNotificationRegistrationToken(token: String) async throws {
         let url = Self.baseUrl.appendingPathComponent("/me/notifications/registration")
         let body = ["token": token]
         var request = URLRequest(url: url)
@@ -403,7 +403,7 @@ public final class IxApiClient: Sendable {
     ///
     /// ### Throws
     /// - `IxApiClientError.Unknown`
-    public func logout() async throws {
+    @Sendable public func logout() async throws {
         let url = Self.baseUrl.appendingPathComponent("/logout")
         
         let (_, urlRes) = try await urlSession.data(from: url)
@@ -431,7 +431,7 @@ public final class IxApiClient: Sendable {
     /// ### Throws
     /// - `IxApiClientError.Unknown`
     /// - `IxApiClientError.Unauthenticated`
-    public func me() async throws -> User {
+    @Sendable public func me() async throws -> User {
         let url = Self.baseUrl.appendingPathComponent("/me")
         
         let (data, urlRes) = try await urlSession.data(from: url)
@@ -452,7 +452,7 @@ public final class IxApiClient: Sendable {
         }
     }
     
-    public func restorePurchases() async throws -> User {
+    @Sendable public func restorePurchases() async throws -> User {
         let url = Self.baseUrl.appendingPathComponent("/pro/subscription/restore")
         let (data, urlRes) = try await urlSession.data(from: url)
         
@@ -485,7 +485,7 @@ public final class IxApiClient: Sendable {
     ///
     /// ### Throws
     /// - `IxApiClientError.Unknown`
-    public func getLists() async throws -> [IxList] {
+    @Sendable public func getLists() async throws -> [IxList] {
         let url = Self.baseUrl.appendingPathComponent("/lists")
         
         let (data, urlRes) = try await urlSession.data(from: url)
@@ -515,7 +515,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.InvalidData`: If the parameters are invalid
     /// - `IxApiClientError.ProRequired`
     /// - `IxApiClientError.Unknown`
-    public func createList(name: String, icon: String, color: String, archived: Bool, is_public: Bool) async throws -> IxList {
+    @Sendable public func createList(name: String, icon: String, color: String, archived: Bool, is_public: Bool) async throws -> IxList {
         let url = Self.baseUrl.appendingPathComponent("/lists")
         
         var request = URLRequest(url: url)
@@ -554,7 +554,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.MissingPermissions`: If the user does not have access to the list.
     /// - `IxApiClientError.NotFound`: If the list with the specified ID is not found.
     /// - `IxApiClientError.Unknown`: For unexpected errors.
-    public func getList(id: String) async throws -> IxList {
+    @Sendable public func getList(id: String) async throws -> IxList {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(id)")
         let (data, response) = try await urlSession.data(from: url)
         let httpResponse = response as! HTTPURLResponse
@@ -583,7 +583,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.MissingPermission`: If the user lacks permission to edit the list.
     /// - `IxApiClientError.NotFound`: If the list with the specified ID is not found.
     /// - `IxApiClientError.Unknown`: For unexpected errors.
-    public func editList(id: String, name: String, icon: String, color: String, archived: Bool, is_public: Bool) async throws -> IxList {
+    @Sendable public func editList(id: String, name: String, icon: String, color: String, archived: Bool, is_public: Bool) async throws -> IxList {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(id)")
         let requestBody = ListCreateOrEditReqBody(name: name, icon: icon, color: color, archived: archived, is_public: is_public)
         
@@ -621,7 +621,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.MissingPermission` List owner required
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    public func deleteList(id: String) async throws {
+    @Sendable public func deleteList(id: String) async throws {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(id)")
         
         var request = URLRequest(url: url)
@@ -654,7 +654,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.MissingPermission` List owner required
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    public func getListUsersWithAccess(id: String) async throws -> [IxListSingleUserAccessInfo] {
+    @Sendable public func getListUsersWithAccess(id: String) async throws -> [IxListSingleUserAccessInfo] {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(id)/access/users")
         
         var request = URLRequest(url: url)
@@ -684,7 +684,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.NotFound` List not found
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    public func leaveList(id: String) async throws {
+    @Sendable public func leaveList(id: String) async throws {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(id)/access/leave")
         
         var request = URLRequest(url: url)
@@ -717,7 +717,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.NotFound` List not found
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    public func inviteUserToList(listId: String, email: String, editor: Bool) async throws -> IxList? {
+    @Sendable public func inviteUserToList(listId: String, email: String, editor: Bool) async throws -> IxList? {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access")
         let requestBody = ListGiveUserAccessReqBody(email: email, editor: editor)
         
@@ -754,7 +754,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.NotFound` List not found
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    public func revokeListAccessFromUser(listId: String, userId: String) async throws -> IxList {
+    @Sendable public func revokeListAccessFromUser(listId: String, userId: String) async throws -> IxList {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access")
         let requestBody = ListRemoveUserAccessReqBody(user_id: userId)
         
@@ -790,7 +790,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.NotFound` List not found
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    public func getListCategories(listId: String) async throws -> [IxListCategory] {
+    @Sendable public func getListCategories(listId: String) async throws -> [IxListCategory] {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories")
         
         var request = URLRequest(url: url)
@@ -820,7 +820,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.NotFound` Category or list not found
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    public func getCategory(listId: String, categoryId: String) async throws -> IxListCategory {
+    @Sendable public func getCategory(listId: String, categoryId: String) async throws -> IxListCategory {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories/\(categoryId)")
         
         var request = URLRequest(url: url)
@@ -843,7 +843,7 @@ public final class IxApiClient: Sendable {
         }
     }
     
-    public func createCategory(listId: String, name: String, color: String) async throws -> IxListCategory {
+    @Sendable public func createCategory(listId: String, name: String, color: String) async throws -> IxListCategory {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories")
         let requestBody = ListCategoryCreateOrEditReqBody(name: name, color: color)
         
@@ -879,7 +879,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.NotFound` List or category not found
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    public func updateListCategory(listId: String, categoryId: String, name: String, color: String) async throws -> IxListCategory {
+    @Sendable public func updateListCategory(listId: String, categoryId: String, name: String, color: String) async throws -> IxListCategory {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories/\(categoryId)")
         let requestBody = ListCategoryCreateOrEditReqBody(name: name, color: color)
         
@@ -913,7 +913,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.MissingPermission` Editor required
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    public func deleteListCategory(listId: String, categoryId: String) async throws {
+    @Sendable public func deleteListCategory(listId: String, categoryId: String) async throws {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories/\(categoryId)")
         
         var request = URLRequest(url: url)
@@ -945,7 +945,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.MissingPermission` Permission required
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    public func getListItems(listId: String, completed: Bool? = nil) async throws -> [IxListItem] {
+    @Sendable public func getListItems(listId: String, completed: Bool? = nil) async throws -> [IxListItem] {
         var urlComponents = URLComponents(string: "\(Self.baseUrl)/lists/\(listId)/items")!
         var queryItems = [URLQueryItem]()
         
@@ -980,7 +980,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.NotFound` The list or item doesn't exist
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    public func getListItem(listId: String, itemId: String) async throws -> IxListItem {
+    @Sendable public func getListItem(listId: String, itemId: String) async throws -> IxListItem {
         let url = URL(string: "\(Self.baseUrl)/lists/\(listId)/items/\(itemId)")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -1008,7 +1008,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.InvalidData`
     /// - `IxApiClientError.MissingPermission` List editor permissions required
     /// - `IxApiClientError.Unknown` Unknown error
-    public func createListItem(listId: String, categoryId: String?, name: String, link: String?, note: String?) async throws -> IxListItem {
+    @Sendable public func createListItem(listId: String, categoryId: String?, name: String, link: String?, note: String?) async throws -> IxListItem {
         let url = URL(string: "\(Self.baseUrl)/lists/\(listId)/items")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -1040,7 +1040,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.MissingPermission` List editor permissions required
     /// - `IxApiClientError.NotFound` List or item not found
     /// - `IxApiClientError.Unknown` Unknown error
-    public func updateListItem(listId: String, itemId: String, name: String, categoryId: String?, link: String?, note: String?) async throws -> IxListItem {
+    @Sendable public func updateListItem(listId: String, itemId: String, name: String, categoryId: String?, link: String?, note: String?) async throws -> IxListItem {
         let url = URL(string: "\(Self.baseUrl)/lists/\(listId)/items/\(itemId)")!
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
@@ -1074,7 +1074,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.NotFound` List or item not found
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    public func setListItemCompletion(listId: String, itemId: String, completed: Bool) async throws -> IxListItem {
+    @Sendable public func setListItemCompletion(listId: String, itemId: String, completed: Bool) async throws -> IxListItem {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/items/\(itemId)/completion")
             .appending(queryItems: [URLQueryItem(name: "completed", value: "\(completed)")])
         
@@ -1101,7 +1101,7 @@ public final class IxApiClient: Sendable {
     /// ### Throws:
     /// - `IxApiClientError.MissingPermission` List editor permissions required
     /// - `IxApiClientError.Unknown` Unknown error
-    public func deleteListItem(listId: String, itemId: String) async throws {
+    @Sendable public func deleteListItem(listId: String, itemId: String) async throws {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/items/\(itemId)")
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
@@ -1126,7 +1126,7 @@ public final class IxApiClient: Sendable {
     /// ### Throws:
     /// - `IxApiClientError.Unknown`
     ///
-    public func getTasks(completed: Bool? = nil) async throws -> [IxTask] {
+    @Sendable public func getTasks(completed: Bool? = nil) async throws -> [IxTask] {
         var urlComponents = URLComponents(string: "\(Self.baseUrl)/tasks")!
         var queryItems = [URLQueryItem]()
         
@@ -1155,7 +1155,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.NotFound`
     /// - `IxApiClientError.Unknown`
     ///
-    public func getTask(taskId: String) async throws -> IxTask {
+    @Sendable public func getTask(taskId: String) async throws -> IxTask {
         let url = Self.baseUrl.appendingPathComponent("/tasks/\(taskId)")
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -1180,7 +1180,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.ProRequired`
     /// - `IxApiClientError.NotFound`
     /// - `IxApiClientError.Unknown`
-    public func createTask(name: String, description: String?, dueDate: Date?, rrule: String?, reminders: [IxTaskReminder], subtasks: [IxSubTask], priority: Int?, itemId: String?) async throws -> IxTask {
+    @Sendable public func createTask(name: String, description: String?, dueDate: Date?, rrule: String?, reminders: [IxTaskReminder], subtasks: [IxSubTask], priority: Int?, itemId: String?) async throws -> IxTask {
         let url = URL(string: "\(Self.baseUrl)/tasks")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -1222,7 +1222,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.InvalidData`
     /// - `IxApiClientError.NotFound`
     /// - `IxApiClientError.Unknown`
-    public func editTask(taskId: String, name: String, description: String?, dueDate: Date?, rrule: String?, reminders: [IxTaskReminder], subtasks: [IxSubTask], priority: Int?, itemId: String?) async throws -> IxTask {
+    @Sendable public func editTask(taskId: String, name: String, description: String?, dueDate: Date?, rrule: String?, reminders: [IxTaskReminder], subtasks: [IxSubTask], priority: Int?, itemId: String?) async throws -> IxTask {
         let url = Self.baseUrl.appendingPathComponent("/tasks/\(taskId)")
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
@@ -1260,7 +1260,7 @@ public final class IxApiClient: Sendable {
     /// ### Throws:
     /// - `IxApiClientError.NotFound`
     /// - `IxApiClientError.Unknown`
-    public func setTaskCompletion(taskId: String, completed: Bool) async throws -> IxTask {
+    @Sendable public func setTaskCompletion(taskId: String, completed: Bool) async throws -> IxTask {
         let url = Self.baseUrl.appendingPathComponent("/tasks/\(taskId)/completion")
             .appending(queryItems: [URLQueryItem(name: "completed", value: "\(completed)")])
         
@@ -1286,7 +1286,7 @@ public final class IxApiClient: Sendable {
     /// ### Throws:
     /// - `IxApiClientError.NotFound`
     /// - `IxApiClientError.Unknown`
-    public func deleteTask(taskId: String, all: Bool? = nil) async throws {
+    @Sendable public func deleteTask(taskId: String, all: Bool? = nil) async throws {
         var urlComponents = URLComponents(string: "\(Self.baseUrl)/tasks/\(taskId)")!
         
         if let all = all {

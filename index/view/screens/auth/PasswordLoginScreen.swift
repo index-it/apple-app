@@ -156,18 +156,3 @@ struct PasswordLoginScreen: View {
             }
     }
 }
-
-#Preview {
-        @Previewable @State var show = true
-        VStack {
-    
-        }.sheet(isPresented: $show) {
-            NavigationStack {
-                PasswordLoginScreen(email: "test@gmail.com")
-                    .environmentObject(AuthNavigationManager())
-                    .environmentObject(IxApiClient())
-            }
-        }
-    
-    
-}
