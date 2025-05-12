@@ -25,9 +25,9 @@ public struct User: Encodable, Decodable, Equatable, Sendable {
     public init(from networkUser: NetworkUser) {
         self.id = networkUser.id
         self.email = networkUser.email
-        self.has_pro = networkUser.has_pro
-        self.creation_timestamp = networkUser.creation_timestamp
-        self.creation_source = networkUser.creation_source
+        self.has_pro = networkUser.hasPro
+        self.creation_timestamp = networkUser.creationTimestamp
+        self.creation_source = networkUser.creationSource
     }
     
     public init(from decoder: any Decoder) throws {

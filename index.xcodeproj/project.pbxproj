@@ -85,7 +85,6 @@
 		092FE7E42D7F428700F38388 /* Exceptions for "index" folder in "indexWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				core/Intents.swift,
 				"GoogleService-Info.plist",
 			);
 			target = 092FE7C12D7F3C8200F38388 /* indexWidgetExtension */;
@@ -100,7 +99,6 @@
 		09EA31C12D7E69F3003FD174 /* Exceptions for "index" folder in "indexShareExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				core/Intents.swift,
 				"GoogleService-Info.plist",
 				view/controls/AddListItemFormSheet.swift,
 			);
@@ -308,7 +306,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1620;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					092FE7C12D7F3C8200F38388 = {
 						CreatedOnToolsVersion = 16.2;
@@ -420,7 +418,6 @@
 				CODE_SIGN_ENTITLEMENTS = indexWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 79VJQ9DB34;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = indexWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = indexWidget;
@@ -450,7 +447,6 @@
 				CODE_SIGN_ENTITLEMENTS = indexWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 79VJQ9DB34;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = indexWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = indexWidget;
@@ -507,7 +503,9 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 79VJQ9DB34;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -568,7 +566,9 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 79VJQ9DB34;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -595,7 +595,7 @@
 				CODE_SIGN_ENTITLEMENTS = index/index.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 79VJQ9DB34;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = index/Info.plist;
@@ -636,7 +636,7 @@
 				CODE_SIGN_ENTITLEMENTS = index/index.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 79VJQ9DB34;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = index/Info.plist;
@@ -675,7 +675,6 @@
 				CODE_SIGN_ENTITLEMENTS = indexShareExtension/indexShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 79VJQ9DB34;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = indexShareExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = indexShareExtension;
@@ -703,7 +702,6 @@
 				CODE_SIGN_ENTITLEMENTS = indexShareExtension/indexShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 79VJQ9DB34;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = indexShareExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = indexShareExtension;

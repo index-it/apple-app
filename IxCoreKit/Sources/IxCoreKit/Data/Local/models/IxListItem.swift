@@ -39,16 +39,16 @@ public class IxListItem {
     public convenience init(networkListItem: NetworkListItem) {
         self.init(
             id: networkListItem.id,
-            user_id: networkListItem.user_id,
-            list_id: networkListItem.list_id,
-            category_id: networkListItem.category_id,
+            user_id: networkListItem.userId,
+            list_id: networkListItem.listId,
+            category_id: networkListItem.categoryId,
             name: networkListItem.name,
             completed: networkListItem.completed,
             link: networkListItem.link,
             note: networkListItem.note,
-            created_at: networkListItem.created_at,
-            edited_at: networkListItem.edited_at,
-            completed_at: networkListItem.completed_at
+            created_at: networkListItem.createdAt,
+            edited_at: networkListItem.editedAt,
+            completed_at: networkListItem.completedAt
         )
     }
 }

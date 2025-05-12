@@ -79,7 +79,7 @@ struct TasksTabView: View {
             try await saveTask(task)
             
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
-        } catch IxApiClientError.ProRequired(_) {
+        } catch IxApiClientError.proRequired(_) {
             showPaywall = true
         } catch {
             errorService.insert(.localizedError(title: "Error creating task", error: error))
@@ -132,7 +132,7 @@ struct TasksTabView: View {
             }
             
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
-        } catch IxApiClientError.NotFound {
+        } catch IxApiClientError.notFound {
             do {
                 try context.transaction {
                     try context.delete(model: IxTask.self, where: #Predicate { $0.id == id })

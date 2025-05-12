@@ -76,7 +76,7 @@ struct ListsTabView: View {
             let list = try await ixApiClient.createList(name: name, icon: emoji, color: color.hexString, archived: false, is_public: isPublic)
             
             try await saveList(list)
-        } catch IxApiClientError.ProRequired(_) {
+        } catch IxApiClientError.proRequired(_) {
             showPaywall = true
         } catch {
             errorService.insert(.localizedError(title: "Error creating list", error: error))
@@ -99,7 +99,7 @@ struct ListsTabView: View {
             try context.transaction {
                 try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
             }
-        } catch IxApiClientError.NotFound {
+        } catch IxApiClientError.notFound {
             do {
                 try context.transaction {
                     try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
@@ -118,7 +118,7 @@ struct ListsTabView: View {
             try context.transaction {
                 try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
             }
-        } catch IxApiClientError.NotFound {
+        } catch IxApiClientError.notFound {
             do {
                 try context.transaction {
                     try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
@@ -180,7 +180,7 @@ struct ListsTabView: View {
             do {
                 loadingSelectedListUserEditOrRevokePermissions = selectedListUsersWithAccess.first(where: { user in
                     user.email == email
-                })?.user_id
+                })?.userId
                 
                 let list = try await ixApiClient.inviteUserToList(listId: selectedList.id, email: email, editor: editor)
                 

@@ -31,9 +31,9 @@ struct EmailLoginScreen: View {
             
             switch welcomeAction {
             case .LOGIN:
-                authNavigationManager.push(.PasswordLogin(email: email))
+                authNavigationManager.push(.passwordLogin(email: email))
             case .REGISTER:
-                authNavigationManager.push(.PasswordRegister(email: email))
+                authNavigationManager.push(.passwordRegister(email: email))
             }
         } catch {
             loading = false

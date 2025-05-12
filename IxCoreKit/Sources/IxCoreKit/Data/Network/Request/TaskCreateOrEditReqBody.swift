@@ -10,9 +10,9 @@ import Foundation
 struct TaskCreateOrEditReqBody: Codable {
     let name: String
     let description: String?
-    let item_id: String?
+    let itemId: String?
     let subtasks: [NetworkSubTask]
-    let due_date: Date?
+    let dueDate: Date?
     let rrule: String?
     let priority: Int?
     let reminders: [NetworkTaskReminder]

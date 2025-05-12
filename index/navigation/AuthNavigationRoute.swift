@@ -8,7 +8,7 @@
 import Foundation
 
 enum AuthNavigationRoute: Hashable {
-    case PasswordLogin(email: String);
-    case PasswordRegister(email: String);
-    case EmailVerification(email: String, password: String, verificationEmailSent: Bool);
+    case passwordLogin(email: String);
+    case passwordRegister(email: String);
+    case emailVerification(email: String, password: String, verificationEmailSent: Bool);
 }

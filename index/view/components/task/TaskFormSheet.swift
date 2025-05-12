@@ -488,13 +488,14 @@ struct TaskFormSheet: View {
                                     yearlyWeekdayFrequency = .last
                                 }
                             }
-                        
-                        if let end = rule.recurrenceEnd {
-                            if let endDate = end.endDate {
-                                endRepeat = .onDate
-                                endRepeatDate = endDate
-                            } else {
-                                endRepeatAfterOccurrences = end.occurrenceCount
+                            
+                            if let end = rule.recurrenceEnd {
+                                if let endDate = end.endDate {
+                                    endRepeat = .onDate
+                                    endRepeatDate = endDate
+                                } else {
+                                    endRepeatAfterOccurrences = end.occurrenceCount
+                                }
                             }
                         }
                     }

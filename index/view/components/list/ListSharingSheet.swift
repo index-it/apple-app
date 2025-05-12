@@ -71,9 +71,9 @@ struct ListSharingSheet: View {
             ShareSheet
                 .navigationDestination(for: ListShareSheetNavigationRoute.self) { route in
                     switch route {
-                    case .InviteUser:
+                    case .inviteUser:
                         InviteSheet
-                    case .EditUser:
+                    case .editUser:
                         EditSheet
                     }
                 }
@@ -124,7 +124,7 @@ struct ListSharingSheet: View {
                         if usersWithAccess.filter({ $0.editor }).isEmpty {
                             Text("No users with edit permissions")
                         } else {
-                            ForEach(usersWithAccess.filter({ $0.editor }), id: \.user_id) { user in
+                            ForEach(usersWithAccess.filter({ $0.editor }), id: \.userId) { user in
                                 Button {
                                     selectedUser = user
                                     showUserActions = true
@@ -137,7 +137,7 @@ struct ListSharingSheet: View {
                         Button("Invite", systemImage: "plus") {
                             addUserEditor = true
                             addUserEmail = ""
-                            navPath.append(.InviteUser)
+                            navPath.append(.inviteUser)
                         }
                     } header: {
                         Text("Editors")
@@ -150,27 +150,27 @@ struct ListSharingSheet: View {
                         if usersWithAccess.filter({ !$0.editor }).isEmpty {
                             Text("No users with view permissions")
                         } else {
-                            ForEach(usersWithAccess.filter({ !$0.editor }), id: \.user_id) { user in
+                            ForEach(usersWithAccess.filter({ !$0.editor }), id: \.userId) { user in
                                 Button {
                                     selectedUser = user
                                     showUserActions = true
                                 } label: {
                                     HStack {
-                                        if loadingUserEditOrDelete == user.user_id {
+                                        if loadingUserEditOrDelete == user.userId {
                                             ProgressView()
                                         }
                                         
                                         NavigationLink(user.email, destination: EmptyView())
                                     }
                                 }.foregroundStyle(Color(uiColor: .label))
-                                    .disabled(loadingUserEditOrDelete == user.user_id)
+                                    .disabled(loadingUserEditOrDelete == user.userId)
                             }
                         }
                         
                         Button("Invite", systemImage: "plus") {
                             addUserEditor = false
                             addUserEmail = ""
-                            navPath.append(.InviteUser)
+                            navPath.append(.inviteUser)
                         }
                     } header: {
                         Text("Viewers")
@@ -200,7 +200,7 @@ struct ListSharingSheet: View {
                 
                 Button("Revoke access completely", role: .destructive) {
                     if let selectedUser {
-                        onUserRevoke(selectedUser.user_id)
+                        onUserRevoke(selectedUser.userId)
                     }
                 }
             }

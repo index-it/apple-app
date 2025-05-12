@@ -10,13 +10,13 @@ struct ListCreateOrEditReqBody: Codable {
     let icon: String
     let color: String
     let archived: Bool
-    let is_public: Bool
+    let isPublic: Bool
     
     enum CodingKeys: String, CodingKey {
         case name
         case icon
         case color
         case archived
-        case is_public = "public"
+        case isPublic = "public"
     }
 }

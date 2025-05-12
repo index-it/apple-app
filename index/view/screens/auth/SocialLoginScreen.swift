@@ -37,7 +37,7 @@ struct SocialLoginScreen: View {
                 Task {
                     do {
                         try await ixApiClient.loginWithGoogle(idToken: token.tokenString)
-                    } catch IxApiClientError.EmailNotVerified {
+                    } catch IxApiClientError.emailNotVerified {
                         errorService.insert(.customMessage(title: "Google email not verified", message: "Your Google email is not verified, please verify the email of your Google account before using it to login."))
                     } catch {
                         errorService.insert(.customMessage(title: "Error", message: "Couldn't login via Google, please use another method or try again later"))
@@ -134,11 +134,11 @@ struct SocialLoginScreen: View {
                 EmailLoginScreen()
                     .navigationDestination(for: AuthNavigationRoute.self) { destination in
                         switch destination {
-                        case let .PasswordLogin(email: email):
+                        case let .passwordLogin(email: email):
                             PasswordLoginScreen(email: email)
-                        case let .PasswordRegister(email: email):
+                        case let .passwordRegister(email: email):
                             PasswordRegisterScreen(email: email)
-                        case let .EmailVerification(email: email, password: password, verificationEmailSent: verificationEmailSent):
+                        case let .emailVerification(email: email, password: password, verificationEmailSent: verificationEmailSent):
                             EmailVerificationScreen(email: email, password: password, verificationEmailSent: verificationEmailSent)
                         }
                     }
@@ -169,7 +169,7 @@ fileprivate class SignInWithAppleController: NSObject, ASAuthorizationController
             Task {
                 do {
                     try await ixApiClient.loginWithApple(idToken: idToken)
-                } catch IxApiClientError.EmailNotVerified {
+                } catch IxApiClientError.emailNotVerified {
                     errorService.insert(.customMessage(title: "Apple email not verified", message: "Your Apple email is not verified, please verify the email of your Apple account before using it to login."))
                 } catch {
                     handleUnknownError(error: error)

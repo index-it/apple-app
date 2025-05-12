@@ -9,10 +9,10 @@ import Foundation
 
 public struct NetworkListCategory: Codable, Sendable {
     public let id: String
-    public let user_id: String
-    public let list_id: String
+    public let userId: String
+    public let listId: String
     public let name: String
     public let color: String
-    public let created_at: Int64
-    public let edited_at: Int64?
+    public let createdAt: Int64
+    public let editedAt: Int64?
 }

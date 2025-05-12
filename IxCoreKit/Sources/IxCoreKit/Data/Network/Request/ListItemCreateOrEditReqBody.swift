@@ -7,7 +7,7 @@
 
 struct ListItemCreateOrEditReqBody: Codable {
     let name: String
-    let category_id: String?
+    let categoryId: String?
     let link: String?
     let note: String?
 }

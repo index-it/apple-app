@@ -214,7 +214,7 @@ struct ListScreen: View {
             try context.transaction {
                 try context.delete(model: IxListItem.self, where: #Predicate { item in item.id == itemId })
             }
-        } catch IxApiClientError.NotFound {
+        } catch IxApiClientError.notFound {
             do {
                 try context.transaction {
                     try context.delete(model: IxListItem.self, where: #Predicate { item in item.id == itemId })
@@ -257,7 +257,7 @@ struct ListScreen: View {
             try context.transaction {
                 try context.delete(model: IxListCategory.self, where: #Predicate { category in category.id == categoryId })
             }
-        } catch IxApiClientError.NotFound {
+        } catch IxApiClientError.notFound {
             do {
                 try context.transaction {
                     try context.delete(model: IxListCategory.self, where: #Predicate { category in category.id == categoryId })
@@ -291,7 +291,7 @@ struct ListScreen: View {
             }
             
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
-        } catch IxApiClientError.ProRequired(_) {
+        } catch IxApiClientError.proRequired(_) {
             showPaywall = true
         } catch {
             errorService.insert(.localizedError(title: "Error creating task", error: error))

@@ -6,5 +6,5 @@
 //
 
 struct ListRemoveUserAccessReqBody: Codable {
-    let user_id: String
+    let userId: String
 }

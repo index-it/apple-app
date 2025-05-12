@@ -39,7 +39,7 @@ struct PaywallView: View {
             restorePurchasesLoading = true
             let _ = try await ixApiClient.restorePurchases()
             restorePurchasesLoading = false
-        } catch IxApiClientError.NotFound {
+        } catch IxApiClientError.notFound {
             restorePurchasesLoading = false
             errorService.insert(.customMessage(title: "Not subscribed", message: "You are not subscribed to the Pro version."))
         } catch {

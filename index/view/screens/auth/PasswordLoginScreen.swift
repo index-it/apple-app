@@ -32,12 +32,12 @@ struct PasswordLoginScreen: View {
             loading = false
             // app will automatically navigate to the authenticated screens
             // thanks to the auth status stored in the IxApiClient
-        } catch IxApiClientError.Unauthenticated {
+        } catch IxApiClientError.unauthenticated {
             loading = false
             errorService.insert(.customMessage(title: "Invalid credentials", message: "The password is incorrect, try again."))
-        } catch IxApiClientError.EmailNotVerified {
+        } catch IxApiClientError.emailNotVerified {
             loading = false
-            authNavigationManager.push(.EmailVerification(email: email, password: password, verificationEmailSent: false))
+            authNavigationManager.push(.emailVerification(email: email, password: password, verificationEmailSent: false))
         } catch {
             loading = false
             errorService.insert(.localizedError(title: nil, error: error))
@@ -48,9 +48,9 @@ struct PasswordLoginScreen: View {
         do {
             try await ixApiClient.passwordForgotten(email: email)
             isPasswordResetSentAlertShown = true
-        } catch IxApiClientError.NotFound {
+        } catch IxApiClientError.notFound {
             errorService.insert(.customMessage(message: "User with email \(email) doesn't seem to exist. Are you sure you provided the correct email?"))
-        } catch IxApiClientError.TooManyPasswordForgottenEmails {
+        } catch IxApiClientError.tooManyPasswordForgottenEmails {
             errorService.insert(.customMessage(title: "Too many requests", message: ""))
         } catch {
             errorService.insert(.localizedError(title: nil, error: error))

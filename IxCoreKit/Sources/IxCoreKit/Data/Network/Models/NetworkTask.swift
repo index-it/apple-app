@@ -9,19 +9,19 @@ import Foundation
 
 public struct NetworkTask: Codable, Sendable {
     public let id: String
-    public let user_id: String
-    public let item_id: String?
+    public let userId: String
+    public let itemId: String?
     public let name: String
     public let description: String?
     public let subtasks: [NetworkSubTask]
-    public let due_date: Date?
+    public let dueDate: Date?
     public let rrule: String?
     public let completed: Bool
     public let priority: Int?
     public let reminders: [NetworkTaskReminder]
-    public let created_at: Int64
-    public let edited_at: Int64?
-    public let completed_at: Int64?
+    public let createdAt: Int64
+    public let editedAt: Int64?
+    public let completedAt: Int64?
 }
 
 public struct NetworkSubTask: Codable, Sendable {

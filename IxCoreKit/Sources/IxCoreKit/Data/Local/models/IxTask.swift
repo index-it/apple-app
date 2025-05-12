@@ -45,19 +45,19 @@ public class IxTask {
     public convenience init(networkTask: NetworkTask) {
         self.init(
             id: networkTask.id,
-            userId: networkTask.user_id,
-            itemId: networkTask.item_id,
+            userId: networkTask.userId,
+            itemId: networkTask.itemId,
             name: networkTask.name,
             description: networkTask.description,
             subtasks: networkTask.subtasks.map { IxSubTask(name: $0.name, completed: $0.completed) },
-            dueDate: networkTask.due_date,
+            dueDate: networkTask.dueDate,
             rrule: networkTask.rrule,
             completed: networkTask.completed,
             priority: networkTask.priority,
             reminders: networkTask.reminders.map { IxTaskReminder(daysBefore: $0.days_before, timeOffset: $0.time_offset) },
-            createdAt: networkTask.created_at,
-            editedAt: networkTask.edited_at,
-            completedAt: networkTask.completed_at
+            createdAt: networkTask.createdAt,
+            editedAt: networkTask.editedAt,
+            completedAt: networkTask.completedAt
         )
     }
     
@@ -84,7 +84,12 @@ public struct IxSubTask: Codable, Hashable {
 }
 
 public struct IxTaskReminder: Codable, Hashable {
+    /// The number of days before the due date when the reminder should trigger.
     public var daysBefore: Int64
+    
+    /// The time offset in milliseconds from the start of the day (00:00) at which the reminder should trigger.
+    ///
+    /// This is stored in UTC and adjusted via `localTimezoneOffset` to determine the local time.
     public var timeOffset: Int64
     
     public init(daysBefore: Int64, timeOffset: Int64) {
@@ -97,10 +102,15 @@ public struct IxTaskReminder: Codable, Hashable {
         self.timeOffset = localTimezoneOffset - Int64(TimeZone.current.secondsFromGMT() * 1000)
     }
     
+    
+    /// Returns the time offset adjusted to the local timezone in milliseconds from midnight.
     public var localTimezoneOffset: Int64 {
         return timeOffset + Int64(TimeZone.current.secondsFromGMT() * 1000)
     }
     
+    
+    /// Returns a formatted string representing the reminder time (e.g., "8:00 AM") in the user's locale.
+    /// - Returns: A short time string based on the local time of the reminder.
     public func hourAndMinuteString() -> String {
         let startOfDay = Calendar.current.startOfDay(for: Date.now)
         // Convert milliseconds to seconds and add to start of the day

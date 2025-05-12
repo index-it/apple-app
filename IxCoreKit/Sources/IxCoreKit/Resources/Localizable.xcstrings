@@ -1,0 +1,159 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ not found." : {
+      "comment" : "Entity not found error"
+    },
+    "A network error occurred. Please check your internet connection." : {
+      "comment" : "Network error"
+    },
+    "All" : {
+      "comment" : "All lists filter"
+    },
+    "Ascending" : {
+      "comment" : "forward sort order for name"
+    },
+    "Category" : {
+      "comment" : "Entity type: Category"
+    },
+    "Complete Task" : {
+
+    },
+    "Completed" : {
+      "comment" : "Filter for completed tasks"
+    },
+    "Completes a task." : {
+
+    },
+    "Create a new list item" : {
+
+    },
+    "Create a new task" : {
+
+    },
+    "Create List Item" : {
+
+    },
+    "Create Task" : {
+
+    },
+    "Creation date" : {
+      "comment" : "Sort categories by creation date\nSort items by creation date\nSort lists by creation date\nSort tasks by creation date"
+    },
+    "Descending" : {
+      "comment" : "reverse sort order for name"
+    },
+    "Hey this is a Pro feature: %@." : {
+      "comment" : "Pro feature required error"
+    },
+    "Highest First" : {
+      "comment" : "forward sort order for priority"
+    },
+    "Item" : {
+      "comment" : "Entity type: Item"
+    },
+    "List" : {
+      "comment" : "Entity type: List"
+    },
+    "List editor" : {
+      "comment" : "Permission: list editor"
+    },
+    "List owner" : {
+      "comment" : "Permission: list owner"
+    },
+    "List viewer" : {
+      "comment" : "Permission: list viewer"
+    },
+    "Loading..." : {
+      "comment" : "List name loading"
+    },
+    "Lowest First" : {
+      "comment" : "reverse sort order for priority"
+    },
+    "Manual" : {
+      "comment" : "Sort categories manually\nSort items manually\nSort lists manually\nSort tasks manually"
+    },
+    "Name" : {
+      "comment" : "Sort categories by name\nSort items by name\nSort lists by name\nSort tasks by name"
+    },
+    "Newest First" : {
+      "comment" : "reverse sort order for creation date"
+    },
+    "Oh no something went terribly wrong, please try again later or contact Support." : {
+      "comment" : "generic unknown error"
+    },
+    "Oldest First" : {
+      "comment" : "forward sort order for creation date"
+    },
+    "Only the owner of the list can perform this action." : {
+      "comment" : "Missing list ownership error"
+    },
+    "Owned by me" : {
+      "comment" : "Lists owned by the user"
+    },
+    "Priority" : {
+      "comment" : "Sort tasks by priority"
+    },
+    "Pro subscription" : {
+      "comment" : "Entity type: Pro Subscription"
+    },
+    "Public lists" : {
+      "comment" : "Pro feature: Public lists"
+    },
+    "Shared with me" : {
+      "comment" : "Lists shared with the user"
+    },
+    "Task" : {
+      "comment" : "Entity type: Task"
+    },
+    "Task id" : {
+
+    },
+    "The email or password format is invalid." : {
+      "comment" : "Invalid email or password format error"
+    },
+    "The email you provided is not allowed to register, please use another email." : {
+      "comment" : "Unusable email error"
+    },
+    "Too many requests. Please wait a moment and try again." : {
+      "comment" : "Rate limit error"
+    },
+    "Uncompleted" : {
+      "comment" : "Filter for uncompleted tasks"
+    },
+    "Unlimited lists" : {
+      "comment" : "Pro feature: Unlimited lists"
+    },
+    "Unlimited task reminders" : {
+      "comment" : "Pro feature: Unlimited task reminders"
+    },
+    "User" : {
+      "comment" : "Entity type: User"
+    },
+    "You" : {
+      "comment" : "Entity type: Self User, referring to the current logged-in user"
+    },
+    "You don't have permissions to edit this list." : {
+      "comment" : "Missing list edit permission error"
+    },
+    "You don't have permissions to view this list." : {
+      "comment" : "Missing list view permission error"
+    },
+    "You entered some invalid values, please double check!" : {
+      "comment" : "Invalid data error"
+    },
+    "You have requested too many verification emails, please check your spam folder for any previous email from us, consider checking your spam too!" : {
+      "comment" : "Rate limit error for email verification"
+    },
+    "You must be logged in to perform this action." : {
+      "comment" : "Unauthenticated error"
+    },
+    "You requested too many password resets, please check the spam folder of your inbox if you can't find the email we sent you previously." : {
+      "comment" : "Rate limit error for password reset emails"
+    },
+    "Your email address has not been verified. Please check your inbox and verify it to continue." : {
+      "comment" : "Email not verified error"
+    }
+  },
+  "version" : "1.0"
+}

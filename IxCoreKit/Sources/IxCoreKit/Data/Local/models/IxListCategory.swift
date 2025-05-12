@@ -30,12 +30,12 @@ public class IxListCategory {
     public convenience init(networkListCategory: NetworkListCategory) {
         self.init(
             id: networkListCategory.id,
-            user_id: networkListCategory.user_id,
-            list_id: networkListCategory.list_id,
+            user_id: networkListCategory.userId,
+            list_id: networkListCategory.listId,
             name: networkListCategory.name,
             color: networkListCategory.color,
-            created_at: networkListCategory.created_at,
-            edited_at: networkListCategory.edited_at
+            created_at: networkListCategory.createdAt,
+            edited_at: networkListCategory.editedAt
         )
     }
 }

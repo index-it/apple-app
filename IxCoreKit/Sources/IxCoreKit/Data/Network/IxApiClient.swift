@@ -89,7 +89,7 @@ public final class IxApiClient: Sendable {
             return try JSONDecoder().decode(WelcomeActionResponse.self, from: data).action
         default:
             Self.log.error("received unexpected status code from server: \(res)")
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -119,12 +119,12 @@ public final class IxApiClient: Sendable {
         case 201:
             return false
         case 400:
-            throw IxApiClientError.EmailOrPasswordFormatInvalid
+            throw IxApiClientError.emailOrPasswordFormatInvalid
         case 403:
-            throw IxApiClientError.UnusableEmail
+            throw IxApiClientError.unusableEmail
         default:
             Self.log.error("received unexpected status code from server: \(res)")
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -155,12 +155,12 @@ public final class IxApiClient: Sendable {
         case 201:
             return true
         case 403:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 429:
-            throw IxApiClientError.TooManyVerificationEmails
+            throw IxApiClientError.tooManyVerificationEmails
         default:
             Self.log.error("received unexpected status code from server: \(res)")
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -187,12 +187,12 @@ public final class IxApiClient: Sendable {
         case 200:
             return true
         case 403:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 404:
             return false
         default:
             Self.log.error("received unexpected status code from server: \(res)")
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -218,12 +218,12 @@ public final class IxApiClient: Sendable {
         
         switch res.statusCode {
         case 404:
-            throw IxApiClientError.NotFound(.selfUser)
+            throw IxApiClientError.notFound(.selfUser)
         case 429:
-            throw IxApiClientError.TooManyPasswordForgottenEmails
+            throw IxApiClientError.tooManyPasswordForgottenEmails
         default:
             Self.log.error("received unexpected status code from server: \(res)")
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -251,12 +251,12 @@ public final class IxApiClient: Sendable {
             handleAuthenticationStatus(.authenticated(user: user))
         case 401:
             handleAuthenticationStatus(.unauthenticated)
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 405:
-            throw IxApiClientError.EmailNotVerified
+            throw IxApiClientError.emailNotVerified
         default:
             Self.log.error("received unexpected status code from server: \(res)")
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -280,12 +280,12 @@ public final class IxApiClient: Sendable {
             handleAuthenticationStatus(.authenticated(user: user))
         case 401:
             handleAuthenticationStatus(.unauthenticated)
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 405:
-            throw IxApiClientError.EmailNotVerified
+            throw IxApiClientError.emailNotVerified
         default:
             Self.log.error("received unexpected status code from server: \(res)")
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -309,12 +309,12 @@ public final class IxApiClient: Sendable {
             handleAuthenticationStatus(.authenticated(user: user))
         case 401:
             handleAuthenticationStatus(.unauthenticated)
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 405:
-            throw IxApiClientError.EmailNotVerified
+            throw IxApiClientError.emailNotVerified
         default:
             Self.log.error("received unexpected status code from server: \(res)")
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -343,11 +343,11 @@ public final class IxApiClient: Sendable {
         case 200:
             return // Password successfully changed.
         case 400:
-            throw IxApiClientError.EmailOrPasswordFormatInvalid
+            throw IxApiClientError.emailOrPasswordFormatInvalid
         case 404:
-            throw IxApiClientError.NotFound(.selfUser)
+            throw IxApiClientError.notFound(.selfUser)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -370,7 +370,7 @@ public final class IxApiClient: Sendable {
             // Successful deletion or already unauthenticated; proceed as unauthenticated.
             handleAuthenticationStatus(.unauthenticated)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -395,7 +395,7 @@ public final class IxApiClient: Sendable {
         case 401:
             handleAuthenticationStatus(.unauthenticated)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -417,7 +417,7 @@ public final class IxApiClient: Sendable {
             handleAuthenticationStatus(.unauthenticated)
         default:
             Self.log.error("unexpected api response: \(res)")
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -445,10 +445,10 @@ public final class IxApiClient: Sendable {
             return user
         case 401:
             handleAuthenticationStatus(.unauthenticated)
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         default:
             Self.log.error("unexpected api response: \(res)")
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -468,12 +468,12 @@ public final class IxApiClient: Sendable {
             return try await me()
         case 401:
             handleAuthenticationStatus(.unauthenticated)
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 404:
-            throw IxApiClientError.NotFound(.proSubscription)
+            throw IxApiClientError.notFound(.proSubscription)
         default:
             Self.log.error("unexpected api response: \(res)")
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -498,10 +498,10 @@ public final class IxApiClient: Sendable {
             return lists
         case 401:
             handleAuthenticationStatus(.unauthenticated)
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         default:
             Self.log.error("unexpected api response: \(res)")
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -522,7 +522,7 @@ public final class IxApiClient: Sendable {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let body = ListCreateOrEditReqBody(name: name, icon: icon, color: color, archived: archived, is_public: is_public)
+        let body = ListCreateOrEditReqBody(name: name, icon: icon, color: color, archived: archived, isPublic: is_public)
         request.httpBody = try JSONEncoder().encode(body)
         
         let (data, response) = try await urlSession.data(for: request)
@@ -533,18 +533,18 @@ public final class IxApiClient: Sendable {
             let networkList = try JSONDecoder().decode(NetworkList.self, from: data)
             return IxList(networkList: networkList)
         case 400:
-            throw IxApiClientError.InvalidData
+            throw IxApiClientError.invalidData
         case 401:
             handleAuthenticationStatus(.unauthenticated)
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 402:
             if is_public {
-                throw IxApiClientError.ProRequired(.public_list)
+                throw IxApiClientError.proRequired(.public_list)
             } else {
-                throw IxApiClientError.ProRequired(.unlimited_lists)
+                throw IxApiClientError.proRequired(.unlimited_lists)
             }
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -564,11 +564,11 @@ public final class IxApiClient: Sendable {
             let networkList = try JSONDecoder().decode(NetworkList.self, from: data)
             return IxList(networkList: networkList)
         case 403:
-            throw IxApiClientError.MissingPermission(.viewer)
+            throw IxApiClientError.missingPermission(.viewer)
         case 404:
-            throw IxApiClientError.NotFound(.list)
+            throw IxApiClientError.notFound(.list)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -585,7 +585,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.Unknown`: For unexpected errors.
     @Sendable public func editList(id: String, name: String, icon: String, color: String, archived: Bool, is_public: Bool) async throws -> IxList {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(id)")
-        let requestBody = ListCreateOrEditReqBody(name: name, icon: icon, color: color, archived: archived, is_public: is_public)
+        let requestBody = ListCreateOrEditReqBody(name: name, icon: icon, color: color, archived: archived, isPublic: is_public)
         
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
@@ -600,17 +600,17 @@ public final class IxApiClient: Sendable {
             let networkList = try JSONDecoder().decode(NetworkList.self, from: data)
             return IxList(networkList: networkList)
         case 400:
-            throw IxApiClientError.InvalidData
+            throw IxApiClientError.invalidData
         case 401:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 402:
-            throw IxApiClientError.ProRequired(.public_list)
+            throw IxApiClientError.proRequired(.public_list)
         case 403:
-            throw IxApiClientError.MissingPermission(.editor)
+            throw IxApiClientError.missingPermission(.editor)
         case 404:
-            throw IxApiClientError.NotFound(.list)
+            throw IxApiClientError.notFound(.list)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -634,13 +634,13 @@ public final class IxApiClient: Sendable {
         case 200:
             return
         case 401:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission(.owner)
+            throw IxApiClientError.missingPermission(.owner)
         case 404:
-            throw IxApiClientError.NotFound(.list)
+            throw IxApiClientError.notFound(.list)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -667,13 +667,13 @@ public final class IxApiClient: Sendable {
         case 200:
             return try JSONDecoder().decode([IxListSingleUserAccessInfo].self, from: data)
         case 401:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission(.owner)
+            throw IxApiClientError.missingPermission(.owner)
         case 404:
-            throw IxApiClientError.NotFound(.list)
+            throw IxApiClientError.notFound(.list)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -697,13 +697,13 @@ public final class IxApiClient: Sendable {
         case 200:
             return
         case 401:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 404:
-            throw IxApiClientError.NotFound(.list)
+            throw IxApiClientError.notFound(.list)
         case 405:
-            throw IxApiClientError.InvalidData
+            throw IxApiClientError.invalidData
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -735,15 +735,15 @@ public final class IxApiClient: Sendable {
         case 201:
             return nil
         case 400:
-            throw IxApiClientError.InvalidData
+            throw IxApiClientError.invalidData
         case 401:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission(.owner)
+            throw IxApiClientError.missingPermission(.owner)
         case 404:
-            throw IxApiClientError.NotFound(.list)
+            throw IxApiClientError.notFound(.list)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -756,7 +756,7 @@ public final class IxApiClient: Sendable {
     ///
     @Sendable public func revokeListAccessFromUser(listId: String, userId: String) async throws -> IxList {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access")
-        let requestBody = ListRemoveUserAccessReqBody(user_id: userId)
+        let requestBody = ListRemoveUserAccessReqBody(userId: userId)
         
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
@@ -770,13 +770,13 @@ public final class IxApiClient: Sendable {
         case 200:
             return IxList(networkList: try JSONDecoder().decode(NetworkList.self, from: data))
         case 401:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission(.owner)
+            throw IxApiClientError.missingPermission(.owner)
         case 404:
-            throw IxApiClientError.NotFound(.list)
+            throw IxApiClientError.notFound(.list)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -803,13 +803,13 @@ public final class IxApiClient: Sendable {
         case 200:
             return try JSONDecoder().decode([NetworkListCategory].self, from: data).map { IxListCategory(networkListCategory: $0) }
         case 401:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission(.viewer)
+            throw IxApiClientError.missingPermission(.viewer)
         case 404:
-            throw IxApiClientError.NotFound(.category)
+            throw IxApiClientError.notFound(.category)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -833,13 +833,13 @@ public final class IxApiClient: Sendable {
         case 200:
             return IxListCategory(networkListCategory: try JSONDecoder().decode(NetworkListCategory.self, from: data))
         case 401:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission(.viewer)
+            throw IxApiClientError.missingPermission(.viewer)
         case 404:
-            throw IxApiClientError.NotFound(.category)
+            throw IxApiClientError.notFound(.category)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -859,15 +859,15 @@ public final class IxApiClient: Sendable {
         case 200:
             return IxListCategory(networkListCategory: try JSONDecoder().decode(NetworkListCategory.self, from: data))
         case 400:
-            throw IxApiClientError.InvalidData
+            throw IxApiClientError.invalidData
         case 401:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission(.editor)
+            throw IxApiClientError.missingPermission(.editor)
         case 404:
-            throw IxApiClientError.NotFound(.list)
+            throw IxApiClientError.notFound(.list)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -895,15 +895,15 @@ public final class IxApiClient: Sendable {
         case 200:
             return IxListCategory(networkListCategory: try JSONDecoder().decode(NetworkListCategory.self, from: data))
         case 400:
-            throw IxApiClientError.InvalidData
+            throw IxApiClientError.invalidData
         case 401:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission(.editor)
+            throw IxApiClientError.missingPermission(.editor)
         case 404:
-            throw IxApiClientError.NotFound(.category)
+            throw IxApiClientError.notFound(.category)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -926,13 +926,13 @@ public final class IxApiClient: Sendable {
         case 200:
             break // Deletion successful, no content to return
         case 401:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission(.editor)
+            throw IxApiClientError.missingPermission(.editor)
         case 404:
             break // Ignore this error
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -965,11 +965,11 @@ public final class IxApiClient: Sendable {
         case 200:
             return try JSONDecoder().decode([NetworkListItem].self, from: data).map { IxListItem(networkListItem: $0) }
         case 401:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission(.viewer)
+            throw IxApiClientError.missingPermission(.viewer)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -992,13 +992,13 @@ public final class IxApiClient: Sendable {
         case 200:
             return IxListItem(networkListItem: try JSONDecoder().decode(NetworkListItem.self, from: data))
         case 401:
-            throw IxApiClientError.Unauthenticated
+            throw IxApiClientError.unauthenticated
         case 403:
-            throw IxApiClientError.MissingPermission(.viewer)
+            throw IxApiClientError.missingPermission(.viewer)
         case 404:
-            throw IxApiClientError.NotFound(.item)
+            throw IxApiClientError.notFound(.item)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -1014,7 +1014,7 @@ public final class IxApiClient: Sendable {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let body = ListItemCreateOrEditReqBody(name: name, category_id: categoryId, link: link, note: note)
+        let body = ListItemCreateOrEditReqBody(name: name, categoryId: categoryId, link: link, note: note)
         request.httpBody = try JSONEncoder().encode(body)
         
         let (data, response) = try await urlSession.data(for: request)
@@ -1025,11 +1025,11 @@ public final class IxApiClient: Sendable {
         case 200:
             return IxListItem(networkListItem: try JSONDecoder().decode(NetworkListItem.self, from: data))
         case 400:
-            throw IxApiClientError.InvalidData
+            throw IxApiClientError.invalidData
         case 403:
-            throw IxApiClientError.MissingPermission(.editor)
+            throw IxApiClientError.missingPermission(.editor)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -1047,7 +1047,7 @@ public final class IxApiClient: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         // Setting the body for the request
-        let body = ListItemCreateOrEditReqBody(name: name, category_id: categoryId, link: link, note: note)
+        let body = ListItemCreateOrEditReqBody(name: name, categoryId: categoryId, link: link, note: note)
         request.httpBody = try JSONEncoder().encode(body)
         
         let (data, response) = try await urlSession.data(for: request)
@@ -1057,13 +1057,13 @@ public final class IxApiClient: Sendable {
         case 200:
             return IxListItem(networkListItem: try JSONDecoder().decode(NetworkListItem.self, from: data))
         case 400:
-            throw IxApiClientError.InvalidData
+            throw IxApiClientError.invalidData
         case 403:
-            throw IxApiClientError.MissingPermission(.editor)
+            throw IxApiClientError.missingPermission(.editor)
         case 404:
-            throw IxApiClientError.NotFound(.item)
+            throw IxApiClientError.notFound(.item)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -1088,11 +1088,11 @@ public final class IxApiClient: Sendable {
         case 200:
             return IxListItem(networkListItem: try JSONDecoder().decode(NetworkListItem.self, from: data))
         case 403:
-            throw IxApiClientError.MissingPermission(.editor)
+            throw IxApiClientError.missingPermission(.editor)
         case 404:
-            throw IxApiClientError.NotFound(.item)
+            throw IxApiClientError.notFound(.item)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -1113,9 +1113,9 @@ public final class IxApiClient: Sendable {
         case 200:
             break // Item successfully deleted
         case 403:
-            throw IxApiClientError.MissingPermission(.editor)
+            throw IxApiClientError.missingPermission(.editor)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -1145,7 +1145,7 @@ public final class IxApiClient: Sendable {
         case 200:
             return try Self.decoder().decode([NetworkTask].self, from: data).map { IxTask(networkTask: $0) }
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -1167,9 +1167,9 @@ public final class IxApiClient: Sendable {
         case 200:
             return IxTask(networkTask: try Self.decoder().decode(NetworkTask.self, from: data))
         case 404:
-            throw IxApiClientError.NotFound(.task)
+            throw IxApiClientError.notFound(.task)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     
@@ -1189,9 +1189,9 @@ public final class IxApiClient: Sendable {
         let body = TaskCreateOrEditReqBody(
             name: name,
             description: description,
-            item_id: itemId,
+            itemId: itemId,
             subtasks: subtasks.map({ NetworkSubTask(name: $0.name, completed: $0.completed)}),
-            due_date: dueDate,
+            dueDate: dueDate,
             rrule: rrule,
             priority: priority,
             reminders: reminders.map({ NetworkTaskReminder(days_before: $0.daysBefore, time_offset: $0.timeOffset)})
@@ -1206,13 +1206,13 @@ public final class IxApiClient: Sendable {
         case 200:
             return IxTask(networkTask: try Self.decoder().decode(NetworkTask.self, from: data))
         case 400:
-            throw IxApiClientError.InvalidData
+            throw IxApiClientError.invalidData
         case 402:
-            throw IxApiClientError.ProRequired(.unlimited_task_reminders)
+            throw IxApiClientError.proRequired(.unlimited_task_reminders)
         case 404:
-            throw IxApiClientError.NotFound(.item)
+            throw IxApiClientError.notFound(.item)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
 
@@ -1231,9 +1231,9 @@ public final class IxApiClient: Sendable {
         let body = TaskCreateOrEditReqBody(
             name: name,
             description: description,
-            item_id: itemId,
+            itemId: itemId,
             subtasks: subtasks.map({ NetworkSubTask(name: $0.name, completed: $0.completed)}),
-            due_date: dueDate,
+            dueDate: dueDate,
             rrule: rrule,
             priority: priority,
             reminders: reminders.map({ NetworkTaskReminder(days_before: $0.daysBefore, time_offset: $0.timeOffset)})
@@ -1247,11 +1247,11 @@ public final class IxApiClient: Sendable {
         case 200:
             return IxTask(networkTask: try Self.decoder().decode(NetworkTask.self, from: data))
         case 400:
-            throw IxApiClientError.InvalidData
+            throw IxApiClientError.invalidData
         case 404:
-            throw IxApiClientError.NotFound(.task)
+            throw IxApiClientError.notFound(.task)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
 
@@ -1275,9 +1275,9 @@ public final class IxApiClient: Sendable {
         case 200:
             return IxTask(networkTask: try Self.decoder().decode(NetworkTask.self, from: data))
         case 404:
-            throw IxApiClientError.NotFound(.task)
+            throw IxApiClientError.notFound(.task)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
 
@@ -1305,9 +1305,9 @@ public final class IxApiClient: Sendable {
         case 200:
             return
         case 404:
-            throw IxApiClientError.NotFound(.task)
+            throw IxApiClientError.notFound(.task)
         default:
-            throw IxApiClientError.Unknown
+            throw IxApiClientError.unknown
         }
     }
     

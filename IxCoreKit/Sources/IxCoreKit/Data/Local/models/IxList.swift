@@ -39,20 +39,27 @@ public class IxList {
     public convenience init(networkList: NetworkList) {
         self.init(
             id: networkList.id,
-            userId: networkList.user_id,
+            userId: networkList.userId,
             name: networkList.name,
             emoji: networkList.icon,
             color: networkList.color,
             archived: networkList.archived,
-            isPublic: networkList.is_public,
+            isPublic: networkList.isPublic,
             viewers: networkList.viewers,
             editors: networkList.editors,
-            createdAt: networkList.created_at,
-            editedAt: networkList.edited_at
+            createdAt: networkList.createdAt,
+            editedAt: networkList.editedAt
         )
     }
     
-    
+    /// A Boolean value indicating whether the list is shared with others.
+    ///
+    /// A list is considered shared if:
+    /// - It is marked as public (`isPublic` is `true`)
+    /// - It has one or more viewers
+    /// - It has one or more editors
+    ///
+    /// - Returns: `true` if the list is public or has any viewers or editors; otherwise, `false`.
     public var isShared: Bool {
         self.isPublic || !self.viewers.isEmpty || !self.editors.isEmpty
     }

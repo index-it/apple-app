@@ -10,7 +10,7 @@ import Foundation
 public struct NetworkUser: Codable, Equatable, Sendable {
     public var id: String
     public var email: String
-    public var has_pro: Bool
-    public var creation_timestamp: Date
-    public var creation_source: UserCreationSource
+    public var hasPro: Bool
+    public var creationTimestamp: Date
+    public var creationSource: UserCreationSource
 }
