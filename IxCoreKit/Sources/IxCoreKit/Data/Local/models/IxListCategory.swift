@@ -38,4 +38,21 @@ public class IxListCategory {
             edited_at: networkListCategory.editedAt
         )
     }
+    
+    public static func mock(
+        name: String,
+        color: String,
+        listId: String = UUID().uuidString,
+        userId: String = UUID().uuidString,
+    ) -> IxListCategory {
+        return IxListCategory(
+            id: UUID().uuidString,
+            user_id: userId,
+            list_id: listId,
+            name: name,
+            color: color,
+            created_at: Date.now.currentTimeMillis(),
+            edited_at: nil
+        )
+    }
 }

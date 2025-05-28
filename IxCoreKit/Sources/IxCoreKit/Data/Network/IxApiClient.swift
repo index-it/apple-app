@@ -8,8 +8,9 @@
 import Foundation
 import os
 
+fileprivate let log = Logger(subsystem: IxSubsystems.CORE_KIT, category: "IxApiClient")
+
 public final class IxApiClient: Sendable {
-    private static let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: IxApiClient.self))
     private static let baseUrl = URL(string: "https://api.index-it.app")!
     
     private let cookieStorage: HTTPCookieStorage
@@ -34,22 +35,23 @@ public final class IxApiClient: Sendable {
     
     static func decoder() -> JSONDecoder {
         let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.timeZone = TimeZone(identifier: "UTC")!
         decoder.dateDecodingStrategy = .formatted(formatter)
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
         
         return decoder
     }
     
     static func encoder() -> JSONEncoder {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
-        
-        let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .formatted(dateFormatter)
-        encoder.keyEncodingStrategy = .convertToSnakeCase
         
         return encoder
     }
@@ -86,9 +88,9 @@ public final class IxApiClient: Sendable {
         
         switch res.statusCode {
         case 200:
-            return try JSONDecoder().decode(WelcomeActionResponse.self, from: data).action
+            return try Self.decoder().decode(WelcomeActionResponse.self, from: data).action
         default:
-            Self.log.error("received unexpected status code from server: \(res)")
+            log.error("received unexpected status code from server: \(res)")
             throw IxApiClientError.unknown
         }
     }
@@ -123,7 +125,7 @@ public final class IxApiClient: Sendable {
         case 403:
             throw IxApiClientError.unusableEmail
         default:
-            Self.log.error("received unexpected status code from server: \(res)")
+            log.error("received unexpected status code from server: \(res)")
             throw IxApiClientError.unknown
         }
     }
@@ -159,7 +161,7 @@ public final class IxApiClient: Sendable {
         case 429:
             throw IxApiClientError.tooManyVerificationEmails
         default:
-            Self.log.error("received unexpected status code from server: \(res)")
+            log.error("received unexpected status code from server: \(res)")
             throw IxApiClientError.unknown
         }
     }
@@ -191,7 +193,7 @@ public final class IxApiClient: Sendable {
         case 404:
             return false
         default:
-            Self.log.error("received unexpected status code from server: \(res)")
+            log.error("received unexpected status code from server: \(res)")
             throw IxApiClientError.unknown
         }
     }
@@ -222,7 +224,7 @@ public final class IxApiClient: Sendable {
         case 429:
             throw IxApiClientError.tooManyPasswordForgottenEmails
         default:
-            Self.log.error("received unexpected status code from server: \(res)")
+            log.error("received unexpected status code from server: \(res)")
             throw IxApiClientError.unknown
         }
     }
@@ -247,7 +249,7 @@ public final class IxApiClient: Sendable {
         
         switch res.statusCode {
         case 200:
-            let user = User(from: try JSONDecoder().decode(NetworkUser.self, from: data))
+            let user = User(from: try Self.decoder().decode(NetworkUser.self, from: data))
             handleAuthenticationStatus(.authenticated(user: user))
         case 401:
             handleAuthenticationStatus(.unauthenticated)
@@ -255,7 +257,7 @@ public final class IxApiClient: Sendable {
         case 405:
             throw IxApiClientError.emailNotVerified
         default:
-            Self.log.error("received unexpected status code from server: \(res)")
+            log.error("received unexpected status code from server: \(res)")
             throw IxApiClientError.unknown
         }
     }
@@ -276,7 +278,7 @@ public final class IxApiClient: Sendable {
         
         switch res.statusCode {
         case 200:
-            let user = User(from: try JSONDecoder().decode(NetworkUser.self, from: data))
+            let user = User(from: try Self.decoder().decode(NetworkUser.self, from: data))
             handleAuthenticationStatus(.authenticated(user: user))
         case 401:
             handleAuthenticationStatus(.unauthenticated)
@@ -284,7 +286,7 @@ public final class IxApiClient: Sendable {
         case 405:
             throw IxApiClientError.emailNotVerified
         default:
-            Self.log.error("received unexpected status code from server: \(res)")
+            log.error("received unexpected status code from server: \(res)")
             throw IxApiClientError.unknown
         }
     }
@@ -305,7 +307,7 @@ public final class IxApiClient: Sendable {
         
         switch res.statusCode {
         case 200:
-            let user = User(from: try JSONDecoder().decode(NetworkUser.self, from: data))
+            let user = User(from: try Self.decoder().decode(NetworkUser.self, from: data))
             handleAuthenticationStatus(.authenticated(user: user))
         case 401:
             handleAuthenticationStatus(.unauthenticated)
@@ -313,7 +315,7 @@ public final class IxApiClient: Sendable {
         case 405:
             throw IxApiClientError.emailNotVerified
         default:
-            Self.log.error("received unexpected status code from server: \(res)")
+            log.error("received unexpected status code from server: \(res)")
             throw IxApiClientError.unknown
         }
     }
@@ -416,7 +418,7 @@ public final class IxApiClient: Sendable {
         case 401:
             handleAuthenticationStatus(.unauthenticated)
         default:
-            Self.log.error("unexpected api response: \(res)")
+            log.error("unexpected api response: \(res)")
             throw IxApiClientError.unknown
         }
     }
@@ -440,14 +442,14 @@ public final class IxApiClient: Sendable {
         
         switch res.statusCode {
         case 200:
-            let user = User(from: try JSONDecoder().decode(NetworkUser.self, from: data))
-            handleAuthenticationStatus(.unauthenticated)
+            let user = User(from: try Self.decoder().decode(NetworkUser.self, from: data))
+            handleAuthenticationStatus(.authenticated(user: user))
             return user
         case 401:
             handleAuthenticationStatus(.unauthenticated)
             throw IxApiClientError.unauthenticated
         default:
-            Self.log.error("unexpected api response: \(res)")
+            log.error("unexpected api response: \(res)")
             throw IxApiClientError.unknown
         }
     }
@@ -460,8 +462,8 @@ public final class IxApiClient: Sendable {
         
         switch res.statusCode {
         case 200:
-            let user = User(from: try JSONDecoder().decode(NetworkUser.self, from: data))
-            handleAuthenticationStatus(.unauthenticated)
+            let user = User(from: try Self.decoder().decode(NetworkUser.self, from: data))
+            handleAuthenticationStatus(.authenticated(user: user))
             return user
         case 204:
             // nothing to do, user is already updated
@@ -472,7 +474,7 @@ public final class IxApiClient: Sendable {
         case 404:
             throw IxApiClientError.notFound(.proSubscription)
         default:
-            Self.log.error("unexpected api response: \(res)")
+            log.error("unexpected api response: \(res)")
             throw IxApiClientError.unknown
         }
     }
@@ -494,13 +496,13 @@ public final class IxApiClient: Sendable {
         
         switch res.statusCode {
         case 200:
-            let lists = try JSONDecoder().decode([NetworkList].self, from: data).map { networList in IxList(networkList: networList) }
+            let lists = try Self.decoder().decode([NetworkList].self, from: data).map { networList in IxList(networkList: networList) }
             return lists
         case 401:
             handleAuthenticationStatus(.unauthenticated)
             throw IxApiClientError.unauthenticated
         default:
-            Self.log.error("unexpected api response: \(res)")
+            log.error("unexpected api response: \(res)")
             throw IxApiClientError.unknown
         }
     }
@@ -530,7 +532,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            let networkList = try JSONDecoder().decode(NetworkList.self, from: data)
+            let networkList = try Self.decoder().decode(NetworkList.self, from: data)
             return IxList(networkList: networkList)
         case 400:
             throw IxApiClientError.invalidData
@@ -561,7 +563,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            let networkList = try JSONDecoder().decode(NetworkList.self, from: data)
+            let networkList = try Self.decoder().decode(NetworkList.self, from: data)
             return IxList(networkList: networkList)
         case 403:
             throw IxApiClientError.missingPermission(.viewer)
@@ -597,7 +599,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            let networkList = try JSONDecoder().decode(NetworkList.self, from: data)
+            let networkList = try Self.decoder().decode(NetworkList.self, from: data)
             return IxList(networkList: networkList)
         case 400:
             throw IxApiClientError.invalidData
@@ -665,7 +667,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            return try JSONDecoder().decode([IxListSingleUserAccessInfo].self, from: data)
+            return try Self.decoder().decode([IxListSingleUserAccessInfo].self, from: data)
         case 401:
             throw IxApiClientError.unauthenticated
         case 403:
@@ -731,7 +733,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            return IxList(networkList: try JSONDecoder().decode(NetworkList.self, from: data))
+            return IxList(networkList: try Self.decoder().decode(NetworkList.self, from: data))
         case 201:
             return nil
         case 400:
@@ -768,7 +770,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            return IxList(networkList: try JSONDecoder().decode(NetworkList.self, from: data))
+            return IxList(networkList: try Self.decoder().decode(NetworkList.self, from: data))
         case 401:
             throw IxApiClientError.unauthenticated
         case 403:
@@ -801,7 +803,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            return try JSONDecoder().decode([NetworkListCategory].self, from: data).map { IxListCategory(networkListCategory: $0) }
+            return try Self.decoder().decode([NetworkListCategory].self, from: data).map { IxListCategory(networkListCategory: $0) }
         case 401:
             throw IxApiClientError.unauthenticated
         case 403:
@@ -831,7 +833,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            return IxListCategory(networkListCategory: try JSONDecoder().decode(NetworkListCategory.self, from: data))
+            return IxListCategory(networkListCategory: try Self.decoder().decode(NetworkListCategory.self, from: data))
         case 401:
             throw IxApiClientError.unauthenticated
         case 403:
@@ -857,7 +859,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            return IxListCategory(networkListCategory: try JSONDecoder().decode(NetworkListCategory.self, from: data))
+            return IxListCategory(networkListCategory: try Self.decoder().decode(NetworkListCategory.self, from: data))
         case 400:
             throw IxApiClientError.invalidData
         case 401:
@@ -893,7 +895,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            return IxListCategory(networkListCategory: try JSONDecoder().decode(NetworkListCategory.self, from: data))
+            return IxListCategory(networkListCategory: try Self.decoder().decode(NetworkListCategory.self, from: data))
         case 400:
             throw IxApiClientError.invalidData
         case 401:
@@ -963,7 +965,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            return try JSONDecoder().decode([NetworkListItem].self, from: data).map { IxListItem(networkListItem: $0) }
+            return try Self.decoder().decode([NetworkListItem].self, from: data).map { IxListItem(networkListItem: $0) }
         case 401:
             throw IxApiClientError.unauthenticated
         case 403:
@@ -990,7 +992,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            return IxListItem(networkListItem: try JSONDecoder().decode(NetworkListItem.self, from: data))
+            return IxListItem(networkListItem: try Self.decoder().decode(NetworkListItem.self, from: data))
         case 401:
             throw IxApiClientError.unauthenticated
         case 403:
@@ -1023,7 +1025,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            return IxListItem(networkListItem: try JSONDecoder().decode(NetworkListItem.self, from: data))
+            return IxListItem(networkListItem: try Self.decoder().decode(NetworkListItem.self, from: data))
         case 400:
             throw IxApiClientError.invalidData
         case 403:
@@ -1055,7 +1057,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            return IxListItem(networkListItem: try JSONDecoder().decode(NetworkListItem.self, from: data))
+            return IxListItem(networkListItem: try Self.decoder().decode(NetworkListItem.self, from: data))
         case 400:
             throw IxApiClientError.invalidData
         case 403:
@@ -1086,7 +1088,7 @@ public final class IxApiClient: Sendable {
         
         switch httpResponse.statusCode {
         case 200:
-            return IxListItem(networkListItem: try JSONDecoder().decode(NetworkListItem.self, from: data))
+            return IxListItem(networkListItem: try Self.decoder().decode(NetworkListItem.self, from: data))
         case 403:
             throw IxApiClientError.missingPermission(.editor)
         case 404:
@@ -1326,7 +1328,7 @@ public final class IxApiClient: Sendable {
 //        
 //        switch httpResponse.statusCode {
 //        case 200:
-//            let colorsSuggestion = try JSONDecoder().decode(NetworkColorsSuggestion.self, from: data)
+//            let colorsSuggestion = try Self.decoder().decode(NetworkColorsSuggestion.self, from: data)
 //            return colorsSuggestion.colors
 //        case 401:
 //            await setAuthenticationStatus(authenticationStatus: .unauthenticated)
@@ -1349,7 +1351,7 @@ public final class IxApiClient: Sendable {
 //        
 //        switch httpResponse.statusCode {
 //        case 200:
-//            return try JSONDecoder().decode(NetworkListTemplateSuggestion.self, from: data)
+//            return try Self.decoder().decode(NetworkListTemplateSuggestion.self, from: data)
 //        case 401:
 //            await setAuthenticationStatus(authenticationStatus: .unauthenticated)
 //            throw IxApiClientError.Unauthenticated
@@ -1371,7 +1373,7 @@ public final class IxApiClient: Sendable {
 //        
 //        switch httpResponse.statusCode {
 //        case 200:
-//            return try JSONDecoder().decode(NetworkCategoryTemplateSuggestion.self, from: data)
+//            return try Self.decoder().decode(NetworkCategoryTemplateSuggestion.self, from: data)
 //        case 401:
 //            await setAuthenticationStatus(authenticationStatus: .unauthenticated)
 //            throw IxApiClientError.Unauthenticated
@@ -1393,7 +1395,7 @@ public final class IxApiClient: Sendable {
 //        
 //        switch httpResponse.statusCode {
 //        case 200:
-//            return try JSONDecoder().decode(NetworkItemTemplateSuggestion.self, from: data)
+//            return try Self.decoder().decode(NetworkItemTemplateSuggestion.self, from: data)
 //        case 401:
 //            await setAuthenticationStatus(authenticationStatus: .unauthenticated)
 //            throw IxApiClientError.Unauthenticated
@@ -1415,7 +1417,7 @@ public final class IxApiClient: Sendable {
 //        
 //        switch httpResponse.statusCode {
 //        case 200:
-//            return try JSONDecoder().decode(NetworkTaskTemplateSuggestion.self, from: data)
+//            return try Self.decoder().decode(NetworkTaskTemplateSuggestion.self, from: data)
 //        case 401:
 //            await setAuthenticationStatus(authenticationStatus: .unauthenticated)
 //            throw IxApiClientError.Unauthenticated

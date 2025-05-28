@@ -11,6 +11,6 @@ public struct NetworkUser: Codable, Equatable, Sendable {
     public var id: String
     public var email: String
     public var hasPro: Bool
-    public var creationTimestamp: Date
+    public var creationTimestamp: Int64
     public var creationSource: UserCreationSource
 }

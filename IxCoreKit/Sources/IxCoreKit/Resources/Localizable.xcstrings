@@ -2,25 +2,64 @@
   "sourceLanguage" : "en",
   "strings" : {
     "%@ not found." : {
-      "comment" : "Entity not found error"
+      "comment" : "Entity not found error",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ non trovato."
+          }
+        }
+      }
     },
     "A network error occurred. Please check your internet connection." : {
       "comment" : "Network error"
     },
     "All" : {
-      "comment" : "All lists filter"
+      "comment" : "All lists filter",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutte"
+          }
+        }
+      }
     },
     "Ascending" : {
       "comment" : "forward sort order for name"
     },
     "Category" : {
-      "comment" : "Entity type: Category"
+      "comment" : "Entity type: Category",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categories"
+          }
+        }
+      }
     },
     "Complete Task" : {
-
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completa"
+          }
+        }
+      }
     },
     "Completed" : {
-      "comment" : "Filter for completed tasks"
+      "comment" : "Filter for completed tasks",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completato"
+          }
+        }
+      }
     },
     "Completes a task." : {
 

@@ -8,15 +8,17 @@
 import SwiftData
 
 /// Provides the model container for SwiftData that includes all the models used by the app. **Autosave is disabled, transactions usage is recommended**
+@MainActor
 public struct ModelContainerProvider {
-    @MainActor
-    public static let shared: ModelContainer = {
+    public static let shared: ModelContainer = makeModelContainer(isStoredInMemoryOnly: false, autosaveEnabled: false)
+    
+    public static func makeModelContainer(isStoredInMemoryOnly: Bool, autosaveEnabled: Bool = false) -> ModelContainer {
         do {
             let schema = Schema([IxList.self, IxListCategory.self, IxListItem.self, IxTask.self])
             
             let modelContainer = try ModelContainer(
                 for: schema,
-                configurations: [ModelConfiguration(isStoredInMemoryOnly: false)]
+                configurations: [ModelConfiguration(isStoredInMemoryOnly: isStoredInMemoryOnly)]
             )
             modelContainer.mainContext.autosaveEnabled = false
             
@@ -24,5 +26,5 @@ public struct ModelContainerProvider {
         } catch {
             fatalError("Could not create model container: \(error)")
         }
-    }()
+    }
 }

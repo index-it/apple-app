@@ -62,7 +62,6 @@
 		092FE7C32D7F3C8200F38388 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		092FE7C52D7F3C8200F38388 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		093287D92C9C811200A0717E /* index.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = index.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		0973F6F72D86E1BF0034BE63 /* indexWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = indexWidgetExtension.entitlements; sourceTree = "<group>"; };
 		09B6252C2DBF8AE900E60C6E /* IxCoreKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = IxCoreKit; sourceTree = "<group>"; };
 		09F48F3B2D7E623D00CA50AC /* indexShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = indexShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -85,7 +84,7 @@
 		092FE7E42D7F428700F38388 /* Exceptions for "index" folder in "indexWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"GoogleService-Info.plist",
+				"Resources/GoogleService-Info.plist",
 			);
 			target = 092FE7C12D7F3C8200F38388 /* indexWidgetExtension */;
 		};
@@ -99,8 +98,8 @@
 		09EA31C12D7E69F3003FD174 /* Exceptions for "index" folder in "indexShareExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"GoogleService-Info.plist",
-				view/controls/AddListItemFormSheet.swift,
+				"Resources/GoogleService-Info.plist",
+				View/Controls/AddListItemFormSheet.swift,
 			);
 			target = 09F48F3A2D7E623D00CA50AC /* indexShareExtension */;
 		};
@@ -186,7 +185,6 @@
 			isa = PBXGroup;
 			children = (
 				09B6252C2DBF8AE900E60C6E /* IxCoreKit */,
-				0973F6F72D86E1BF0034BE63 /* indexWidgetExtension.entitlements */,
 				093287DB2C9C811200A0717E /* index */,
 				09F48F3C2D7E623D00CA50AC /* indexShareExtension */,
 				092FE7C72D7F3C8200F38388 /* indexWidget */,
@@ -415,7 +413,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = indexWidgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = indexWidget/indexWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -444,7 +442,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = indexWidgetExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = indexWidget/indexWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
 				GENERATE_INFOPLIST_FILE = YES;

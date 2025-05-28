@@ -81,11 +81,13 @@ public class IxList {
         emoji: String,
         color: String,
         archived: Bool = false,
-        isPublic: Bool = false
+        isPublic: Bool = false,
+        id: String = UUID().uuidString,
+        userId: String = UUID().uuidString,
     ) -> IxList {
         return IxList(
-            id: UUID().uuidString,
-            userId: UUID().uuidString,
+            id: id,
+            userId: userId,
             name: name,
             emoji: emoji,
             color: color,

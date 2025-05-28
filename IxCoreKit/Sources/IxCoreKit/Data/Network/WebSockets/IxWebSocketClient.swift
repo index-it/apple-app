@@ -51,8 +51,8 @@ public actor IxWebsocketClient {
         
         shouldReconnect = true
         websocketTask = urlSession.webSocketTask(with: Self.wsURL)
-        handleMessages()
         websocketTask?.resume()
+        handleMessages()
         
         print("Listening to websocket messages")
     }
