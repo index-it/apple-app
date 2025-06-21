@@ -27,10 +27,10 @@ struct MainView: View {
                 }
             }.navigationDestination(for: NavigationRoute.self) { destination in
                 switch destination {
+                case .archivedLists:
+                    ListsGridScreen(archived: true)
                 case let .listRoute(listId: listId):
                     ListScreen(listId: listId)
-                case .completedTasks:
-                    CompletedTasksScreen()
                 case .accountSettings:
                     AccountSettingsView()
                 case .proSettings:

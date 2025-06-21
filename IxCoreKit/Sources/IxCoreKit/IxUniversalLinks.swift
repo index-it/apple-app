@@ -15,37 +15,48 @@ public struct IxUniversalLinks {
         
         public static let tasks = "tasks"
         public static let settings = "settings"
+        
+        public static let quickAdd = "quick-add"
+    }
+    
+    public enum QuickAddEntity: String {
+        case task = "task";
+        case item = "item";
     }
     
     public static var lists: String {
-        "\(host)/\(Sections.lists)"
+        "https://\(host)/\(Sections.lists)"
     }
     
     public static func list(_ listId: String) -> String {
-        "\(host)/\(Sections.lists)/\(listId)"
+        "https://\(host)/\(Sections.lists)/\(listId)"
     }
     
     public static func categories(listId: String) -> String {
-        "\(host)/\(Sections.lists)/\(listId)/categories"
+        "https://\(host)/\(Sections.lists)/\(listId)/categories"
     }
     
     public static func category(listId: String, _ categoryId: String) -> String {
-        "\(host)/\(Sections.lists)/\(listId)/categories/\(categoryId)"
+        "https://\(host)/\(Sections.lists)/\(listId)/categories/\(categoryId)"
     }
     
     public static func item(listId: String, _ itemId: String) -> String {
-        "\(host)/\(Sections.lists)/\(listId)/items/\(itemId)"
+        "https://\(host)/\(Sections.lists)/\(listId)/items/\(itemId)"
     }
     
     public static var tasks: String {
-        "\(host)/\(Sections.tasks)"
+        "https://\(host)/\(Sections.tasks)"
     }
     
     public static func tasks(_ taskId: String) -> String {
-        "\(host)/\(Sections.tasks)/\(taskId)"
+        "https://\(host)/\(Sections.tasks)/\(taskId)"
     }
     
     public static var settings: String {
-        "\(host)/\(Sections.settings)"
+        "https://\(host)/\(Sections.settings)"
+    }
+    
+    public static func quickAdd(_ entity: QuickAddEntity) -> String {
+        "https://\(host)/\(Sections.quickAdd)/\(entity.rawValue)"
     }
 }

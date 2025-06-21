@@ -59,6 +59,8 @@ struct TasksTabView: View {
                     context.insert(ixTask)
                 }
             }
+            
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch {
             errorService.insert(.localizedError(title: "Error loading tasks", error: error))
         }
@@ -149,7 +151,7 @@ struct TasksTabView: View {
             TaskListView
                 .navigationTitle("Your tasks")
                 .floatingActionButton("plus") {
-                    // TODO
+                    isAddingTask = true
                 }
                 .paywallCover(isPresented: $showPaywall)
                 .toolbar {
@@ -181,20 +183,36 @@ struct TasksTabView: View {
                         }
                     }
                     
-//                    ToolbarItem(placement: .secondaryAction) {
-//                        Picker(selection: $sorting) {
-//                            ForEach(TasksSorting.allCases) { filter in
-//                                Text(filter.label)
-//                                    .tag(filter)
+                    ToolbarItem(placement: .secondaryAction) {
+                        Menu {
+                            Picker(selection: $sorting) {
+                                ForEach(TasksSorting.allCases) { sorting in
+                                    Text(sorting.label)
+                                        .tag(sorting)
+                                }
+                            } label: {
+                                Text("Sorting")
+                            }
+                            
+//                            if sorting != .manual {
+                                Picker(selection: $sortOrder) {
+                                    Text(SortOrder.forward.labelForTasksSorting(sorting))
+                                        .tag(SortOrder.forward)
+                                    
+                                    Text(SortOrder.reverse.labelForTasksSorting(sorting))
+                                        .tag(SortOrder.reverse)
+                                } label: {
+                                    Text("Sort Order")
+                                }
 //                            }
-//                        } label: {
-//                            Label("Sorting", systemImage: "arrow.up.arrow.down")
-//                        }.pickerStyle(.menu)
-//                    }
-//                    
-//                    ToolbarItem(placement: .secondaryAction) {
-//                        Toggle("Reverse", isOn: $reverseSorting)
-//                    }
+                        } label: {
+                            Button {} label: {
+                                Text("Sort by")
+                                Text(sorting.label)
+                                Image(systemName: "arrow.up.arrow.down")
+                            }
+                        }
+                    }
                 }
                 .confirmationDialog(
                     Text("Confirm deletion"),
@@ -279,6 +297,12 @@ struct TasksTabView: View {
                 }
             }
         }
+        .onChange(of: navigationManager.quickAddTaskViewPresented, initial: true, { _, newValue in
+            if (newValue) {
+                isAddingTask = true
+                navigationManager.quickAddTaskViewPresented = false
+            }
+        })
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name.NSCalendarDayChanged).receive(on: DispatchQueue.main)) { _ in
             todayDate = Date.now.toLocalDate()
         }
@@ -315,7 +339,7 @@ struct TasksTabView: View {
                     .onTapGesture {
                         taskCreationDueDate = todayDate
                         // TODO
-//                        navigationManager.showCreateTaskSheet = true
+                        //                        navigationManager.showCreateTaskSheet = true
                     }
             }
             
@@ -354,7 +378,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-//                    navigationManager.showCreateTaskSheet = true
+                    //                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
@@ -392,7 +416,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-//                    navigationManager.showCreateTaskSheet = true
+                    //                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
@@ -430,7 +454,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-//                    navigationManager.showCreateTaskSheet = true
+                    //                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
@@ -468,7 +492,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-//                    navigationManager.showCreateTaskSheet = true
+                    //                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
@@ -506,7 +530,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-//                    navigationManager.showCreateTaskSheet = true
+                    //                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
@@ -544,7 +568,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-//                    navigationManager.showCreateTaskSheet = true
+                    //                    navigationManager.showCreateTaskSheet = true
                 }
             }
             
@@ -575,7 +599,7 @@ struct TasksTabView: View {
                     .textCase(nil)
                     .onTapGesture {
                         taskCreationDueDate = todayDate.addingTimeInterval(DateHelper.sevenDaySeconds)
-//                        navigationManager.showCreateTaskSheet = true
+                        //                        navigationManager.showCreateTaskSheet = true
                     }
             }
         }

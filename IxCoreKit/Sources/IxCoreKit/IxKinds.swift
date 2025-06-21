@@ -7,4 +7,6 @@
 
 public struct IxKinds {
     public static let tasksWidget = "app.index-it.index.tasksWidget"
+    public static let quickAddTaskControlCenterWidget = "app.index-it.index.createTaskWidget"
+    public static let quickAddItemControlCenterWidget = "app.index-it.index.indexItemWidget"
 }

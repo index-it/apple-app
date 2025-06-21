@@ -19,7 +19,9 @@ struct HomeScreen: View {
             }
             
             Tab("Your lists", systemImage: "square.grid.2x2.fill", value: HomeTab.lists) {
-                ListsTabView()
+                NavigationView {
+                    ListsGridScreen(archived: false)
+                }
             }
             
             Tab("Settings", systemImage: "gearshape.fill", value: HomeTab.settings) {

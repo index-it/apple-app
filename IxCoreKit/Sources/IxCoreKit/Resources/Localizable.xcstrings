@@ -86,7 +86,7 @@
       "comment" : "Pro feature required error"
     },
     "Highest First" : {
-      "comment" : "forward sort order for priority"
+      "comment" : "reverse sort order for priority"
     },
     "Item" : {
       "comment" : "Entity type: Item"
@@ -107,7 +107,7 @@
       "comment" : "List name loading"
     },
     "Lowest First" : {
-      "comment" : "reverse sort order for priority"
+      "comment" : "forward sort order for priority"
     },
     "Manual" : {
       "comment" : "Sort categories manually\nSort items manually\nSort lists manually\nSort tasks manually"

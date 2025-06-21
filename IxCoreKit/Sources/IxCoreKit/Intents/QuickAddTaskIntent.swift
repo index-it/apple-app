@@ -8,20 +8,17 @@
 import AppIntents
 
 @available(iOS 18.0, *)
-public struct CreateTaskIntent: AppIntent {
+public struct QuickAddTaskIntent: AppIntent {
     public static let title: LocalizedStringResource = "Create Task"
     public static let description: IntentDescription = "Create a new task"
     
     public init() {}
     
     public func perform() async throws -> some IntentResult & OpensIntent {
-        // Construct the URL to open the app on the create task page
-        guard let url = URL(string: "https://web.index-it.app/create-task") else {
+        guard let url = URL(string: IxUniversalLinks.quickAdd(.task)) else {
             throw URLError(.badURL)
         }
         
         return .result(opensIntent: OpenURLIntent(url))
     }
-    
-    public static let openAppWhenRun: Bool = true
 }

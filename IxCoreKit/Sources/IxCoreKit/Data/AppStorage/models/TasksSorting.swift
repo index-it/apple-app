@@ -11,7 +11,7 @@ public enum TasksSorting: String, CaseIterable, Identifiable, Sendable {
     case name
     case priority
     case creation
-    case manual
+//    case manual
         
     public var id: Self { self }
     
@@ -23,8 +23,8 @@ public enum TasksSorting: String, CaseIterable, Identifiable, Sendable {
             return NSLocalizedString("Priority", comment: "Sort tasks by priority")
         case .creation:
             return NSLocalizedString("Creation date", comment: "Sort tasks by creation date")
-        case .manual:
-            return NSLocalizedString("Manual", comment: "Sort tasks manually")
+//        case .manual:
+//            return NSLocalizedString("Manual", comment: "Sort tasks manually")
         }
     }
 }

@@ -20,9 +20,9 @@ public extension SortOrder {
     var labelForPriority: String {
         switch self {
         case .forward:
-            return NSLocalizedString("Highest First", comment: "forward sort order for priority")
+            return NSLocalizedString("Lowest First", comment: "forward sort order for priority")
         case .reverse:
-            return NSLocalizedString("Lowest First", comment: "reverse sort order for priority")
+            return NSLocalizedString("Highest First", comment: "reverse sort order for priority")
         }
     }
     
@@ -32,6 +32,52 @@ public extension SortOrder {
             return NSLocalizedString("Ascending", comment: "forward sort order for name")
         case .reverse:
             return NSLocalizedString("Descending", comment: "reverse sort order for name")
+        }
+    }
+    
+    func labelForListsSorting(_ sorting: ListsSorting) -> String {
+        switch sorting {
+//        case .manual:
+//            return ""
+        case .creationDate:
+            return labelForCreationDate
+        case .name:
+            return labelForName
+        }
+    }
+    
+    func labelForCategoriesSorting(_ sorting: CategoriesSorting) -> String {
+        switch sorting {
+//        case .manual:
+//            return ""
+        case .name:
+            return labelForName
+        case .creationDate:
+            return labelForCreationDate
+        }
+    }
+    
+    func labelForItemsSorting(_ sorting: ItemsSorting) -> String {
+        switch sorting {
+//        case .manual:
+//            return ""
+        case .name:
+            return labelForName
+        case .creationDate:
+            return labelForCreationDate
+        }
+    }
+    
+    func labelForTasksSorting(_ sorting: TasksSorting) -> String {
+        switch sorting {
+//        case .manual:
+//            return ""
+        case .name:
+            return labelForName
+        case .priority:
+            return labelForPriority
+        case .creation:
+            return labelForCreationDate
         }
     }
 }

@@ -58,9 +58,20 @@ struct ListEditor: View {
         NavigationView {
             VStack {
                 VStack {
-                    ListCard(list: IxList.mock(name: name.isEmpty ? "List name" : name, emoji: emoji, color: color.hexString), owner: false, onTap: {}, onShare: {}, onEdit: {}, onDelete: {}, onLeave: {}, withInteractions: false)
-                        .frame(maxWidth: 200)
-                        .padding()
+                    ListCard(
+                        list: IxList.mock(name: name.isEmpty ? "List name" : name, emoji: emoji, color: color.hexString),
+                        owner: false,
+                        onTap: {
+                        },
+                        onShare: {},
+                        onEdit: {},
+                        onArchiveToggle: {},
+                        onDelete: {},
+                        onLeave: {},
+                        withInteractions: false
+                    )
+                    .frame(maxWidth: 200)
+                    .padding()
                     
                     Spacer()
                         .frame(height: 20)
@@ -82,7 +93,7 @@ struct ListEditor: View {
                                 arrowDirection: .up
                             )
                         
-                        TextField("Name", text: $name)
+                        TextField("List name", text: $name)
                             .font(.title2)
                             .fontWeight(.bold)
                             .multilineTextAlignment(.center)

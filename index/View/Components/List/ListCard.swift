@@ -16,6 +16,7 @@ struct ListCard: View {
     var onTap: () -> Void
     var onShare: () -> Void
     var onEdit: () -> Void
+    var onArchiveToggle: () -> Void
     var onDelete: () -> Void
     var onLeave: () -> Void
     
@@ -39,6 +40,12 @@ struct ListCard: View {
                             }
                             
                             Button("Edit", systemImage: "pencil", action: onEdit)
+                            
+                            Button(
+                                list.archived ? "Unarchive" : "Archive",
+                                systemImage: list.archived ? "shippingbox.and.arrow.backward" : "archivebox",
+                                action: onArchiveToggle
+                            )
                             
                             if owner {
                                 Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
@@ -99,7 +106,6 @@ struct ListCard: View {
         }
         .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: 20))
         .if(withInteractions) { view in
-            // TODO: Fix white edges on context menu
             view.contextMenu {
                 Button{
                     onShare()

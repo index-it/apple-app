@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum UserCreationSource: String, Codable, Sendable {
+public enum UserCreationSource: String, Codable, Sendable, Equatable {
     case GOOGLE = "google"
     case APPLE = "apple"
     case FACEBOOK = "facebook"

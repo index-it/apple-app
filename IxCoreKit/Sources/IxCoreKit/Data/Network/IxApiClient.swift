@@ -1196,7 +1196,7 @@ public final class IxApiClient: Sendable {
             dueDate: dueDate,
             rrule: rrule,
             priority: priority,
-            reminders: reminders.map({ NetworkTaskReminder(days_before: $0.daysBefore, time_offset: $0.timeOffset)})
+            reminders: reminders.map({ NetworkTaskReminder(daysBefore: $0.daysBefore, timeOffset: $0.timeOffset)})
         )
         
         request.httpBody = try Self.encoder().encode(body)
@@ -1238,7 +1238,7 @@ public final class IxApiClient: Sendable {
             dueDate: dueDate,
             rrule: rrule,
             priority: priority,
-            reminders: reminders.map({ NetworkTaskReminder(days_before: $0.daysBefore, time_offset: $0.timeOffset)})
+            reminders: reminders.map({ NetworkTaskReminder(daysBefore: $0.daysBefore, timeOffset: $0.timeOffset)})
         )
         request.httpBody = try Self.encoder().encode(body)
         

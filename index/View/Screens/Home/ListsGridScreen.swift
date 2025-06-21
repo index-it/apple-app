@@ -10,7 +10,7 @@ import SwiftData
 import MCEmojiPicker
 import IxCoreKit
 
-struct ListsTabView: View {
+struct ListsGridScreen: View {
     @Environment(\.modelContext) private var context
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var navigationManager: NavigationManager
@@ -19,13 +19,14 @@ struct ListsTabView: View {
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
     
     @Query private var lists: [IxList]
+    private var archived: Bool
     
     @State private var showPaywall: Bool = false
     
     // MARK: List creation
     @State private var isAddingList = false
     @State private var newListColor: Color = ColorHelper.randomIxColor()
-    @State private var newListEmoji: String = EmojiHelper.randomEmoji()
+    @State private var newListEmoji: String = EmojiHelper.randomEmojiForPickerInitial()
     
     // MARK: Selected list
     @State private var selectedList: IxList? = nil
@@ -34,7 +35,7 @@ struct ListsTabView: View {
     
     // MARK: Sorting and filtering
     @AppStorage(AppStorageKeys.Lists.sorting) private var sorting = AppStorageKeys.Defaults.listsSorting
-    @AppStorage(AppStorageKeys.Lists.sortOrder) private var sortingOrder = AppStorageKeys.Defaults.listsSortOrder
+    @AppStorage(AppStorageKeys.Lists.sortOrder) private var sortOrder = AppStorageKeys.Defaults.listsSortOrder
     @AppStorage(AppStorageKeys.Lists.filter) private var filter = AppStorageKeys.Defaults.listsFilter
     
     // MARK: Share sheet
@@ -46,6 +47,18 @@ struct ListsTabView: View {
     @State private var loadingSelectedListUserInvite: Bool = false
     @State private var loadingSelectedListUserEditOrRevokePermissions: String? = nil
     @State private var showLeaveListConfirmation = false
+    
+    init(archived: Bool) {
+        self.archived = archived
+        
+        let listsDescriptor = FetchDescriptor<IxList>(
+            predicate: #Predicate { list in
+                list.archived == archived
+            }
+        )
+        
+        _lists = Query(listsDescriptor)
+    }
     
     
     private func saveList(_ list: IxList) async throws {
@@ -218,164 +231,208 @@ struct ListsTabView: View {
     
     
     var body: some View {
-        NavigationView {
-            ListsDisplayerView
-                .navigationTitle("Your lists")
-                .floatingActionButton("plus") {
-                    if let user = user, !user.has_pro && lists.count >= 7 {
-                        showPaywall = true
-                    } else {
-                        isAddingList = true
+        ListsDisplayerView
+            .navigationTitle(archived ? "Archived lists" : "Your lists")
+            .navigationBarTitleDisplayMode(archived ? .inline : .large)
+            .toolbar {
+                if (!archived) {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            if let user = user, !user.has_pro && lists.count >= 7 {
+                                showPaywall = true
+                            } else {
+                                isAddingList = true
+                            }
+                        } label: {
+                            Image(systemName: "plus.circle")
+                        }
                     }
                 }
-//                .toolbar {
-//                    ToolbarItem(placement: .topBarTrailing) {
-//                        Menu {
-//                            Picker(selection: $filter) {
-//                                ForEach(ListsFilter.allCases) { filter in
-//                                    Text(filter.label)
-//                                        .tag(filter)
-//                                }
-//                            } label: {
-//                                Label("Filter", systemImage: "line.3.horizontal.decrease")
-//                            }.pickerStyle(.menu)
-//                            
-//                            Section {
-//                                Picker(selection: $sorting) {
-//                                    ForEach(ListsSorting.allCases) { filter in
-//                                        Text(filter.label)
-//                                            .tag(filter)
-//                                    }
-//                                } label: {
-//                                    Label("Sorting", systemImage: "arrow.up.arrow.down")
-//                                }.pickerStyle(.menu)
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Menu {
+                            Picker(selection: $sorting) {
+                                ForEach(ListsSorting.allCases) { sorting in
+                                    Text(sorting.label)
+                                        .tag(sorting)
+                                }
+                            } label: {
+                                Text("Sorting")
+                            }
+                            
+//                            if sorting != .manual {
+                                Picker(selection: $sortOrder) {
+                                    Text(SortOrder.forward.labelForListsSorting(sorting))
+                                        .tag(SortOrder.forward)
+                                    
+                                    Text(SortOrder.reverse.labelForListsSorting(sorting))
+                                        .tag(SortOrder.reverse)
+                                } label: {
+                                    Text("Sort Order")
+                                }
 //                            }
-//                        } label: {
-//                            Label("Options", systemImage: "ellipsis.circle")
-//                                .labelStyle(.iconOnly)
-//                        }
-//                    }
-//                }
-                .paywallCover(isPresented: $showPaywall)
-                .sheet(isPresented: $showShareSheet) {
-                    ListSharingSheet(
-                        showSheet: $showShareSheet,
-                        showUserInvitationSuccessAlert: $showUserInvitationSuccessAlert,
-                        loadingPublic: $loadingSelectedListPublic,
-                        loadingUsers: $loadingSelectedListUsers,
-                        loadingUserInvite: $loadingSelectedListUserInvite,
-                        loadingUserEditOrDelete: $loadingSelectedListUserEditOrRevokePermissions,
-                        isPublic: $selectedList.wrappedValue?.isPublic ?? false,
-                        usersWithAccess: $selectedListUsersWithAccess
-                    ) { isPublic in
-                        Task {
-                            await editListPublic(isPublic: isPublic)
+                        } label: {
+                            Button {} label: {
+                                Text("Sort by")
+                                Text(sorting.label)
+                                Image(systemName: "arrow.up.arrow.down")
+                            }
                         }
-                    } onUserInvite: { email, editor in
-                        Task {
-                            await inviteUser(email: email, editor: editor)
+                        
+                        Picker(selection: $filter) {
+                            ForEach(ListsFilter.allCases) { filter in
+                                Text(filter.label)
+                                    .tag(filter)
+                            }
+                        } label: {
+                            Button {} label: {
+                                Text("Filter")
+                                Text(filter.label)
+                                Image(systemName: "line.3.horizontal.decrease")
+                            }
+                        }.pickerStyle(.menu)
+                        
+                        Divider()
+                        
+                        if (!archived) {
+                            Button {
+                                navigationManager.push(.archivedLists)
+                            } label: {
+                                Label("Archived lists", systemImage: "archivebox")
+                            }
                         }
-                    } onUserEditEditorPermission: { email, editor in
-                        Task {
-                            await editUserPermissions(email: email, editor: editor)
-                        }
-                    } onUserRevokeAccess: { userId in
-                        Task {
-                            await revokeUserAccessFromList(userId: userId)
-                        }
-                    }.presentationDetents([.large])
+                    } label: {
+                        Label("Options", systemImage: "ellipsis.circle")
+                            .labelStyle(.iconOnly)
+                    }
                 }
-                .sheet(isPresented: $isAddingList) {
-                    ListEditor(
-                        isPresented: $isAddingList,
-                        addingNew: true,
-                        name: "",
-                        color: newListColor,
-                        emoji: newListEmoji,
-                        isPublic: false,
-                        colors: ColorHelper.ixColors
-                    ) { name, color, emoji, isPublic in
+            }
+            .paywallCover(isPresented: $showPaywall)
+            .sheet(isPresented: $showShareSheet) { [selectedList] in
+                ListSharingSheet(
+                    showSheet: $showShareSheet,
+                    showUserInvitationSuccessAlert: $showUserInvitationSuccessAlert,
+                    loadingPublic: $loadingSelectedListPublic,
+                    loadingUsers: $loadingSelectedListUsers,
+                    loadingUserInvite: $loadingSelectedListUserInvite,
+                    loadingUserEditOrDelete: $loadingSelectedListUserEditOrRevokePermissions,
+                    listId: selectedList?.id ?? "",
+                    isPublic: selectedList?.isPublic ?? false,
+                    usersWithAccess: $selectedListUsersWithAccess
+                ) { isPublic in
+                    Task {
+                        await editListPublic(isPublic: isPublic)
+                    }
+                } onUserInvite: { email, editor in
+                    Task {
+                        await inviteUser(email: email, editor: editor)
+                    }
+                } onUserEditEditorPermission: { email, editor in
+                    Task {
+                        await editUserPermissions(email: email, editor: editor)
+                    }
+                } onUserRevokeAccess: { userId in
+                    Task {
+                        await revokeUserAccessFromList(userId: userId)
+                    }
+                }.presentationDetents([.large])
+            }
+            .sheet(isPresented: $isAddingList) {
+                ListEditor(
+                    isPresented: $isAddingList,
+                    addingNew: true,
+                    name: "",
+                    color: newListColor,
+                    emoji: newListEmoji,
+                    isPublic: false,
+                    colors: ColorHelper.ixColors
+                ) { name, color, emoji, isPublic in
+                    Task {
+                        await createList(name: name, color: color, emoji: emoji, isPublic: isPublic)
+                    }
+                }
+                .presentationDetents([.large])
+            }
+            .sheet(isPresented: $isEditingList) {
+                ListEditor(
+                    isPresented: $isEditingList,
+                    addingNew: false,
+                    name: selectedList?.name ?? "",
+                    color: selectedList?.color.toColor() ?? Color.accentColor,
+                    emoji: selectedList?.icon ?? EmojiHelper.randomEmojiForPickerInitial(),
+                    isPublic: selectedList?.isPublic ?? false,
+                    colors: ColorHelper.ixColors
+                ) { name, color, emoji, isPublic in
+                    if let selectedList {
                         Task {
-                            await createList(name: name, color: color, emoji: emoji, isPublic: isPublic)
+                            await editList(id: selectedList.id, name: name, color: color.hexString, emoji: emoji, archived: selectedList.archived, isPublic: isPublic)
                         }
                     }
-                    .presentationDetents([.large])
-                }
-                .sheet(isPresented: $isEditingList) {
-                    ListEditor(
-                        isPresented: $isEditingList,
-                        addingNew: false,
-                        name: selectedList?.name ?? "",
-                        color: selectedList?.color.toColor() ?? Color.accentColor,
-                        emoji: selectedList?.icon ?? EmojiHelper.randomEmoji(),
-                        isPublic: selectedList?.isPublic ?? false,
-                        colors: ColorHelper.ixColors
-                    ) { name, color, emoji, isPublic in
+                }.presentationDetents([.large])
+            }
+            .sheet(isPresented: $navigationManager.quickAddItemViewPresented) {
+                AddListItemFormSheet(onCancel: {
+                    navigationManager.quickAddItemViewPresented = false
+                })
+            }
+            .confirmationDialog(
+                Text("Confirm deletion"),
+                isPresented: $showDeleteConfirmationDialog,
+                titleVisibility: .visible,
+                actions: {
+                    Button("Delete", role: .destructive) {
                         if let selectedList {
                             Task {
-                                await editList(id: selectedList.id, name: name, color: color.hexString, emoji: emoji, archived: selectedList.archived, isPublic: isPublic)
+                                await deleteList(id: selectedList.id)
                             }
                         }
-                    }.presentationDetents([.large])
+                    }
+                    
+                    Button("Keep", role: .cancel) {
+                        showDeleteConfirmationDialog = false
+                    }
+                },
+                message: {
+                    Text("Are you sure you want to delete the list \(selectedList?.name ?? "")? This action is irreversible!")
                 }
-                .confirmationDialog(
-                    Text("Confirm deletion"),
-                    isPresented: $showDeleteConfirmationDialog,
-                    titleVisibility: .visible,
-                    actions: {
-                        Button("Delete", role: .destructive) {
-                            if let selectedList {
-                                Task {
-                                    await deleteList(id: selectedList.id)
-                                }
+            )
+            .confirmationDialog(
+                Text("Leave list"),
+                isPresented: $showLeaveListConfirmation,
+                titleVisibility: .visible,
+                actions: {
+                    Button("Leave", role: .destructive) {
+                        if let selectedList {
+                            Task {
+                                await leaveList(id: selectedList.id)
                             }
                         }
-                        
-                        Button("Keep", role: .cancel) {
-                            showDeleteConfirmationDialog = false
-                        }
-                    },
-                    message: {
-                        Text("Are you sure you want to delete the list \(selectedList?.name ?? "")? This action is irreversible!")
                     }
-                )
-                .confirmationDialog(
-                    Text("Leave list"),
-                    isPresented: $showLeaveListConfirmation,
-                    titleVisibility: .visible,
-                    actions: {
-                        Button("Leave", role: .destructive) {
-                            if let selectedList {
-                                Task {
-                                    await leaveList(id: selectedList.id)
-                                }
-                            }
-                        }
-                        
-                        Button("Stay", role: .cancel) {
-                            showLeaveListConfirmation = false
-                        }
-                    },
-                    message: {
-                        Text("The list \(selectedList?.name ?? "") was shared with you! Do you want to leave the list and lose access to it?")
+                    
+                    Button("Stay", role: .cancel) {
+                        showLeaveListConfirmation = false
                     }
-                )
-        }
-        .onAppear {
-            Task {
-                let shouldSync = await SyncRegister.shared.hasExpired(SyncResource.lists)
-                
-                if (shouldSync) {
-                    await fetchLists()
+                },
+                message: {
+                    Text("The list \(selectedList?.name ?? "") was shared with you! Do you want to leave the list and lose access to it?")
+                }
+            )
+            .onAppear {
+                Task {
+                    let shouldSync = await SyncRegister.shared.hasExpired(SyncResource.lists)
+                    
+                    if (shouldSync) {
+                        await fetchLists()
+                    }
                 }
             }
-        }
-        .onChange(of: isAddingList) {
-            if isAddingList {
-                newListEmoji = EmojiHelper.randomEmoji()
-                newListColor = ColorHelper.randomIxColor()
+            .onChange(of: isAddingList) {
+                if isAddingList {
+                    newListEmoji = EmojiHelper.randomEmojiForPickerInitial()
+                    newListColor = ColorHelper.randomIxColor()
+                }
             }
-        }
     }
     
     
@@ -383,8 +440,9 @@ struct ListsTabView: View {
         ListsGrid(
             userId: user?.id ?? "",
             filter: filter,
+            archived: archived,
             sorting: sorting,
-            sortOrder: sortingOrder,
+            sortOrder: sortOrder,
             onFilterClear: {
                 filter = .all
             },
@@ -406,14 +464,14 @@ struct ListsTabView: View {
                 }
                 
             },
-            onArchive: { list in
-                Task {
-                    await editList(id: list.id, name: list.name, color: list.color, emoji: list.icon, archived: true, isPublic: list.isPublic)
-                }
-            },
             onEdit: { list in
                 selectedList = list
                 isEditingList = true
+            },
+            onArchiveToggle: { list in
+                Task {
+                    await editList(id: list.id, name: list.name, color: list.color, emoji: list.icon, archived: !list.archived, isPublic: list.isPublic)
+                }
             },
             onDelete: { list in
                 selectedList = list

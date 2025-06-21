@@ -23,6 +23,7 @@ struct ListSharingSheet: View {
     @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
     @State private var showPaywall = false
     
+    private var listId: String
     @State private var isPublic: Bool
     @Binding private var showSheet: Bool
     @Binding private var showUserInvitationSuccessAlert: Bool
@@ -45,6 +46,7 @@ struct ListSharingSheet: View {
         loadingUsers: Binding<Bool>,
         loadingUserInvite: Binding<Bool>,
         loadingUserEditOrDelete: Binding<String?>,
+        listId: String,
         isPublic: Bool,
         usersWithAccess: Binding<[IxListSingleUserAccessInfo]>,
         onPublicChange: @escaping (Bool) -> Void,
@@ -58,6 +60,7 @@ struct ListSharingSheet: View {
         self._loadingUsers = loadingUsers
         self._loadingUserInvite = loadingUserInvite
         self._loadingUserEditOrDelete = loadingUserEditOrDelete
+        self.listId = listId
         self.isPublic = isPublic
         self._usersWithAccess = usersWithAccess
         self.onPublicChange = onPublicChange
@@ -179,31 +182,38 @@ struct ListSharingSheet: View {
                     }
                 }
             }
-        }.navigationTitle("Sharing")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem {
-                    if loadingUsers {
-                        ProgressView()
-                    }
+        }
+        .navigationTitle("Sharing")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem {
+                if loadingUsers {
+                    ProgressView()
                 }
             }
-            .onChange(of: isPublic) { _, new in
-                onPublicChange(new)
-            }
-            .confirmationDialog("Manage user access", isPresented: $showUserActions) {
-                Button(selectedUser?.editor ?? false ? "Revoke edit permissions" : "Make editor") {
-                    if let selectedUser {
-                        onEditUserPermissions(selectedUser.email, !selectedUser.editor)
-                    }
-                }
-                
-                Button("Revoke access completely", role: .destructive) {
-                    if let selectedUser {
-                        onUserRevoke(selectedUser.userId)
-                    }
+            
+            ToolbarItem(placement: .confirmationAction) {
+                ShareLink(item: URL(string: IxUniversalLinks.list(listId))!) {
+                    Label("Share", systemImage: "square.and.arrow.up")
                 }
             }
+        }
+        .onChange(of: isPublic) { _, new in
+            onPublicChange(new)
+        }
+        .confirmationDialog("Manage user access", isPresented: $showUserActions) {
+            Button(selectedUser?.editor ?? false ? "Revoke edit permissions" : "Make editor") {
+                if let selectedUser {
+                    onEditUserPermissions(selectedUser.email, !selectedUser.editor)
+                }
+            }
+            
+            Button("Revoke access completely", role: .destructive) {
+                if let selectedUser {
+                    onUserRevoke(selectedUser.userId)
+                }
+            }
+        }
     }
     
     var InviteSheet: some View {
@@ -238,14 +248,35 @@ struct ListSharingSheet: View {
                 .controlSize(.large)
                 .padding()
                 .disabled(loadingUserInvite || !isInviteEmailValid)
-            
-        }.frame(maxHeight: .infinity, alignment: .top)
-            .background(Color(UIColor.systemGroupedBackground))
-            .navigationTitle("Invite user")
-            .navigationBarTitleDisplayMode(.inline)
+        }
+        .frame(maxHeight: .infinity, alignment: .top)
+        .background(Color(UIColor.systemGroupedBackground))
+        .navigationTitle("Invite user")
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var EditSheet: some View {
         EmptyView()
     }
+}
+
+#Preview {
+    ListSharingSheet(
+        showSheet: .constant(true),
+        showUserInvitationSuccessAlert: .constant(false),
+        loadingPublic: .constant(false),
+        loadingUsers: .constant(false),
+        loadingUserInvite: .constant(false),
+        loadingUserEditOrDelete: .constant(nil),
+        listId: "",
+        isPublic: false,
+        usersWithAccess: .constant([])) { _ in
+            
+        } onUserInvite: { _, _ in
+            
+        } onUserEditEditorPermission: { _, _ in
+            
+        } onUserRevokeAccess: { _ in
+            
+        }
 }

@@ -47,4 +47,12 @@ public struct User: Encodable, Decodable, Equatable, Sendable {
         try container.encode(creation_timestamp, forKey: .creation_timestamp)
         try container.encode(creation_source, forKey: .creation_source)
     }
+    
+    public static func == (lhs: User, rhs: User) -> Bool {
+        return lhs.id == rhs.id &&
+               lhs.email == rhs.email &&
+               lhs.has_pro == rhs.has_pro &&
+               lhs.creation_timestamp == rhs.creation_timestamp &&
+               lhs.creation_source == rhs.creation_source
+    }
 }

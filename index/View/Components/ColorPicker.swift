@@ -122,7 +122,8 @@ struct ColorSlider: View {
             value: $lightness,
             colorList: [
                 Color(hue: hue, saturation: 0.1, brightness: 1),
-                Color(hue: hue, saturation: 1.0, brightness: 0.7)
+                Color(hue: hue, saturation: 1.0, brightness: 0.7),
+                Color(hue: hue, saturation: 1.0, brightness: 0)
             ]
         )
     }

@@ -8,6 +8,9 @@
 import Foundation
 import Combine
 import SwiftUI
+import os
+
+fileprivate let log = Logger(subsystem: IxSubsystems.CORE_KIT, category: "IxWebsocketClient")
 
 public actor IxWebsocketClient {
     private static let wsURL = URL(string: "wss://api.index-it.app/ws")!
@@ -54,7 +57,7 @@ public actor IxWebsocketClient {
         websocketTask?.resume()
         handleMessages()
         
-        print("Listening to websocket messages")
+        log.info("Listening to websocket messages")
     }
     
     public func disconnect() {
@@ -64,17 +67,22 @@ public actor IxWebsocketClient {
         websocketTask?.cancel(with: .normalClosure, reason: "Logged out".data(using: .utf8))
         websocketTask = nil
         
-        print("Disconnected from websocket")
+        log.info("Disconnected from websocket")
     }
     
     private func handleMessages() {
         guard let websocketTask = websocketTask else {
             // TODO: Report issue
+            log.error("websocketTask is nil")
             return
         }
         
         websocketTask.receive { [weak self] result in
-            guard let self = self else { return }
+            guard let self = self else {
+                log.error("IxWebsocketClient instance is nil")
+                return
+            }
+            
             
             // Use Task to bridge to the actor's isolated context
             Task {
@@ -94,22 +102,22 @@ public actor IxWebsocketClient {
                     do {
                         try await self.ixWebsocketEventHandler.handleWebsocketEvent(data: websocketEvent)
                     } catch {
-                        print("Failed handling websocket event: \(error)")
+                        log.error("Failed handling websocket event: \(error)")
                     }
                 } catch {
-                    print("Failed deserializing websocket message: \(error)")
+                    log.error("Failed deserializing websocket message: \(error)")
                 }
             case .data(_):
-                print("Received binary data from websocket - not supported")
+                log.warning("Received binary data from websocket - not supported")
             @unknown default:
-                print("Received unknown type of message from websocket")
+                log.warning("Received unknown type of message from websocket")
             }
             
             // Continue receiving messages - now within actor context
             self.handleMessages()
             
         case .failure(let error):
-            print("WebSocket receive error: \(error)")
+            log.error("WebSocket receive error: \(error)")
             
             if self.shouldReconnect {
                 self.scheduleReconnect()

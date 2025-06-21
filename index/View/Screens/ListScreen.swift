@@ -363,92 +363,136 @@ struct ListScreen: View {
                         }
                     }
                 })
-        //            .sheet(isPresented: $showItemNotePopover) { [selectedItem] in
-        //                NavigationView {
-        //                    ScrollView(showsIndicators: false) {
-        //                        Text(selectedItem?.note ?? "This item has no notes in it")
-        //                            .navigationTitle("Notes")
-        //                            .navigationBarTitleDisplayMode(.inline)
-        //                            .toolbar {
-        //                                ToolbarItem(placement: .topBarTrailing) {
-        //                                    Button("Done") {
-        //                                        showItemNotePopover = false
-        //                                    }
-        //                                }
-        //                            }
-        //                    }.padding()
-        //                }.presentationDetents([.medium, .large])
-        //                    .presentationDragIndicator(.hidden)
-        //            }
-        //            .sheet(
-        //                isPresented: $showTaskCreationSheet,
-        //                content: { [selectedItem] in
-        //                    TaskFormSheet(
-        //                        showSheet: $showTaskCreationSheet,
-        //                        name: selectedItem?.name ?? "",
-        //                        description: selectedItem?.note,
-        //                        priority: nil,
-        //                        dueDate: nil,
-        //                        rrule: nil,
-        //                        reminders: [],
-        //                        itemId: selectedItem?.id,
-        //                        subtasks: [],
-        //                        namePlaceholder: "Task name"
-        //                    ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
-        //                        Task {
-        //                            await createTask(name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
-        //                        }
-        //                    }
-        //                }
-        //            )
+            .sheet(isPresented: $showItemNotePopover) { [selectedItem] in
+                NavigationView {
+                    ScrollView(showsIndicators: false) {
+                        Text(selectedItem?.note ?? "This item has no notes in it")
+                    }
+                    .padding()
+                    .navigationTitle("\(selectedItem?.name ?? "" ) notes")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Copy", systemImage: "document.on.document") {
+                                UIPasteboard.general.string = selectedItem?.note ?? ""
+                            }.labelStyle(.iconOnly)
+                        }
+                        
+                        ToolbarItem(placement: .topBarTrailing) {
+                            ShareLink(item: selectedItem?.note ?? "") {
+                                Label("Share", systemImage: "square.and.arrow.up")
+                            }
+                        }
+                    }
+                }
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.hidden)
+            }
+            .sheet(
+                isPresented: $showTaskCreationSheet,
+                content: { [selectedItem] in
+                    TaskEditor(
+                        isPresented: $showTaskCreationSheet,
+                        addingNew: true,
+                        name: selectedItem?.name ?? "",
+                        description: selectedItem?.note,
+                        priority: nil,
+                        dueDate: nil,
+                        rrule: nil,
+                        reminders: [],
+                        itemId: selectedItem?.id,
+                        subtasks: []
+                    ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
+                        Task {
+                            await createTask(name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
+                        }
+                    }
+                }
+            )
             .navigationTitle(list.name)
             .paywallCover(isPresented: $showPaywall)
             .toolbar {
                 // MARK: - Toolbar
                 ToolbarItem(placement: .topBarTrailing) {
-                    //                    Menu {
-                    //                        Section {
-                    //                            Toggle("Show completed", isOn: Binding(
-                    //                                get: {
-                    //                                    showCompletedItems
-                    //                                }, set: { newValue in
-                    //                                    showCompletedItems = newValue
-                    //                                }
-                    //                            ))
-                    //
-                    //                            Picker(selection: $itemSorting) {
-                    //                                ForEach(ItemsSorting.allCases) { sort in
-                    //                                    Text(sort.label)
-                    //                                        .tag(sort)
-                    //                                }
-                    //                            } label: {
-                    //                                Label("Items sorting", systemImage: "arrow.up.arrow.down")
-                    //                            }.pickerStyle(.menu)
-                    //
-                    //                            Toggle("Items reverse sorting", isOn: $item)
-                    //                        }
-                    //
-                    //                        Section {
-                    //                            Toggle("Hide default category", isOn: $hideDefaultCategory)
-                    //
-                    //                            Picker(selection: $categorySorting) {
-                    //                                ForEach(CategorySorting.allCases) { sort in
-                    //                                    Text(sort.rawValue)
-                    //                                        .tag(sort)
-                    //                                }
-                    //                            } label: {
-                    //                                Label("Categories sorting", systemImage: "arrow.up.arrow.down")
-                    //                            }.pickerStyle(.menu)
-                    //
-                    //                            Toggle("Categories reverse sorting", isOn: $categoryReverseSorting)
-                    //                        }
-                    //
-                    //                    } label: {
-                    //                        Label("Options", systemImage: "ellipsis.circle")
-                    //                            .labelStyle(.iconOnly)
-                    //                    }
-                    //                }
+                    Menu {
+                        Section {
+                            Toggle("Show completed", isOn: Binding(
+                                get: {
+                                    showCompletedItems
+                                }, set: { newValue in
+                                    showCompletedItems = newValue
+                                }
+                            ))
+                            
+                            Menu {
+                                Picker(selection: $itemSorting) {
+                                    ForEach(ItemsSorting.allCases) { sorting in
+                                        Text(sorting.label)
+                                            .tag(sorting)
+                                    }
+                                } label: {
+                                    Text("Sorting")
+                                }
+                                
+//                                if itemSorting != .manual {
+                                    Picker(selection: $itemsSortOrder) {
+                                        Text(SortOrder.forward.labelForItemsSorting(itemSorting))
+                                            .tag(SortOrder.forward)
+                                        
+                                        Text(SortOrder.reverse.labelForItemsSorting(itemSorting))
+                                            .tag(SortOrder.reverse)
+                                    } label: {
+                                        Text("Sort Order")
+                                    }
+//                                }
+                            } label: {
+                                Button {} label: {
+                                    Text("Sort items by")
+                                    Text(categoriesSorting.label)
+                                    Image(systemName: "arrow.up.arrow.down")
+                                }
+                            }
+                        }
+                        
+                        Section {
+                            Toggle("Hide uncategorized", isOn: $hideUncategorized)
+                            
+                            Menu {
+                                Picker(selection: $categoriesSorting) {
+                                    ForEach(CategoriesSorting.allCases) { sorting in
+                                        Text(sorting.label)
+                                            .tag(sorting)
+                                    }
+                                } label: {
+                                    Text("Sorting")
+                                }
+                                
+//                                if categoriesSorting != .manual {
+                                    Picker(selection: $categoriesSortOrder) {
+                                        Text(SortOrder.forward.labelForCategoriesSorting(categoriesSorting))
+                                            .tag(SortOrder.forward)
+                                        
+                                        Text(SortOrder.reverse.labelForCategoriesSorting(categoriesSorting))
+                                            .tag(SortOrder.reverse)
+                                    } label: {
+                                        Text("Sort Order")
+                                    }
+//                                }
+                            } label: {
+                                Button {} label: {
+                                    Text("Sort categories by")
+                                    Text(categoriesSorting.label)
+                                    Image(systemName: "arrow.up.arrow.down")
+                                }
+                            }
+                        }
+                        
+                    } label: {
+                        Label("Options", systemImage: "ellipsis.circle")
+                            .labelStyle(.iconOnly)
+                    }
                 }
+                
                 ToolbarItem(placement: .bottomBar) {
                     HStack {
                         Button {

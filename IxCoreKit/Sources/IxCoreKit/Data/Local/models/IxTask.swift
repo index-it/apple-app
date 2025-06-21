@@ -54,7 +54,7 @@ public class IxTask {
             rrule: networkTask.rrule,
             completed: networkTask.completed,
             priority: networkTask.priority,
-            reminders: networkTask.reminders.map { IxTaskReminder(daysBefore: $0.days_before, timeOffset: $0.time_offset) },
+            reminders: networkTask.reminders.map { IxTaskReminder(daysBefore: $0.daysBefore, timeOffset: $0.timeOffset) },
             createdAt: networkTask.createdAt,
             editedAt: networkTask.editedAt,
             completedAt: networkTask.completedAt

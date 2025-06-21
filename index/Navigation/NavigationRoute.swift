@@ -8,8 +8,8 @@
 import Foundation
 
 enum NavigationRoute: Hashable {
+    case archivedLists;
     case listRoute(listId: String);
-    case completedTasks;
     case accountSettings;
     case proSettings;
     case about;

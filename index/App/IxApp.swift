@@ -103,6 +103,7 @@ struct IxApp: App {
             
             
             Task.detached {
+                log.info("Disconnecting websocket")
                 async let disconnectResult: () = ixWebsocketClient.disconnect()
                 async let clearRegisterResult: () = SyncRegister.shared.clear()
                 async let revenueCatResult: () = RevenueCatHelper.logout()
@@ -118,7 +119,7 @@ struct IxApp: App {
             
             Task.detached {
                 await SyncRegister.shared.clear()
-//                await ixWebsocketClient.connectAndHandleMessages()
+                await ixWebsocketClient.connectAndHandleMessages()
             }
             
             Task.detached {
@@ -164,7 +165,7 @@ struct IxApp: App {
                 .onChange(of: authenticationHelper.localAuthStatus, initial: true) { _, newLocalAuthStatus in
                     onLocalAuthStatusChange(newLocalAuthStatus)
                 }
-                .onChange(of: user, initial: true) { _, newLocalUser in
+                .onChange(of: user, initial: true) { oldLocalUser, newLocalUser in
                     if let newLocalUser = newLocalUser {
                         authenticationHelper.setLocalAuthStatus(.authenticated(user: newLocalUser))
                     } else {

@@ -167,7 +167,7 @@ struct TodayTasksWidgetView : View {
     
     @ViewBuilder
     var createTaskButtonView: some View {
-        Button(intent: CreateTaskIntent()) {
+        Button(intent: QuickAddTaskIntent()) {
             Label("Create", systemImage: "plus")
                 .labelStyle(.iconOnly)
         }
@@ -242,9 +242,12 @@ struct TodayTasksProvider: TimelineProvider {
             }
             
             // Create the timeline entry with fetched tasks
-            let entry = TodayTasksEntry(date: Date(), tasks: tasks.filter({
-                $0.dueDate == nil || calendar.compare($0.dueDate!, to: now, toGranularity: .day).rawValue <= 0
-            }))
+            let entry = TodayTasksEntry(
+                date: Date(),
+                tasks: tasks.filter({
+                    $0.dueDate == nil || calendar.compare($0.dueDate!, to: now, toGranularity: .day).rawValue <= 0
+                })
+            )
             
             // Update every hour or when the widget refreshes
             let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!

@@ -18,6 +18,8 @@ struct AddListItemFormSheet: View {
     @State private var note: String = ""
     @State private var selectedListId: String
     @State private var selectedCategoryId: String?
+    
+    @FocusState private var isNameFieldFocused: Bool
 
     private var onCancel: () -> Void
     private var syncThreeshold: Int64
@@ -107,6 +109,7 @@ struct AddListItemFormSheet: View {
             Form {
                 Section {
                     TextField("Name", text: $name, axis: .vertical)
+                        .focused($isNameFieldFocused)
 
                     TextField("Link", text: $link, axis: .vertical)
                         .keyboardType(.URL)
@@ -164,17 +167,21 @@ struct AddListItemFormSheet: View {
             }
         }
         .onAppear {
+            if name.isEmpty {
+                isNameFieldFocused = true
+            }
+            
             Task {
                 if await SyncRegister.shared.hasExpired(SyncResource.lists, threshold: syncThreeshold) {
                     await fetchLists()
                 }
             }
         }
-        .onChange(of: lists, { _, newValue in
+        .onChange(of: lists, initial: true) { _, newValue in
             if selectedListId.isEmpty, let listId = newValue.first?.id {
                 selectedListId = listId
             }
-        })
+        }
         .onChange(of: selectedListId) { _, newValue in
             selectedCategoryId = nil
 

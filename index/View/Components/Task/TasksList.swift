@@ -85,8 +85,8 @@ struct TasksList: View {
             sortDescriptor = SortDescriptor(\IxTask.name, order: sortOrder)
         case .priority:
             sortDescriptor = SortDescriptor(\IxTask.priority, order: sortOrder)
-        case .manual:
-            sortDescriptor = SortDescriptor(\IxTask.priority, order: sortOrder)
+//        case .manual:
+//            sortDescriptor = SortDescriptor(\IxTask.priority, order: sortOrder)
         case .creation:
             sortDescriptor = SortDescriptor(\IxTask.createdAt, order: sortOrder)
         }

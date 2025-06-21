@@ -8,11 +8,17 @@
 import SwiftUI
 import IxCoreKit
 
+fileprivate enum FocusField: Hashable {
+    case name
+    case link
+    case note
+}
+
 struct ItemEditor: View {
     @Binding var isPresented: Bool
-    
+    @FocusState private var focusField: FocusField?
+
     private var addingNew: Bool
-    @FocusState private var isNameFocused: Bool
     @State private var name: String
     @State private var categoryId: String?
     @State private var link: String
@@ -50,12 +56,23 @@ struct ItemEditor: View {
         self.onSave = onSave
     }
     
+    private func onSubmit() {
+        if (!isNameInvalid) {
+            onSave(name, categoryId, link.isEmpty ? nil : link, note.isEmpty ? nil : note)
+            isPresented = false
+        }
+    }
+    
     var body: some View {
         NavigationView {
             VStack {
                 Form {
-                    TextField("Name", text: $name, axis: .vertical)
-                        .focused($isNameFocused)
+                    TextField("Name", text: $name)
+                        .focused($focusField, equals: .name)
+                        .submitLabel(.next)
+                        .onSubmit {
+                            focusField = .link
+                        }
                     
                     Section {
                         Picker("Category", selection: $categoryId) {
@@ -71,9 +88,19 @@ struct ItemEditor: View {
                             .keyboardType(.URL)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
+                            .focused($focusField, equals: .link)
+                            .submitLabel(.next)
+                            .onSubmit {
+                                focusField = .note
+                            }
                             
                         TextField("Notes", text: $note,  axis: .vertical)
                             .lineLimit(3...)
+                            .focused($focusField, equals: .note)
+                            .submitLabel(.done)
+                            .onSubmit {
+                                onSubmit()
+                            }
                     } header: {
                         Text("Properties")
                     } footer: {
@@ -93,15 +120,14 @@ struct ItemEditor: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        onSave(name, categoryId, link.isEmpty ? nil : link, note.isEmpty ? nil : note)
-                        isPresented = false
+                        onSubmit()
                     }
                     .disabled(isNameInvalid)
                 }
             }
             .onAppear {
                 if addingNew {
-                    isNameFocused = true
+                    focusField = .name
                 }
             }
         }

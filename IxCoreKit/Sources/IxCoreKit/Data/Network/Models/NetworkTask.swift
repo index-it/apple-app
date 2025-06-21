@@ -30,6 +30,6 @@ public struct NetworkSubTask: Codable, Sendable {
 }
 
 public struct NetworkTaskReminder: Codable, Sendable {
-    public let days_before: Int64
-    public let time_offset: Int64
+    public let daysBefore: Int64
+    public let timeOffset: Int64
 }

@@ -14,51 +14,54 @@ struct ListsGrid: View {
     
     private var userId: String
     private var filter: ListsFilter
+    private var archived: Bool
     private var onFilterClear: () -> ()
     private var onAdd: () -> ()
     private var onListCardTap: (_ list: IxList) -> ()
     private var onShare: (_ list: IxList) -> ()
-    private var onArchive: (_ list: IxList) -> ()
     private var onEdit: (_ list: IxList) -> ()
+    private var onArchiveToggle: (_ list: IxList) -> ()
     private var onDelete: (_ list: IxList) -> ()
     private var onLeave: (_ list: IxList) -> ()
     
     init(
         userId: String,
         filter: ListsFilter,
+        archived: Bool,
         sorting: ListsSorting,
         sortOrder: SortOrder,
         onFilterClear: @escaping () -> (),
         onAdd: @escaping () -> Void,
         onListCardTap: @escaping (_: IxList) -> Void,
         onShare: @escaping (_: IxList) -> Void,
-        onArchive: @escaping (_: IxList) -> Void,
         onEdit: @escaping (_: IxList) -> Void,
+        onArchiveToggle: @escaping (_: IxList) -> Void,
         onDelete: @escaping (_: IxList) -> Void,
         onLeave: @escaping (_: IxList) -> Void
     ) {
         self.userId = userId
         self.filter = filter
+        self.archived = archived
         self.onFilterClear = onFilterClear
         self.onAdd = onAdd
         self.onListCardTap = onListCardTap
         self.onShare = onShare
-        self.onArchive = onArchive
+        self.onArchiveToggle = onArchiveToggle
         self.onEdit = onEdit
         self.onDelete = onDelete
         self.onLeave = onLeave
         
-        var filterPredicate = #Predicate<IxList> { _ in
-            true
+        var filterPredicate = #Predicate<IxList> { list in
+            list.archived == archived
         }
         
         if filter == .ownedByMe {
             filterPredicate = #Predicate<IxList> { list in
-                list.userId == userId
+                list.userId == userId && list.archived == archived
             }
         } else if filter == .sharedWithMe {
             filterPredicate = #Predicate<IxList> { list in
-                list.userId != userId
+                list.userId != userId && list.archived == archived
             }
         }
         
@@ -67,8 +70,8 @@ struct ListsGrid: View {
             SortDescriptor(\IxList.name, order: sortOrder)
         case .creationDate:
             SortDescriptor(\IxList.createdAt, order: sortOrder)
-        case .manual:
-            SortDescriptor(\IxList.createdAt, order: sortOrder)
+//        case .manual:
+//            SortDescriptor(\IxList.createdAt, order: sortOrder)
         }
         
         _lists = Query(filter: filterPredicate, sort: [sortDescriptor])
@@ -80,9 +83,9 @@ struct ListsGrid: View {
             .overlay {
                 if lists.isEmpty {
                     ContentUnavailableView {
-                        Label(filter == .sharedWithMe ? "No shared lists" : "No lists", systemImage: "binoculars")
+                        Label(filter == .sharedWithMe ? "No shared lists" : (archived ? "Archive is empty" : "No lists"), systemImage: archived ? "archivebox" : "binoculars")
                     } description: {
-                        Text(filter == .sharedWithMe ? "You are not part of any shared list yet!" : "You don't have any list yet!")
+                        Text(filter == .sharedWithMe ? "You are not part of any shared list yet!" : (archived ? "You didn't archive any list" : "You don't have any list yet!"))
                     } actions: {
                         if filter == .sharedWithMe {
                             Button {
@@ -90,7 +93,7 @@ struct ListsGrid: View {
                             } label: {
                                 Label("Clear filters", systemImage: "xmark")
                             }.buttonStyle(.borderedProminent)
-                        } else {
+                        } else if !archived {
                             Button {
                                 onAdd()
                             } label: {
@@ -117,6 +120,9 @@ struct ListsGrid: View {
                         },
                         onEdit: {
                             onEdit(list)
+                        },
+                        onArchiveToggle: {
+                            onArchiveToggle(list)
                         },
                         onDelete: {
                            onDelete(list)

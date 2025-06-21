@@ -38,14 +38,13 @@ struct CategoryPicker: View {
             category.listId == listId
         }
         
-        // TODO: Manual
         let sortDescriptor = switch sorting {
         case .name:
             SortDescriptor(\IxListCategory.name, order: sortOrder)
         case .creationDate:
             SortDescriptor(\IxListCategory.createdAt, order: sortOrder)
-        case .manual:
-            SortDescriptor(\IxListCategory.editedAt, order: sortOrder)
+//        case .manual:
+//            SortDescriptor(\IxListCategory.editedAt, order: sortOrder)
         }
         
         _categories = Query(filter: filterPredicate, sort: [sortDescriptor])
@@ -80,7 +79,6 @@ struct CategoryPicker: View {
                     selectedCategory = category
                 } label: {
                     HStack {
-                        // TODO: Category color circle
                         if selectedCategory?.id == category.id {
                             Image(systemName: "checkmark")
                         }
@@ -105,7 +103,7 @@ struct CategoryPicker: View {
             }
         } label: {
             HStack {
-                Text(selectedCategory?.name.prefix(20) ?? "Default")
+                Text(selectedCategory?.name.prefix(20) ?? "Uncategorized")
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.footnote)
             }

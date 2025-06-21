@@ -77,14 +77,13 @@ struct ItemsList: View {
             }
         }
         
-        // TODO: Manual
         let sortDescriptor = switch sorting {
         case .name:
             SortDescriptor(\IxListItem.name, order: sortOrder)
         case .creationDate:
             SortDescriptor(\IxListItem.createdAt, order: sortOrder)
-        case .manual:
-            SortDescriptor(\IxListItem.editedAt, order: sortOrder)
+//        case .manual:
+//            SortDescriptor(\IxListItem.editedAt, order: sortOrder)
         }
        
         _items = Query(filter: filterPredicate, sort: [SortDescriptor(\IxListItem.completed), sortDescriptor])
@@ -123,7 +122,7 @@ struct ItemsList: View {
                     ContentUnavailableView {
                         Label("No items", systemImage: "binoculars")
                     } description: {
-                        Text(category == nil ? "There are no uncategorized items" : "There are no items in this category") // TODO
+                        Text(category == nil ? "There are no uncategorized items" : "There are no items in this category")
                     } actions: {
                         Button {
                             onCreateItem()

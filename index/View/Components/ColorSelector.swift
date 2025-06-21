@@ -12,7 +12,8 @@ struct ColorSelector: View {
     var colors: [Color]
     
     @State var hue: Double = 0.3
-    @State var lightness: Double = 0.7
+    @State var brightness: Double = 0.7
+    @State var saturation: Double = 0.6
     @State private var showColorPicker = false
     
     private var gradientColorList = stride(from: 0, through: 1, by: 0.2).map {
@@ -33,7 +34,7 @@ struct ColorSelector: View {
                 LazyHStack(spacing: 20) {
                     Button {
                         withAnimation {
-                            self.color = Color(hue: hue, saturation: 1, brightness: lightness)
+                            self.color = Color(hue: hue, saturation: 1, brightness: brightness)
                             showColorPicker = true
                         }
                     } label: {
@@ -97,10 +98,18 @@ struct ColorSelector: View {
                     )
                     
                     ColorSlider(
-                        value: $lightness,
+                        value: $brightness,
                         colorList: [
-                            Color(hue: hue, saturation: 0.1, brightness: 1),
-                            Color(hue: hue, saturation: 1.0, brightness: 0.7),
+                            Color(hue: hue, saturation: saturation, brightness: 0.1),
+                            Color(hue: hue, saturation: saturation, brightness: 0.9),
+                        ]
+                    )
+                    
+                    ColorSlider(
+                        value: $saturation,
+                        colorList: [
+                            Color(hue: hue, saturation: 0.1, brightness: brightness),
+                            Color(hue: hue, saturation: 0.9, brightness: brightness),
                         ]
                     )
                 }.padding([.top, .bottom], 24)
@@ -108,12 +117,17 @@ struct ColorSelector: View {
         }
         .onChange(of: hue) { _, newValue in
             withAnimation {
-                self.color = Color(hue: newValue, saturation: 1, brightness: lightness)
+                self.color = Color(hue: newValue, saturation: saturation, brightness: brightness)
             }
         }
-        .onChange(of: lightness) { _, newValue in
+        .onChange(of: brightness) { _, newValue in
             withAnimation {
-                self.color = Color(hue: hue, saturation: 1, brightness: newValue)
+                self.color = Color(hue: hue, saturation: saturation, brightness: newValue)
+            }
+        }
+        .onChange(of: saturation) { _, newValue in
+            withAnimation {
+                self.color = Color(hue: hue, saturation: newValue, brightness: brightness)
             }
         }
     }
@@ -129,5 +143,5 @@ struct ColorSelector: View {
         
         ColorSelector(color: $color, colors: [.red, .green, .yellow, .blue, .pink, .purple, .black])
         
-    }
+    }.padding()
 }

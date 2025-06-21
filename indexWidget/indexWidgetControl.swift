@@ -8,49 +8,45 @@
 import AppIntents
 import SwiftUI
 import WidgetKit
+import IxCoreKit
 
-//struct CreateTaskWidgetControl: ControlWidget {
-//    // TODO: Move to IxKinds
-//    static let kind: String = "app.index-it.index.createTaskWidget"
-//
-//    var body: some ControlWidgetConfiguration {
-//        StaticControlConfiguration(
-//            kind: Self.kind
-//        ) {
-//            ControlWidgetButton(
-//                action: CreateTaskIntent(),
-//                label: {
-//                    VStack {
-//                        Image(systemName: "calendar.badge.plus")
-//                        Text("Create Task")
-//                    }
-//                }
-//            )
-//        }
-//        .displayName("Create Task")
-//        .description("Quickly create a new task.")
-//    }
-//}
-//
-//struct CreateListItemWidgetControl: ControlWidget {
-//    static let kind: String = "app.index-it.index.createListItemWidget"
-//
-//    var body: some ControlWidgetConfiguration {
-//        StaticControlConfiguration(
-//            kind: Self.kind
-//        ) {
-//            ControlWidgetButton(
-//                action: CreateListItemIntent(),
-//                label: {
-//                    VStack {
-//                        Image(systemName: "note.text.badge.plus")
-//                        Text("Index It")
-//                    }
-//                }
-//            )
-//        }
-//        .displayName("Index It")
-//        .description("Quickly add a new item to a list.")
-//    }
-//}
-//
+struct QuickAddTaskControlWidget: ControlWidget {
+    var body: some ControlWidgetConfiguration {
+        StaticControlConfiguration(
+            kind: IxKinds.quickAddTaskControlCenterWidget
+        ) {
+            ControlWidgetButton(
+                action: QuickAddTaskIntent(),
+                label: {
+                    VStack {
+                        Image(systemName: "calendar.badge.plus")
+                        Text("Create Task")
+                    }
+                }
+            )
+        }
+        .displayName("Create Task")
+        .description("Quickly create a new task.")
+    }
+}
+
+struct QuickAddItemControlWidget: ControlWidget {
+    var body: some ControlWidgetConfiguration {
+        StaticControlConfiguration(
+            kind: IxKinds.quickAddItemControlCenterWidget
+        ) {
+            ControlWidgetButton(
+                action: QuickAddItemIntent(),
+                label: {
+                    VStack {
+                        Image(systemName: "note.text.badge.plus")
+                        Text("Index It")
+                    }
+                }
+            )
+        }
+        .displayName("Index It")
+        .description("Quickly add a new item to a list.")
+    }
+}
+

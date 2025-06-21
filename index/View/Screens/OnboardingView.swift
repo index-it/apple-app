@@ -148,6 +148,7 @@ struct OnboardingView: View {
                     onTap: {},
                     onShare: {},
                     onEdit: {},
+                    onArchiveToggle: {},
                     onDelete: {},
                     onLeave: {},
                     withInteractions: false

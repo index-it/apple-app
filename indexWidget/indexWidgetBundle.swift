@@ -12,7 +12,7 @@ import SwiftUI
 struct indexWidgetBundle: WidgetBundle {
     var body: some Widget {
         TodayTasksWidget()
-//        CreateListItemWidgetControl()
-//        CreateTaskWidgetControl()
+        QuickAddItemControlWidget()
+        QuickAddTaskControlWidget()
     }
 }

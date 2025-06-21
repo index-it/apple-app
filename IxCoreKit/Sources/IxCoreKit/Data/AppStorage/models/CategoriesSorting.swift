@@ -10,7 +10,7 @@ import Foundation
 public enum CategoriesSorting: String, CaseIterable, Identifiable, Sendable {
     case name
     case creationDate
-    case manual
+//    case manual
     
     public var id: Self { self }
     
@@ -20,8 +20,8 @@ public enum CategoriesSorting: String, CaseIterable, Identifiable, Sendable {
             return NSLocalizedString("Name", comment: "Sort categories by name")
         case .creationDate:
             return NSLocalizedString("Creation date", comment: "Sort categories by creation date")
-        case .manual:
-            return NSLocalizedString("Manual", comment: "Sort categories manually")
+//        case .manual:
+//            return NSLocalizedString("Manual", comment: "Sort categories manually")
         }
     }
 }

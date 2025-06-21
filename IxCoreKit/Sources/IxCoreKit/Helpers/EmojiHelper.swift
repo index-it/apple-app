@@ -29,8 +29,22 @@ public struct EmojiHelper {
         0x1fa90...0x1fa95,
     ].reduce([], +)
     
+    public static let emojiRangesForPickerInitialEmoji: [UInt32] = [
+        0x1f6cb...0x1f6d2,
+        0x1f6e0...0x1f6e5,
+        0x1f93c...0x1f945,
+        0x1fa78...0x1fa7a,
+        0x1fa90...0x1fa95,
+    ].reduce([], +)
+    
     public static func randomEmoji() -> String {
         let ascii = emojiRanges[Int(drand48() * (Double(emojiRanges.count)))]
+        let emoji = UnicodeScalar(ascii)?.description ?? "🎨"
+        return emoji
+    }
+    
+    public static func randomEmojiForPickerInitial() -> String {
+        let ascii = emojiRangesForPickerInitialEmoji[Int(drand48() * (Double(emojiRangesForPickerInitialEmoji.count)))]
         let emoji = UnicodeScalar(ascii)?.description ?? "🎨"
         return emoji
     }
