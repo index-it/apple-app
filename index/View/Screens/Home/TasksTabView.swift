@@ -338,8 +338,7 @@ struct TasksTabView: View {
                     .textCase(nil)
                     .onTapGesture {
                         taskCreationDueDate = todayDate
-                        // TODO
-                        //                        navigationManager.showCreateTaskSheet = true
+                        isAddingTask = true
                     }
             }
             
@@ -378,7 +377,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    //                    navigationManager.showCreateTaskSheet = true
+                    isAddingTask = true
                 }
             }
             
@@ -416,7 +415,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    //                    navigationManager.showCreateTaskSheet = true
+                    isAddingTask = true
                 }
             }
             
@@ -454,7 +453,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    //                    navigationManager.showCreateTaskSheet = true
+                    isAddingTask = true
                 }
             }
             
@@ -492,7 +491,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    //                    navigationManager.showCreateTaskSheet = true
+                    isAddingTask = true
                 }
             }
             
@@ -530,7 +529,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    //                    navigationManager.showCreateTaskSheet = true
+                    isAddingTask = true
                 }
             }
             
@@ -568,7 +567,7 @@ struct TasksTabView: View {
                         .textCase(nil)
                 }.onTapGesture {
                     taskCreationDueDate = date
-                    //                    navigationManager.showCreateTaskSheet = true
+                    isAddingTask = true
                 }
             }
             
@@ -599,7 +598,7 @@ struct TasksTabView: View {
                     .textCase(nil)
                     .onTapGesture {
                         taskCreationDueDate = todayDate.addingTimeInterval(DateHelper.sevenDaySeconds)
-                        //                        navigationManager.showCreateTaskSheet = true
+                        isAddingTask = true
                     }
             }
         }

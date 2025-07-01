@@ -108,7 +108,7 @@ public final class IxApiClient: Sendable {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let body = try JSONEncoder().encode(EmailAndPasswordReqBody(email: email, password: password))
+        let body = try Self.encoder().encode(EmailAndPasswordReqBody(email: email, password: password))
         req.httpBody = body
         
         let (_, urlRes) = try await urlSession.data(for: req)
@@ -240,7 +240,7 @@ public final class IxApiClient: Sendable {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let body = try JSONEncoder().encode(EmailAndPasswordReqBody(email: email, password: password))
+        let body = try Self.encoder().encode(EmailAndPasswordReqBody(email: email, password: password))
         req.httpBody = body
         
         let (data, urlRes) = try await urlSession.data(for: req)
@@ -487,7 +487,7 @@ public final class IxApiClient: Sendable {
     ///
     /// ### Throws
     /// - `IxApiClientError.Unknown`
-    @Sendable public func getLists() async throws -> [IxList] {
+    public func getLists() async throws -> [IxList] {
         let url = Self.baseUrl.appendingPathComponent("/lists")
         
         let (data, urlRes) = try await urlSession.data(from: url)
@@ -525,7 +525,7 @@ public final class IxApiClient: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let body = ListCreateOrEditReqBody(name: name, icon: icon, color: color, archived: archived, isPublic: is_public)
-        request.httpBody = try JSONEncoder().encode(body)
+        request.httpBody = try Self.encoder().encode(body)
         
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
@@ -592,7 +592,7 @@ public final class IxApiClient: Sendable {
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(requestBody)
+        request.httpBody = try Self.encoder().encode(requestBody)
         
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
@@ -726,7 +726,7 @@ public final class IxApiClient: Sendable {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(requestBody)
+        request.httpBody = try Self.encoder().encode(requestBody)
         
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
@@ -763,7 +763,7 @@ public final class IxApiClient: Sendable {
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(requestBody)
+        request.httpBody = try Self.encoder().encode(requestBody)
         
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
@@ -852,7 +852,7 @@ public final class IxApiClient: Sendable {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(requestBody)
+        request.httpBody = try Self.encoder().encode(requestBody)
         
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
@@ -888,7 +888,7 @@ public final class IxApiClient: Sendable {
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(requestBody)
+        request.httpBody = try Self.encoder().encode(requestBody)
         
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
@@ -1017,7 +1017,7 @@ public final class IxApiClient: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let body = ListItemCreateOrEditReqBody(name: name, categoryId: categoryId, link: link, note: note)
-        request.httpBody = try JSONEncoder().encode(body)
+        request.httpBody = try Self.encoder().encode(body)
         
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
@@ -1050,7 +1050,7 @@ public final class IxApiClient: Sendable {
         
         // Setting the body for the request
         let body = ListItemCreateOrEditReqBody(name: name, categoryId: categoryId, link: link, note: note)
-        request.httpBody = try JSONEncoder().encode(body)
+        request.httpBody = try Self.encoder().encode(body)
         
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
