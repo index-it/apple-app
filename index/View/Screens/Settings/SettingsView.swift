@@ -9,7 +9,7 @@ import SwiftUI
 import RevenueCat
 import IxCoreKit
 
-struct SettingsTabView: View {
+struct SettingsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
@@ -159,9 +159,9 @@ struct SettingsTabView: View {
                     }
                 }
             }
-            .navigationBarTitleDisplayMode(.large)
-            .navigationTitle("Settings")
         }
+        .navigationBarTitleDisplayMode(.automatic)
+        .navigationTitle("Settings")
     }
     
     var getProView: some View {
@@ -269,5 +269,5 @@ struct SettingsTabView: View {
 }
 
 #Preview {
-    SettingsTabView()
+    SettingsView()
 }

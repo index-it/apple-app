@@ -23,10 +23,6 @@ struct HomeScreen: View {
                     ListsGridScreen(archived: false)
                 }
             }
-            
-            Tab("Settings", systemImage: "gearshape.fill", value: HomeTab.settings) {
-                SettingsTabView()
-            }
         }
         .fullScreenCover(
             isPresented: Binding(

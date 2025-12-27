@@ -235,6 +235,14 @@ struct ListsGridScreen: View {
             .navigationTitle(archived ? "Archived lists" : "Your lists")
             .navigationBarTitleDisplayMode(archived ? .inline : .large)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        navigationManager.push(.settings)
+                    } label: {
+                        Label("Settings", systemImage: "gearshape")
+                    }
+                }
+                
                 if (!archived) {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {

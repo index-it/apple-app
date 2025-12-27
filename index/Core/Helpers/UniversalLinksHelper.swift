@@ -34,7 +34,7 @@ struct UniversalLinksHelper {
         case IxUniversalLinks.Sections.tasks:
             navigationManager.navigateToTab(.tasks)
         case IxUniversalLinks.Sections.settings:
-            navigationManager.navigateToTab(.settings)
+            navigationManager.push(.settings)
         case IxUniversalLinks.Sections.quickAdd:
             guard let entity = pathComponents[safe: 1] else { return }
             switch entity {

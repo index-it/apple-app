@@ -155,6 +155,14 @@ struct TasksTabView: View {
                 }
                 .paywallCover(isPresented: $showPaywall)
                 .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            navigationManager.push(.settings)
+                        } label: {
+                            Label("Settings", systemImage: "gearshape")
+                        }
+                    }
+                    
                     ToolbarItem(placement: .topBarTrailing) {
                         NavigationLink {
                             CompletedTasksList { task in

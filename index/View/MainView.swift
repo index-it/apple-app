@@ -31,6 +31,8 @@ struct MainView: View {
                     ListsGridScreen(archived: true)
                 case let .listRoute(listId: listId):
                     ListScreen(listId: listId)
+                case .settings:
+                    SettingsView()
                 case .accountSettings:
                     AccountSettingsView()
                 case .proSettings:
