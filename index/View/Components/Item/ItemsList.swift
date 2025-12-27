@@ -29,8 +29,8 @@ struct ItemsList: View {
     @Query private var items: [IxListItem]
     
     private var color: Color {
-        guard let category = category else { return listColor }
-        return category.color.toColor()
+        guard let categoryColor = category?.color else { return listColor }
+        return categoryColor.toColor()
     }
     
     init(
@@ -105,6 +105,7 @@ struct ItemsList: View {
                     onDelete(item)
                 } label: {
                     Label("Delete", systemImage: "trash.fill")
+                        .labelStyle(.iconOnly)
                 }
             }.swipeActions(edge: .leading, allowsFullSwipe: true) {
                 Button {
@@ -121,6 +122,7 @@ struct ItemsList: View {
                     
                     ContentUnavailableView {
                         Label("No items", systemImage: "binoculars")
+                            .labelStyle(.iconOnly)
                     } description: {
                         Text(category == nil ? "There are no uncategorized items" : "There are no items in this category")
                     } actions: {

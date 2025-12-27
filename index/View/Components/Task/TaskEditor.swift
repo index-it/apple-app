@@ -496,6 +496,8 @@ struct TaskEditor: View {
                                     endRepeatAfterOccurrences = end.occurrenceCount
                                 }
                             }
+                        @unknown default:
+                            fatalError("EKRecurrenceRule frequency is of an unknown type")
                         }
                     }
                 }

@@ -845,7 +845,7 @@ public final class IxApiClient: Sendable {
         }
     }
     
-    @Sendable public func createCategory(listId: String, name: String, color: String) async throws -> IxListCategory {
+    @Sendable public func createCategory(listId: String, name: String, color: String?) async throws -> IxListCategory {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories")
         let requestBody = ListCategoryCreateOrEditReqBody(name: name, color: color)
         
@@ -881,7 +881,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.NotFound` List or category not found
     /// - `IxApiClientError.Unknown` Unknown error
     ///
-    @Sendable public func updateListCategory(listId: String, categoryId: String, name: String, color: String) async throws -> IxListCategory {
+    @Sendable public func updateListCategory(listId: String, categoryId: String, name: String, color: String?) async throws -> IxListCategory {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories/\(categoryId)")
         let requestBody = ListCategoryCreateOrEditReqBody(name: name, color: color)
         
@@ -1312,117 +1312,4 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
-    // MARK: - Suggestions
-    
-    /// Retrieves a list of default colors usable in lists.
-    ///
-    /// - Returns: A list of color strings.
-    /// ### Throws:
-    /// - `IxApiClientError.Unknown`
-//    public func getColorsSuggestion() async throws -> [String] {
-//        let url = Self.baseUrl.appendingPathComponent("/suggestions/colors")
-//        
-//        let (data, response) = try await urlSession.data(from: url)
-//        let httpResponse = response as! HTTPURLResponse
-//        
-//        switch httpResponse.statusCode {
-//        case 200:
-//            let colorsSuggestion = try Self.decoder().decode(NetworkColorsSuggestion.self, from: data)
-//            return colorsSuggestion.colors
-//        case 401:
-//            await setAuthenticationStatus(authenticationStatus: .unauthenticated)
-//            throw IxApiClientError.Unauthenticated
-//        default:
-//            throw IxApiClientError.Unknown
-//        }
-//    }
-
-    /// Retrieves a template for creating a new list.
-    ///
-    /// - Returns: A `NetworkListTemplateSuggestion` object.
-    /// ### Throws:
-    /// - `IxApiClientError.Unknown`
-//    public func getListTemplateSuggestion() async throws -> NetworkListTemplateSuggestion {
-//        let url = Self.baseUrl.appendingPathComponent("/suggestions/templates/list")
-//        
-//        let (data, response) = try await urlSession.data(from: url)
-//        let httpResponse = response as! HTTPURLResponse
-//        
-//        switch httpResponse.statusCode {
-//        case 200:
-//            return try Self.decoder().decode(NetworkListTemplateSuggestion.self, from: data)
-//        case 401:
-//            await setAuthenticationStatus(authenticationStatus: .unauthenticated)
-//            throw IxApiClientError.Unauthenticated
-//        default:
-//            throw IxApiClientError.Unknown
-//        }
-//    }
-
-    /// Retrieves a template for creating a new category.
-    ///
-    /// - Returns: A `NetworkCategoryTemplateSuggestion` object.
-    /// ### Throws:
-    /// - `IxApiClientError.Unknown` unknown errors.
-//    public func getCategoryTemplateSuggestion() async throws -> NetworkCategoryTemplateSuggestion {
-//        let url = Self.baseUrl.appendingPathComponent("/suggestions/templates/category")
-//        
-//        let (data, response) = try await urlSession.data(from: url)
-//        let httpResponse = response as! HTTPURLResponse
-//        
-//        switch httpResponse.statusCode {
-//        case 200:
-//            return try Self.decoder().decode(NetworkCategoryTemplateSuggestion.self, from: data)
-//        case 401:
-//            await setAuthenticationStatus(authenticationStatus: .unauthenticated)
-//            throw IxApiClientError.Unauthenticated
-//        default:
-//            throw IxApiClientError.Unknown
-//        }
-//    }
-
-    /// Retrieves a template for creating a new item.
-    ///
-    /// - Returns: A `NetworkItemTemplateSuggestion` object.
-    /// ### Throws:
-    /// - `IxApiClientError.Unknown` for authentication or unknown errors.
-//    public func getItemTemplateSuggestion() async throws -> NetworkItemTemplateSuggestion {
-//        let url = Self.baseUrl.appendingPathComponent("/suggestions/templates/item")
-//        
-//        let (data, response) = try await urlSession.data(from: url)
-//        let httpResponse = response as! HTTPURLResponse
-//        
-//        switch httpResponse.statusCode {
-//        case 200:
-//            return try Self.decoder().decode(NetworkItemTemplateSuggestion.self, from: data)
-//        case 401:
-//            await setAuthenticationStatus(authenticationStatus: .unauthenticated)
-//            throw IxApiClientError.Unauthenticated
-//        default:
-//            throw IxApiClientError.Unknown
-//        }
-//    }
-
-    /// Retrieves a template for creating a new task.
-    ///
-    /// - Returns: A `NetworkTaskTemplateSuggestion` object.
-    /// ### Throws:
-    /// - `IxApiClientError.Unknown`
-//    public func getTaskTemplateSuggestion() async throws -> NetworkTaskTemplateSuggestion {
-//        let url = Self.baseUrl.appendingPathComponent("/suggestions/templates/task")
-//        
-//        let (data, response) = try await urlSession.data(from: url)
-//        let httpResponse = response as! HTTPURLResponse
-//        
-//        switch httpResponse.statusCode {
-//        case 200:
-//            return try Self.decoder().decode(NetworkTaskTemplateSuggestion.self, from: data)
-//        case 401:
-//            await setAuthenticationStatus(authenticationStatus: .unauthenticated)
-//            throw IxApiClientError.Unauthenticated
-//        default:
-//            throw IxApiClientError.Unknown
-//        }
-//    }
 }

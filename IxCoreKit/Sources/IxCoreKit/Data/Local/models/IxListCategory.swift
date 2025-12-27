@@ -13,11 +13,11 @@ public class IxListCategory {
     public var userId: String
     public var listId: String
     public var name: String
-    public var color: String
+    public var color: String?
     public var createdAt: Int64
     public var editedAt: Int64?
     
-    public init(id: String, user_id: String, list_id: String, name: String, color: String, created_at: Int64, edited_at: Int64? = nil) {
+    public init(id: String, user_id: String, list_id: String, name: String, color: String?, created_at: Int64, edited_at: Int64? = nil) {
         self.id = id
         self.userId = user_id
         self.listId = list_id
@@ -41,7 +41,7 @@ public class IxListCategory {
     
     public static func mock(
         name: String,
-        color: String,
+        color: String?,
         listId: String = UUID().uuidString,
         userId: String = UUID().uuidString,
     ) -> IxListCategory {

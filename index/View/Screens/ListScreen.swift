@@ -68,11 +68,11 @@ struct ListScreen: View {
     @AppStorage private var categoriesSortOrder: SortOrder
     
     private var contentColor: Color {
-        guard let selectedCategory = selectedCategory else {
+        guard let selectedCategoryColor = selectedCategory?.color else {
             return list.color.toColor()
         }
         
-        return selectedCategory.color.toColor()
+        return selectedCategoryColor.toColor()
     }
     
     init(listId: String) {
@@ -226,9 +226,9 @@ struct ListScreen: View {
     }
     
     // MARK: - Category CRUD
-    func createCategory(listId: String, name: String, color: Color) async {
+    func createCategory(listId: String, name: String, color: Color?) async {
         do {
-            let category = try await ixApiClient.createCategory(listId: listId, name: name, color: color.hexString)
+            let category = try await ixApiClient.createCategory(listId: listId, name: name, color: color?.hexString)
             
             try await saveCategory(category)
             
@@ -240,9 +240,9 @@ struct ListScreen: View {
         }
     }
     
-    func editCategory(listId: String, categoryId: String, name: String, color: Color) async {
+    func editCategory(listId: String, categoryId: String, name: String, color: Color?) async {
         do {
-            let category = try await ixApiClient.updateListCategory(listId: listId, categoryId: categoryId, name: name, color: color.hexString)
+            let category = try await ixApiClient.updateListCategory(listId: listId, categoryId: categoryId, name: name, color: color?.hexString)
             
             try await saveCategory(category)
         } catch {
@@ -354,7 +354,7 @@ struct ListScreen: View {
                         isPresented: $isEditingCategory,
                         addingNew: false,
                         name: selectedCategory?.name ?? "",
-                        color: selectedCategory?.color.toColorOrNil()
+                        color: selectedCategory?.color?.toColorOrNil()
                     ) { name, color in
                         Task {
                             if let category = selectedCategory {
@@ -413,117 +413,7 @@ struct ListScreen: View {
             .paywallCover(isPresented: $showPaywall)
             .toolbar {
                 // MARK: - Toolbar
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Section {
-                            Toggle("Show completed", isOn: Binding(
-                                get: {
-                                    showCompletedItems
-                                }, set: { newValue in
-                                    showCompletedItems = newValue
-                                }
-                            ))
-                            
-                            Menu {
-                                Picker(selection: $itemSorting) {
-                                    ForEach(ItemsSorting.allCases) { sorting in
-                                        Text(sorting.label)
-                                            .tag(sorting)
-                                    }
-                                } label: {
-                                    Text("Sorting")
-                                }
-                                
-//                                if itemSorting != .manual {
-                                    Picker(selection: $itemsSortOrder) {
-                                        Text(SortOrder.forward.labelForItemsSorting(itemSorting))
-                                            .tag(SortOrder.forward)
-                                        
-                                        Text(SortOrder.reverse.labelForItemsSorting(itemSorting))
-                                            .tag(SortOrder.reverse)
-                                    } label: {
-                                        Text("Sort Order")
-                                    }
-//                                }
-                            } label: {
-                                Button {} label: {
-                                    Text("Sort items by")
-                                    Text(categoriesSorting.label)
-                                    Image(systemName: "arrow.up.arrow.down")
-                                }
-                            }
-                        }
-                        
-                        Section {
-                            Toggle("Hide uncategorized", isOn: $hideUncategorized)
-                            
-                            Menu {
-                                Picker(selection: $categoriesSorting) {
-                                    ForEach(CategoriesSorting.allCases) { sorting in
-                                        Text(sorting.label)
-                                            .tag(sorting)
-                                    }
-                                } label: {
-                                    Text("Sorting")
-                                }
-                                
-//                                if categoriesSorting != .manual {
-                                    Picker(selection: $categoriesSortOrder) {
-                                        Text(SortOrder.forward.labelForCategoriesSorting(categoriesSorting))
-                                            .tag(SortOrder.forward)
-                                        
-                                        Text(SortOrder.reverse.labelForCategoriesSorting(categoriesSorting))
-                                            .tag(SortOrder.reverse)
-                                    } label: {
-                                        Text("Sort Order")
-                                    }
-//                                }
-                            } label: {
-                                Button {} label: {
-                                    Text("Sort categories by")
-                                    Text(categoriesSorting.label)
-                                    Image(systemName: "arrow.up.arrow.down")
-                                }
-                            }
-                        }
-                        
-                    } label: {
-                        Label("Options", systemImage: "ellipsis.circle")
-                            .labelStyle(.iconOnly)
-                    }
-                }
-                
-                ToolbarItem(placement: .bottomBar) {
-                    HStack {
-                        Button {
-                            isAddingItem = true
-                        } label: {
-                            Label("Create item", systemImage: "plus.circle.fill")
-                                .labelStyle(.titleAndIcon)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(contentColor)
-                        }
-                        
-                        Spacer()
-                        
-                        CategoryPicker(
-                            listId: listId,
-                            selectedCategory: $selectedCategory,
-                            sorting: categoriesSorting,
-                            sortOrder: categoriesSortOrder,
-                            hideUncategorized: hideUncategorized
-                        ) {
-                            isAddingCategory = true
-                        } onEdit: { category in
-                            selectedCategory = category
-                            isEditingCategory = true
-                        } onDelete: { category in
-                            Task {
-                                await deleteCategory(listId: listId, categoryId: category.id)
-                            }
-                        }
-                    }.padding(.top)
-                }
+                toolbarContent
             }
             .onAppear {
                 Task {
@@ -589,5 +479,123 @@ struct ListScreen: View {
                     await deleteItem(listId: listId, itemId: item.id)
                 }
             }
+    }
+    
+    @ToolbarContentBuilder
+    var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Menu {
+                Section {
+                    Toggle("Show completed", isOn: Binding(
+                        get: {
+                            showCompletedItems
+                        }, set: { newValue in
+                            showCompletedItems = newValue
+                        }
+                    ))
+                    
+                    Menu {
+                        Picker(selection: $itemSorting) {
+                            ForEach(ItemsSorting.allCases) { sorting in
+                                Text(sorting.label)
+                                    .tag(sorting)
+                            }
+                        } label: {
+                            Text("Sorting")
+                        }
+                        
+//                                if itemSorting != .manual {
+                            Picker(selection: $itemsSortOrder) {
+                                Text(SortOrder.forward.labelForItemsSorting(itemSorting))
+                                    .tag(SortOrder.forward)
+                                
+                                Text(SortOrder.reverse.labelForItemsSorting(itemSorting))
+                                    .tag(SortOrder.reverse)
+                            } label: {
+                                Text("Sort Order")
+                            }
+//                                }
+                    } label: {
+                        Button {} label: {
+                            Text("Sort items by")
+                            Text(categoriesSorting.label)
+                            Image(systemName: "arrow.up.arrow.down")
+                        }
+                    }
+                }
+                
+                Section {
+                    Toggle("Hide uncategorized", isOn: $hideUncategorized)
+                    
+                    Menu {
+                        Picker(selection: $categoriesSorting) {
+                            ForEach(CategoriesSorting.allCases) { sorting in
+                                Text(sorting.label)
+                                    .tag(sorting)
+                            }
+                        } label: {
+                            Text("Sorting")
+                        }
+                        
+//                                if categoriesSorting != .manual {
+                            Picker(selection: $categoriesSortOrder) {
+                                Text(SortOrder.forward.labelForCategoriesSorting(categoriesSorting))
+                                    .tag(SortOrder.forward)
+                                
+                                Text(SortOrder.reverse.labelForCategoriesSorting(categoriesSorting))
+                                    .tag(SortOrder.reverse)
+                            } label: {
+                                Text("Sort Order")
+                            }
+//                                }
+                    } label: {
+                        Button {} label: {
+                            Text("Sort categories by")
+                            Text(categoriesSorting.label)
+                            Image(systemName: "arrow.up.arrow.down")
+                        }
+                    }
+                }
+                
+            } label: {
+                Label("Options", systemImage: "ellipsis.circle")
+                    .labelStyle(.iconOnly)
+            }
+        }
+        
+        ToolbarItemGroup(placement: .bottomBar) {
+            CategoryPicker(
+                listId: listId,
+                selectedCategory: $selectedCategory,
+                sorting: categoriesSorting,
+                sortOrder: categoriesSortOrder,
+                hideUncategorized: hideUncategorized
+            ) {
+                isAddingCategory = true
+            } onEdit: { category in
+                selectedCategory = category
+                isEditingCategory = true
+            } onDelete: { category in
+                Task {
+                    await deleteCategory(listId: listId, categoryId: category.id)
+                }
+            }
+        }
+        
+        if #available(iOS 26, *) {
+            ToolbarSpacer(.fixed, placement: .bottomBar)
+        }
+        
+        ToolbarItem(placement: .bottomBar) {
+            Button {
+                isAddingItem = true
+            } label: {
+                Label("Create item", systemImage: "plus.circle.fill")
+                    .fontWeight(.semibold)
+                    .foregroundStyle(contentColor)
+            }
+        }
+        
+
     }
 }

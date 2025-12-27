@@ -7,5 +7,5 @@
 
 struct ListCategoryCreateOrEditReqBody: Codable {
     let name: String
-    let color: String
+    let color: String?
 }

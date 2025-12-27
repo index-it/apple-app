@@ -14,24 +14,26 @@ struct CategoryEditor: View {
     private var addingNew: Bool
     @FocusState private var isNameFocused: Bool
     @State private var name: String
+    @State private var noColor: Bool
     @State private var color: Color
     
     private var isNameInvalid: Bool {
         name.isEmpty || name.count >= 100
     }
 
-    private var onSave: (_ name: String, _ color: Color) -> Void
+    private var onSave: (_ name: String, _ color: Color?) -> Void
     
     init(
         isPresented: Binding<Bool>,
         addingNew: Bool = true,
         name: String = "",
-        color: Color? = ColorHelper.randomIxColor(),
-        onSave: @escaping (_ name: String, _ color: Color) -> Void
+        color: Color? = nil,
+        onSave: @escaping (_ name: String, _ color: Color?) -> Void
     ) {
         self._isPresented = isPresented
         self.addingNew = addingNew
         self.name = name
+        self.noColor = color == nil
         self.color = color ?? ColorHelper.randomIxColor()
         self.onSave = onSave
     }
@@ -44,13 +46,20 @@ struct CategoryEditor: View {
                         .focused($isNameFocused)
                     
                     Section {
-                        ColorSelector(color: $color, colors: ColorHelper.ixColors)
+                        Toggle("Use list color", isOn: $noColor)
+                        if !noColor {
+                            ColorSelector(color: $color, colors: ColorHelper.ixColors)
+                        }
                     } header: {
                         Text("Color")
                     } footer: {
-                        Text("Scroll horizontally for more colors")
+                        Text(noColor ?
+                             "The color of the category will be the same as the one of the list" :
+                             "Scroll horizontally for more colors"
+                        )
                     }
                 }
+                .animation(.default, value: noColor)
             }
             .background(Color.systemGroupedBackground)
             .navigationTitle(addingNew ? "Add Category" : "Edit Category")
@@ -64,7 +73,7 @@ struct CategoryEditor: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        onSave(name, color)
+                        onSave(name, noColor ? nil : color)
                         isPresented = false
                     }
                     .disabled(isNameInvalid)

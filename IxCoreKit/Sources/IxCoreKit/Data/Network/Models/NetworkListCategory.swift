@@ -12,7 +12,7 @@ public struct NetworkListCategory: Codable, Sendable {
     public let userId: String
     public let listId: String
     public let name: String
-    public let color: String
+    public let color: String?
     public let createdAt: Int64
     public let editedAt: Int64?
 }

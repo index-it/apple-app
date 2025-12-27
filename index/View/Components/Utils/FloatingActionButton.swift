@@ -18,12 +18,13 @@ struct FloatingActionButton: ViewModifier {
             Button(action: action) {
                 Image(systemName: "plus")
                     .font(.title.weight(.semibold))
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundColor(.white)
+                    .padding(.vertical, 6)
+//                    .background(Color.accentColor)
+//                    .foregroundColor(.white)
                     .clipShape(Circle())
-                    .shadow(radius: 4, x: 0, y: 4)
+//                    .shadow(radius: 4, x: 0, y: 4)
             }
+            .buttonStyle(.glassProminent)
             .padding()
         }
     }

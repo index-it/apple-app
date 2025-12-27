@@ -103,15 +103,15 @@ struct CategoryPicker: View {
             }
         } label: {
             HStack {
-                Text(selectedCategory?.name.prefix(20) ?? "Uncategorized")
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.footnote)
+                Text(selectedCategory?.name.prefix(20) ?? "Uncategorized")
             }
             .foregroundStyle(Color.primary)
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(UIColor.secondarySystemFill.toColor())
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+//            .background(UIColor.secondarySystemFill.toColor())
+//            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .onChange(of: categories, initial: true) { _, newCategories in
             if hideUncategorized && selectedCategory == nil {

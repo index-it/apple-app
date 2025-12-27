@@ -38,9 +38,9 @@ struct SocialLoginScreen: View {
                     do {
                         try await ixApiClient.loginWithGoogle(idToken: token.tokenString)
                     } catch IxApiClientError.emailNotVerified {
-                        errorService.insert(.customMessage(title: "Google email not verified", message: "Your Google email is not verified, please verify the email of your Google account before using it to login."))
+                        await errorService.insert(.customMessage(title: "Google email not verified", message: "Your Google email is not verified, please verify the email of your Google account before using it to login."))
                     } catch {
-                        errorService.insert(.customMessage(title: "Error", message: "Couldn't login via Google, please use another method or try again later"))
+                        await errorService.insert(.customMessage(title: "Error", message: "Couldn't login via Google, please use another method or try again later"))
                     }
                 }
             }
