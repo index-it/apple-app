@@ -79,19 +79,26 @@ struct TasksList: View {
 //            }
         }
         
-        let sortDescriptor: SortDescriptor<IxTask>
+        var sortDescriptors: [SortDescriptor<IxTask>] = []
         switch taskSorting {
         case .name:
-            sortDescriptor = SortDescriptor(\IxTask.name, order: sortOrder)
+            sortDescriptors.append(SortDescriptor(\IxTask.name, order: sortOrder))
         case .priority:
-            sortDescriptor = SortDescriptor(\IxTask.priority, order: sortOrder)
+            sortDescriptors.append(SortDescriptor(\IxTask.priority, order: sortOrder))
+            sortDescriptors.append(SortDescriptor(\IxTask.name, order: .forward))
 //        case .manual:
 //            sortDescriptor = SortDescriptor(\IxTask.priority, order: sortOrder)
         case .creation:
-            sortDescriptor = SortDescriptor(\IxTask.createdAt, order: sortOrder)
+            sortDescriptors.append(SortDescriptor(\IxTask.createdAt, order: sortOrder))
         }
+        
+        // add dueDate to sort 'Later' tasks
+        sortDescriptors.append(SortDescriptor(\IxTask.dueDate, order: .forward))
        
-        _tasks = Query(filter: filterPredicate, sort: [sortDescriptor])
+        _tasks = Query(
+            filter: filterPredicate,
+            sort: sortDescriptors
+        )
     }
     
     private var calendar: Calendar {
@@ -125,6 +132,7 @@ struct TasksList: View {
                     onDelete(task)
                 } label: {
                     Label("Delete", systemImage: "trash.fill")
+                        .labelStyle(.iconOnly)
                         .tint(.red)
                 }
             }.swipeActions(edge: .leading, allowsFullSwipe: true) {
