@@ -49,6 +49,7 @@ public enum AppStorageKeys {
     public enum Tasks {
         public static let sorting = "tasks_sorting"
         public static let sortOrder = "tasks_sorting_order"
+        public static let unplannedTasksSectionEspanded = "unplanned_tasks_section_expanded"
     }
     
     /// Default values for AppStorage keys
@@ -67,5 +68,6 @@ public enum AppStorageKeys {
         
         public static let tasksSorting = TasksSorting.priority
         public static let tasksSortOrder = SortOrder.reverse
+        public static let unplannedTasksSectionEspanded = true
     }
 }

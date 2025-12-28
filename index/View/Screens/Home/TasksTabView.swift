@@ -32,9 +32,15 @@ struct TasksTabView: View {
     @State private var isEditingTask = false
     @State private var showDeleteConfirmationDialog = false
     
+    // MARK: Unplanned tasks
+    @Query(filter: #Predicate<IxTask> { !$0.completed && $0.dueDate == nil })
+    private var unplannedTasks: [IxTask]
+    @AppStorage(AppStorageKeys.Tasks.unplannedTasksSectionEspanded) private var isUnplannedTasksSectionExpanded = AppStorageKeys.Defaults.unplannedTasksSectionEspanded
+    
     // MARK: Sorting and filtering
     @AppStorage(AppStorageKeys.Tasks.sorting) private var sorting = AppStorageKeys.Defaults.tasksSorting
     @AppStorage(AppStorageKeys.Tasks.sortOrder) private var sortOrder = AppStorageKeys.Defaults.tasksSortOrder
+    
     
     private func saveTask(_ task: IxTask) async throws {
         try context.transaction {
@@ -318,10 +324,50 @@ struct TasksTabView: View {
     
     var TaskListView: some View {
         List {
+            if !unplannedTasks.isEmpty {
+                Section(isExpanded: $isUnplannedTasksSectionExpanded) {
+                    TasksList(
+                        dateFilter: nil,
+                        noDateFilter: true,
+                        earlierThanDateFilter: false,
+                        laterThanDateFilter: false,
+                        taskFilter: .uncompleted,
+                        taskSorting: sorting,
+                        sortOrder: sortOrder
+                    ) { task in
+                        selectedTask = task
+                        isEditingTask = true
+                    } onCompletionToggle: { task in
+                        Task {
+                            await setTaskCompletion(id: task.id, completed: !task.completed)
+                        }
+                    } onDelete: { task in
+                        selectedTask = task
+                        showDeleteConfirmationDialog = true
+                    }
+                } header: {
+                    VStack(alignment: .leading) {
+                        Text("Anyday")
+                            .fontWeight(.semibold)
+                            .font(.title2)
+                            .foregroundStyle(UIColor.label.toColor())
+                            .textCase(nil)
+                        
+                        Text("\(unplannedTasks.count) unplanned tasks")
+                            .font(.caption)
+                            .multilineTextAlignment(.leading)
+                            .textCase(nil)
+                    }.onTapGesture {
+                        taskCreationDueDate = nil
+                        isAddingTask = true
+                    }
+                }
+            }
+            
             Section {
                 TasksList(
                     dateFilter: todayDate,
-                    noDateFilter: true,
+                    noDateFilter: false,
                     earlierThanDateFilter: true,
                     laterThanDateFilter: false,
                     taskFilter: .uncompleted,
