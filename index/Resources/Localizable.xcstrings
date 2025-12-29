@@ -1,0 +1,812 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "[Privacy Policy](https://index-it.app/privacy)" : {
+
+    },
+    "[Terms of Service](https://www.apple.com/legal/internet-services/itunes/dev/stdeula/)" : {
+
+    },
+    "%@" : {
+
+    },
+    "%@  %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@  %2$@"
+          }
+        }
+      }
+    },
+    "%@ at %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ at %2$@"
+          }
+        }
+      }
+    },
+    "%@ notes" : {
+
+    },
+    "%@ per %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ per %2$@"
+          }
+        }
+      }
+    },
+    "%lld" : {
+
+    },
+    "%lld occurrence%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld occurrence%2$@"
+          }
+        }
+      }
+    },
+    "%lld unplanned tasks" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unplanned task"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "%lld unplanned tasks"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A verification email has been sent to **%@**.\nPlease follow the instructions in the email to verify your account, consider checking your spam folder if you don't see the email!" : {
+
+    },
+    "ABOUT" : {
+
+    },
+    "About & Feedback" : {
+
+    },
+    "About the developer" : {
+
+    },
+    "Account" : {
+
+    },
+    "Active reminders" : {
+
+    },
+    "Add Category" : {
+
+    },
+    "Add Item" : {
+
+    },
+    "Add List" : {
+
+    },
+    "Add reminder" : {
+
+    },
+    "Add subtask" : {
+
+    },
+    "Add Task" : {
+
+    },
+    "After" : {
+
+    },
+    "After..." : {
+
+    },
+    "All properties are optional" : {
+
+    },
+    "An email with instructions on how to reset the password has been sent to %@" : {
+
+    },
+    "An invitation email has been sent to %@. He will need to accept the invitation to %@ this list." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "An invitation email has been sent to %1$@. He will need to accept the invitation to %2$@ this list."
+          }
+        }
+      }
+    },
+    "Anyday" : {
+
+    },
+    "Archive" : {
+
+    },
+    "Archive is empty" : {
+
+    },
+    "Archived lists" : {
+
+    },
+    "Are you sure you want to delete the list %@? This action is irreversible!" : {
+
+    },
+    "Are you sure you want to delete the%@ task %@?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Are you sure you want to delete the%1$@ task %2$@?"
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete your account?\n**This action is permanent**, all your data will be wiped out immediately and you won't be able to restore it!" : {
+
+    },
+    "At time" : {
+
+    },
+    "be intentional." : {
+
+    },
+    "be intentional.\nget pro." : {
+
+    },
+    "By continuing you agree to our %@ and %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "By continuing you agree to our %1$@ and %2$@"
+          }
+        }
+      }
+    },
+    "By making the list public anyone with a link to it will be able to see it but not modify it." : {
+
+    },
+    "By making this list public it will be accessible by anyone, but only you will be able to edit it" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Category" : {
+
+    },
+    "Change password" : {
+
+    },
+    "Change Password" : {
+
+    },
+    "Ciao!" : {
+
+    },
+    "Clear filters" : {
+
+    },
+    "Close" : {
+
+    },
+    "Color" : {
+
+    },
+    "Complete" : {
+
+    },
+    "Completed tasks" : {
+
+    },
+    "Confirm deletion" : {
+
+    },
+    "Continue" : {
+
+    },
+    "Continue with Apple" : {
+
+    },
+    "Continue with email" : {
+
+    },
+    "Continue with Google" : {
+
+    },
+    "Copy" : {
+
+    },
+    "Copy email address" : {
+
+    },
+    "Count" : {
+
+    },
+    "Create" : {
+
+    },
+    "Create a list" : {
+
+    },
+    "Create category" : {
+
+    },
+    "Create item" : {
+
+    },
+    "Create task" : {
+
+    },
+    "Create Task" : {
+
+    },
+    "Create your password" : {
+
+    },
+    "Currently logged in as" : {
+
+    },
+    "Date" : {
+
+    },
+    "Date & Reminders" : {
+
+    },
+    "Days before" : {
+
+    },
+    "Days of Week" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete account" : {
+
+    },
+    "Delete all" : {
+
+    },
+    "Delete category" : {
+
+    },
+    "Delete single" : {
+
+    },
+    "Description" : {
+
+    },
+    "Done" : {
+
+    },
+    "Each" : {
+
+    },
+    "Edit" : {
+
+    },
+    "Edit category" : {
+
+    },
+    "Edit Category" : {
+
+    },
+    "Edit Item" : {
+
+    },
+    "Edit List" : {
+
+    },
+    "Edit Task" : {
+
+    },
+    "Editor" : {
+
+    },
+    "Editors" : {
+
+    },
+    "Editors are allowed to do anything inside the list but cannot delete it, click to show actions" : {
+
+    },
+    "Editors are allowed to modify the content of the list, choose editors with care!" : {
+
+    },
+    "Email" : {
+
+    },
+    "Enable repeat" : {
+
+    },
+    "Enabled" : {
+
+    },
+    "End repeat" : {
+
+    },
+    "End Repeat Date" : {
+
+    },
+    "Enter new password" : {
+
+    },
+    "Every" : {
+
+    },
+    "Features you will unlock:" : {
+
+    },
+    "Filter" : {
+
+    },
+    "frequency" : {
+
+    },
+    "Frequency" : {
+
+    },
+    "frequency target" : {
+
+    },
+    "Get Pro" : {
+
+    },
+    "giuliopime.dev" : {
+
+    },
+    "Hello, World!" : {
+
+    },
+    "Hey! I'm a computer science student from Italy with a passion for sports. You can find more about me at my website ^^" : {
+
+    },
+    "Hide uncategorized" : {
+
+    },
+    "High" : {
+
+    },
+    "How can I share feedback?" : {
+
+    },
+    "How can I support Index development?" : {
+
+    },
+    "I created this app to be more organized and intentional in my everyday life." : {
+
+    },
+    "I verified it!" : {
+
+    },
+    "I will definitely read all the feedback and try to improve the app!" : {
+
+    },
+    "I'd love to hear your feedback. I can't promise that I'll implement every change, but I'll listen and do what I can." : {
+
+    },
+    "Index It" : {
+
+    },
+    "Index Pro" : {
+
+    },
+    "Insert name" : {
+
+    },
+    "Insert your email" : {
+
+    },
+    "Insert your password" : {
+
+    },
+    "Instructions sent!" : {
+
+    },
+    "Invitation sent" : {
+
+    },
+    "Invite" : {
+
+    },
+    "Invite user" : {
+
+    },
+    "Keep" : {
+
+    },
+    "Later" : {
+
+    },
+    "Leave" : {
+
+    },
+    "Leave list" : {
+
+    },
+    "Link" : {
+
+    },
+    "List" : {
+
+    },
+    "List name" : {
+
+    },
+    "Login" : {
+
+    },
+    "Login with password" : {
+
+    },
+    "Logout" : {
+
+    },
+    "Low" : {
+
+    },
+    "Make editor" : {
+
+    },
+    "Manage subscription" : {
+
+    },
+    "Manage user access" : {
+
+    },
+    "Medium" : {
+
+    },
+    "Monthly" : {
+
+    },
+    "Name" : {
+
+    },
+    "Never" : {
+
+    },
+    "No category" : {
+
+    },
+    "No completed tasks" : {
+
+    },
+    "No items" : {
+
+    },
+    "No lists" : {
+
+    },
+    "No shared lists" : {
+
+    },
+    "No Tasks" : {
+
+    },
+    "No users with edit permissions" : {
+
+    },
+    "No users with view permissions" : {
+
+    },
+    "None" : {
+
+    },
+    "Notes" : {
+
+    },
+    "Ok" : {
+
+    },
+    "On date" : {
+
+    },
+    "On the..." : {
+
+    },
+    "Open emails" : {
+
+    },
+    "Open link" : {
+
+    },
+    "Options" : {
+
+    },
+    "Password" : {
+
+    },
+    "Password forgotten" : {
+
+    },
+    "Password forgotten?" : {
+
+    },
+    "Permissions" : {
+
+    },
+    "Placeholder" : {
+
+    },
+    "Priority" : {
+
+    },
+    "Privacy" : {
+
+    },
+    "Pro" : {
+
+    },
+    "Pro enabled" : {
+
+    },
+    "Properties" : {
+
+    },
+    "Public" : {
+
+    },
+    "Public list" : {
+
+    },
+    "Quickly add a new item to a list." : {
+
+    },
+    "Quickly create a new task." : {
+
+    },
+    "Register" : {
+
+    },
+    "Reminders" : {
+
+    },
+    "Repeat" : {
+
+    },
+    "Repeat Forever" : {
+
+    },
+    "Repeat password" : {
+
+    },
+    "Repeat the password" : {
+
+    },
+    "Reschedule" : {
+
+    },
+    "Resend" : {
+
+    },
+    "Restore purchases" : {
+
+    },
+    "Review App" : {
+
+    },
+    "Revoke access completely" : {
+
+    },
+    "Revoke edit permissions" : {
+
+    },
+    "Save" : {
+
+    },
+    "Save to list" : {
+
+    },
+    "Scroll horizontally for more colors" : {
+
+    },
+    "See notes" : {
+
+    },
+    "Select %@" : {
+
+    },
+    "Select a date" : {
+
+    },
+    "Send" : {
+
+    },
+    "Send invite" : {
+
+    },
+    "Send me an email" : {
+
+    },
+    "Settings" : {
+
+    },
+    "Share" : {
+
+    },
+    "Share App" : {
+
+    },
+    "Sharing" : {
+
+    },
+    "Show completed" : {
+
+    },
+    "Show onboarding" : {
+
+    },
+    "Shows your tasks due today" : {
+
+    },
+    "Sort by" : {
+
+    },
+    "Sort categories by" : {
+
+    },
+    "Sort items by" : {
+
+    },
+    "Sort Order" : {
+
+    },
+    "Sorting" : {
+
+    },
+    "Stay" : {
+
+    },
+    "Subtasks" : {
+
+    },
+    "Support" : {
+
+    },
+    "SUPPORT AND FEEDBACK" : {
+
+    },
+    "Swipe left to delete a reminder" : {
+
+    },
+    "Terms of service" : {
+
+    },
+    "Thank you for supporting the app :)" : {
+
+    },
+    "The color of the category will be the same as the one of the list" : {
+
+    },
+    "The list %@ was shared with you! Do you want to leave the list and lose access to it?" : {
+
+    },
+    "The password must be between 8 and 100 characters, and contain a lowercase letter, an uppercase one, and a number." : {
+
+    },
+    "The passwords don't match" : {
+
+    },
+    "The user will receive an email with a link to accept this invitation" : {
+
+    },
+    "There are no items in this category" : {
+
+    },
+    "There are no uncategorized items" : {
+
+    },
+    "This indicates that the task is connected to an item of a list, when completing this task that item will also get completed" : {
+
+    },
+    "Today" : {
+
+    },
+    "Today's Tasks" : {
+
+    },
+    "Tomorrow" : {
+
+    },
+    "Type 'GOODBYE'" : {
+
+    },
+    "Unarchive" : {
+
+    },
+    "Uncategorized" : {
+
+    },
+    "Uncomplete" : {
+
+    },
+    "Unlock all features" : {
+
+    },
+    "Upgrade" : {
+
+    },
+    "Upgrading" : {
+
+    },
+    "Use list color" : {
+
+    },
+    "User email" : {
+
+    },
+    "Verify your email" : {
+
+    },
+    "Very low" : {
+
+    },
+    "Viewers" : {
+
+    },
+    "Viewers can only view the contents of the list without modifing anything, click to show actions" : {
+
+    },
+    "Visibility" : {
+
+    },
+    "We will send an email to %@ with instructions on how to reset the password!" : {
+
+    },
+    "What's your email?" : {
+
+    },
+    "Who are you?" : {
+
+    },
+    "Yearly" : {
+
+    },
+    "You are not part of any shared list yet!" : {
+
+    },
+    "You can buy the Pro version or share the app with the people in your life, and give feedback. A nice review on the App Store doesn't hurt, either :)" : {
+
+    },
+    "You didn't archive any list" : {
+
+    },
+    "You don't have any list yet!" : {
+
+    },
+    "You haven't completed any task yet!" : {
+
+    },
+    "Your lists" : {
+
+    },
+    "Your password must contain an uppercase, a lowercase letter and a number" : {
+
+    },
+    "Your tasks" : {
+
+    }
+  },
+  "version" : "1.1"
+}

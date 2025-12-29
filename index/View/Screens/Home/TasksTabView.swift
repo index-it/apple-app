@@ -29,6 +29,14 @@ struct TasksTabView: View {
     
     // MARK: Selected task
     @State private var selectedTask: IxTask? = nil
+    
+    @State private var isReschedulingTask = false
+    @State private var reschedulingRecurrenceState = RecurrenceState()
+    @FocusState private var rescheduleDummyFocusState: Bool
+    @State private var reschedulingDueDate: Date? = nil
+    @State private var reschedulingRrule: String? = nil
+    @State private var reschedulingReminders: [IxTaskReminder] = []
+    
     @State private var isEditingTask = false
     @State private var showDeleteConfirmationDialog = false
     
@@ -161,72 +169,7 @@ struct TasksTabView: View {
                 }
                 .paywallCover(isPresented: $showPaywall)
                 .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            navigationManager.push(.settings)
-                        } label: {
-                            Label("Settings", systemImage: "gearshape")
-                        }
-                    }
-                    
-                    ToolbarItem(placement: .topBarTrailing) {
-                        NavigationLink {
-                            CompletedTasksList { task in
-                                selectedTask = task
-                                isEditingTask = true
-                            } onCompletionToggle: { task in
-                                Task {
-                                    await setTaskCompletion(id: task.id, completed: !task.completed)
-                                }
-                            } onDelete: { task in
-                                selectedTask = task
-                                showDeleteConfirmationDialog = true
-                            }
-                            .navigationTitle("Completed tasks")
-                            .onAppear {
-                                Task {
-                                    let shouldSync = await SyncRegister.shared.hasExpired(SyncResource.completedTasks)
-                                    
-                                    if shouldSync {
-                                        await fetchTasks(completion: true)
-                                    }
-                                }
-                            }
-                        } label: {
-                            Label("Completed tasks", systemImage: "book.closed")
-                        }
-                    }
-                    
-                    ToolbarItem(placement: .secondaryAction) {
-                        Menu {
-                            Picker(selection: $sorting) {
-                                ForEach(TasksSorting.allCases) { sorting in
-                                    Text(sorting.label)
-                                        .tag(sorting)
-                                }
-                            } label: {
-                                Text("Sorting")
-                            }
-                            
-//                            if sorting != .manual {
-                                Picker(selection: $sortOrder) {
-                                    Text(SortOrder.forward.labelForTasksSorting(sorting))
-                                        .tag(SortOrder.forward)
-                                    
-                                    Text(SortOrder.reverse.labelForTasksSorting(sorting))
-                                        .tag(SortOrder.reverse)
-                                } label: {
-                                    Text("Sort Order")
-                                }
-//                            }
-                        } label: {
-                            Button {} label: {
-                                Text("Sort by")
-                                Text(sorting.label)
-                                Image(systemName: "arrow.up.arrow.down")
-                            }
-                        }
-                    }
+                    ToolbarContentView
                 }
                 .confirmationDialog(
                     Text("Confirm deletion"),
@@ -274,6 +217,58 @@ struct TasksTabView: View {
                         ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
                             Task {
                                 await createTask(name: name, description: description, dueDate: dueDate, rrule: rrule, reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId)
+                            }
+                        }
+                    }
+                )
+                .sheet(
+                    isPresented: $isReschedulingTask,
+                    content: {
+                        NavigationView {
+                            Form {
+                                TaskDateSection(
+                                    dueDate: $reschedulingDueDate,
+                                    reminders: $reschedulingReminders,
+                                    isTaskNameFocused: _rescheduleDummyFocusState,
+                                    recurrenceState: reschedulingRecurrenceState
+                                )
+                            }
+                            .navigationTitle("Date & Reminders")
+                            .navigationBarTitleDisplayMode(.inline)
+                            .toolbar {
+                                ToolbarItem(placement: .cancellationAction) {
+                                    Button {
+                                        isReschedulingTask = false
+                                    } label: {
+                                        Label("Cancel", systemImage: "xmark")
+                                    }
+                                }
+                                
+                                ToolbarItem(placement: .confirmationAction) {
+                                    Button {
+                                        Task {
+                                            if let selectedTask = selectedTask {
+                                                let rrule = reschedulingRecurrenceState.generateRRule()
+                                                
+                                                await editTask(
+                                                    id: selectedTask.id,
+                                                    name: selectedTask.name,
+                                                    description: selectedTask.taskDescription,
+                                                    dueDate: reschedulingDueDate,
+                                                    rrule: rrule,
+                                                    reminders: reschedulingReminders,
+                                                    subtasks: selectedTask.subtasks,
+                                                    priority: selectedTask.priority,
+                                                    itemId: selectedTask.itemId
+                                                )
+                                            }
+                                        }
+                                        
+                                        isReschedulingTask = false
+                                    } label: {
+                                        Label("Save", systemImage: "checkmark")
+                                    }
+                                }
                             }
                         }
                     }
@@ -341,6 +336,17 @@ struct TasksTabView: View {
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
+                    } onReschedule: { task in
+                        selectedTask = task
+                        reschedulingDueDate = task.dueDate
+                        reschedulingRrule = task.rrule
+                        reschedulingReminders = task.reminders
+                        
+                        DispatchQueue.global(qos: .userInitiated).async {
+                            reschedulingRecurrenceState.parseRRule(reschedulingRrule)
+                        }
+                        
+                        isReschedulingTask = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -353,10 +359,12 @@ struct TasksTabView: View {
                             .foregroundStyle(UIColor.label.toColor())
                             .textCase(nil)
                         
-                        Text("\(unplannedTasks.count) unplanned tasks")
-                            .font(.caption)
-                            .multilineTextAlignment(.leading)
-                            .textCase(nil)
+                        if !isUnplannedTasksSectionExpanded {
+                            Text("\(unplannedTasks.count) unplanned tasks")
+                                .font(.caption)
+                                .multilineTextAlignment(.leading)
+                                .textCase(nil)
+                        }
                     }.onTapGesture {
                         taskCreationDueDate = nil
                         isAddingTask = true
@@ -380,6 +388,17 @@ struct TasksTabView: View {
                     Task {
                         await setTaskCompletion(id: task.id, completed: !task.completed)
                     }
+                } onReschedule: { task in
+                    selectedTask = task
+                    reschedulingDueDate = task.dueDate
+                    reschedulingRrule = task.rrule
+                    reschedulingReminders = task.reminders
+                    
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        reschedulingRecurrenceState.parseRRule(reschedulingRrule)
+                    }
+                    
+                    isReschedulingTask = true
                 } onDelete: { task in
                     selectedTask = task
                     showDeleteConfirmationDialog = true
@@ -411,6 +430,17 @@ struct TasksTabView: View {
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
+                    } onReschedule: { task in
+                        selectedTask = task
+                        reschedulingDueDate = task.dueDate
+                        reschedulingRrule = task.rrule
+                        reschedulingReminders = task.reminders
+                        
+                        DispatchQueue.global(qos: .userInitiated).async {
+                            reschedulingRecurrenceState.parseRRule(reschedulingRrule)
+                        }
+                        
+                        isReschedulingTask = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -450,6 +480,17 @@ struct TasksTabView: View {
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
+                    } onReschedule: { task in
+                        selectedTask = task
+                        reschedulingDueDate = task.dueDate
+                        reschedulingRrule = task.rrule
+                        reschedulingReminders = task.reminders
+                        
+                        DispatchQueue.global(qos: .userInitiated).async {
+                            reschedulingRecurrenceState.parseRRule(reschedulingRrule)
+                        }
+                        
+                        isReschedulingTask = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -488,6 +529,17 @@ struct TasksTabView: View {
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
+                    } onReschedule: { task in
+                        selectedTask = task
+                        reschedulingDueDate = task.dueDate
+                        reschedulingRrule = task.rrule
+                        reschedulingReminders = task.reminders
+                        
+                        DispatchQueue.global(qos: .userInitiated).async {
+                            reschedulingRecurrenceState.parseRRule(reschedulingRrule)
+                        }
+                        
+                        isReschedulingTask = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -526,6 +578,17 @@ struct TasksTabView: View {
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
+                    } onReschedule: { task in
+                        selectedTask = task
+                        reschedulingDueDate = task.dueDate
+                        reschedulingRrule = task.rrule
+                        reschedulingReminders = task.reminders
+                        
+                        DispatchQueue.global(qos: .userInitiated).async {
+                            reschedulingRecurrenceState.parseRRule(reschedulingRrule)
+                        }
+                        
+                        isReschedulingTask = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -564,6 +627,17 @@ struct TasksTabView: View {
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
+                    } onReschedule: { task in
+                        selectedTask = task
+                        reschedulingDueDate = task.dueDate
+                        reschedulingRrule = task.rrule
+                        reschedulingReminders = task.reminders
+                        
+                        DispatchQueue.global(qos: .userInitiated).async {
+                            reschedulingRecurrenceState.parseRRule(reschedulingRrule)
+                        }
+                        
+                        isReschedulingTask = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -602,6 +676,17 @@ struct TasksTabView: View {
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
+                    } onReschedule: { task in
+                        selectedTask = task
+                        reschedulingDueDate = task.dueDate
+                        reschedulingRrule = task.rrule
+                        reschedulingReminders = task.reminders
+                        
+                        DispatchQueue.global(qos: .userInitiated).async {
+                            reschedulingRecurrenceState.parseRRule(reschedulingRrule)
+                        }
+                        
+                        isReschedulingTask = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -640,6 +725,17 @@ struct TasksTabView: View {
                         Task {
                             await setTaskCompletion(id: task.id, completed: !task.completed)
                         }
+                    } onReschedule: { task in
+                        selectedTask = task
+                        reschedulingDueDate = task.dueDate
+                        reschedulingRrule = task.rrule
+                        reschedulingReminders = task.reminders
+                        
+                        DispatchQueue.global(qos: .userInitiated).async {
+                            reschedulingRecurrenceState.parseRRule(reschedulingRrule)
+                        }
+                        
+                        isReschedulingTask = true
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -654,6 +750,76 @@ struct TasksTabView: View {
                         taskCreationDueDate = todayDate.addingTimeInterval(DateHelper.sevenDaySeconds)
                         isAddingTask = true
                     }
+            }
+        }
+    }
+    
+    @ToolbarContentBuilder
+    var ToolbarContentView: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            Button {
+                navigationManager.push(.settings)
+            } label: {
+                Label("Settings", systemImage: "gearshape")
+            }
+        }
+        
+        ToolbarItem(placement: .topBarTrailing) {
+            NavigationLink {
+                CompletedTasksList { task in
+                    selectedTask = task
+                    isEditingTask = true
+                } onCompletionToggle: { task in
+                    Task {
+                        await setTaskCompletion(id: task.id, completed: !task.completed)
+                    }
+                } onDelete: { task in
+                    selectedTask = task
+                    showDeleteConfirmationDialog = true
+                }
+                .navigationTitle("Completed tasks")
+                .onAppear {
+                    Task {
+                        let shouldSync = await SyncRegister.shared.hasExpired(SyncResource.completedTasks)
+                        
+                        if shouldSync {
+                            await fetchTasks(completion: true)
+                        }
+                    }
+                }
+            } label: {
+                Label("Completed tasks", systemImage: "book.closed")
+            }
+        }
+        
+        ToolbarItem(placement: .secondaryAction) {
+            Menu {
+                Picker(selection: $sorting) {
+                    ForEach(TasksSorting.allCases) { sorting in
+                        Text(sorting.label)
+                            .tag(sorting)
+                    }
+                } label: {
+                    Text("Sorting")
+                }
+                
+//                            if sorting != .manual {
+                    Picker(selection: $sortOrder) {
+                        Text(SortOrder.forward.labelForTasksSorting(sorting))
+                            .tag(SortOrder.forward)
+                        
+                        Text(SortOrder.reverse.labelForTasksSorting(sorting))
+                            .tag(SortOrder.reverse)
+                    } label: {
+                        Text("Sort Order")
+                    }
+//                            }
+            } label: {
+                Button {} label: {
+                    Text("Sort by")
+                    Text(sorting.label)
+                    Image(systemName: "arrow.up.arrow.down")
+                }
             }
         }
     }
