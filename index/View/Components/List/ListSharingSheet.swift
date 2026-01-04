@@ -184,14 +184,9 @@ struct ListSharingSheet: View {
             }
         }
         .navigationTitle("Sharing")
+        .navigationSubtitle(loadingUsers ? "Loading users..." : "")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem {
-                if loadingUsers {
-                    ProgressView()
-                }
-            }
-            
             ToolbarItem(placement: .confirmationAction) {
                 ShareLink(item: URL(string: IxUniversalLinks.list(listId))!) {
                     Label("Share", systemImage: "square.and.arrow.up")
@@ -201,7 +196,7 @@ struct ListSharingSheet: View {
         .onChange(of: isPublic) { _, new in
             onPublicChange(new)
         }
-        .confirmationDialog("Manage user access", isPresented: $showUserActions) {
+        .alert("Manage user access", isPresented: $showUserActions) {
             Button(selectedUser?.editor ?? false ? "Revoke edit permissions" : "Make editor") {
                 if let selectedUser {
                     onEditUserPermissions(selectedUser.email, !selectedUser.editor)

@@ -89,7 +89,8 @@ struct ItemRow: View {
                     }.background(Color.clear)
                 }
             }.frame(alignment: .trailing)
-        }.listRowBackground(color)
+        }
+//        .listRowBackground(color)
     }
     
     // MARK: Item card
@@ -105,7 +106,7 @@ struct ItemRow: View {
             
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .foregroundStyle(color?.contrastColor() ?? UIColor.label.toColor())
+        .foregroundStyle(UIColor.label.toColor())
     }
 }
 

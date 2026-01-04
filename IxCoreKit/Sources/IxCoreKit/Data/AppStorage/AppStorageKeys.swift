@@ -32,6 +32,10 @@ public enum AppStorageKeys {
     }
     
     public enum Categories {
+        public static func selectedCategory(_ listId: String) -> String {
+            return "selected_category/\(listId)"
+        }
+        
         public static func hideUncategorized(_ listId: String) -> String {
             return "hide_uncategorized/\(listId)"
         }

@@ -130,12 +130,19 @@ struct ItemsList: View {
                             onCreateItem()
                         } label: {
                             Label("Create item", systemImage: "plus")
-                        }.buttonStyle(.borderedProminent)
+                                .foregroundStyle(color.contrastColor().contrastColor())
+                        }
+                        .tint(color.contrastColor())
+                        .buttonStyle(.glass)
                     }
                     
                     Spacer()
-                }.frame(maxHeight: .infinity)
+                }
+                .foregroundStyle(color.contrastColor())
+                .frame(maxHeight: .infinity)
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(color)
     }
 }

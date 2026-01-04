@@ -27,7 +27,10 @@ struct ListScreen: View {
     
     // MARK: Categories and selected category
     @Query private var categories: [IxListCategory]
-    @State private var selectedCategory: IxListCategory? = nil
+    @AppStorage(AppStorageKeys.Categories.selectedCategory("")) private var selectedCategoryId: String = ""
+    private var selectedCategory: IxListCategory? {
+        return categories.first { $0.id == selectedCategoryId }
+    }
     @State private var nextCategory: IxListCategory? = nil
     @State private var previousCategory: IxListCategory? = nil
     @State private var showItemMovedToNextCategoryToast = false
@@ -77,6 +80,8 @@ struct ListScreen: View {
     
     init(listId: String) {
         self.listId = listId
+        
+        _selectedCategoryId = AppStorage(wrappedValue: "", AppStorageKeys.Categories.selectedCategory(listId))
         
         // MARK: AppStorage init
         _showCompletedItems = AppStorage(wrappedValue: AppStorageKeys.Defaults.itemsShowCompleted, AppStorageKeys.Items.show_completed(listId))
@@ -233,7 +238,7 @@ struct ListScreen: View {
             try await saveCategory(category)
             
             withAnimation {
-                selectedCategory = category
+                selectedCategoryId = category.id
             }
         } catch {
             errorService.insert(.localizedError(title: "Error creating category", error: error))
@@ -267,8 +272,8 @@ struct ListScreen: View {
             errorService.insert(.localizedError(title: "Error deleting category", error: error))
         }
         
-        if selectedCategory?.id == categoryId {
-            selectedCategory = categories.first
+        if selectedCategoryId == categoryId {
+            selectedCategoryId = categories.first?.id ?? ""
         }
     }
     
@@ -487,6 +492,11 @@ struct ListScreen: View {
     
     @ToolbarContentBuilder
     var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .principal) {
+            Text(list.name)
+                .foregroundStyle(contentColor.contrastColor())
+        }
+        
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Section {
@@ -570,14 +580,14 @@ struct ListScreen: View {
         ToolbarItemGroup(placement: .bottomBar) {
             CategoryPicker(
                 listId: listId,
-                selectedCategory: $selectedCategory,
+                selectedCategoryId: $selectedCategoryId,
                 sorting: categoriesSorting,
                 sortOrder: categoriesSortOrder,
                 hideUncategorized: hideUncategorized
             ) {
                 isAddingCategory = true
             } onEdit: { category in
-                selectedCategory = category
+                selectedCategoryId = category.id
                 isEditingCategory = true
             } onDelete: { category in
                 Task {

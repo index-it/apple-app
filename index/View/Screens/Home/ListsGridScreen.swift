@@ -390,10 +390,9 @@ struct ListsGridScreen: View {
                     navigationManager.quickAddItemViewPresented = false
                 })
             }
-            .confirmationDialog(
+            .alert(
                 Text("Confirm deletion"),
                 isPresented: $showDeleteConfirmationDialog,
-                titleVisibility: .visible,
                 actions: {
                     Button("Delete", role: .destructive) {
                         if let selectedList {
@@ -411,10 +410,9 @@ struct ListsGridScreen: View {
                     Text("Are you sure you want to delete the list \(selectedList?.name ?? "")? This action is irreversible!")
                 }
             )
-            .confirmationDialog(
+            .alert(
                 Text("Leave list"),
                 isPresented: $showLeaveListConfirmation,
-                titleVisibility: .visible,
                 actions: {
                     Button("Leave", role: .destructive) {
                         if let selectedList {

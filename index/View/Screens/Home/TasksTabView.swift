@@ -39,6 +39,7 @@ struct TasksTabView: View {
     
     @State private var isEditingTask = false
     @State private var showDeleteConfirmationDialog = false
+    @State private var showDeleteCompletedConfirmationDialog = false
     
     // MARK: Unplanned tasks
     @Query(filter: #Predicate<IxTask> { !$0.completed && $0.dueDate == nil })
@@ -177,35 +178,32 @@ struct TasksTabView: View {
                 .toolbar {
                     ToolbarContentView
                 }
-                .confirmationDialog(
-                    Text("Confirm deletion"),
-                    isPresented: $showDeleteConfirmationDialog,
-                    titleVisibility: .visible,
-                    actions: {
-                        if let selectedTask = selectedTask {
-                            Button(selectedTask.rrule == nil ? "Delete" : "Delete single", role: .destructive) {
-                                Task {
-                                    await deleteTask(id: selectedTask.id, all: selectedTask.rrule == nil ? nil : false)
-                                }
-                            }
-                            
-                            if selectedTask.rrule != nil {
-                                Button("Delete all", role: .destructive) {
-                                    Task {
-                                        await deleteTask(id: selectedTask.id, all: true)
-                                    }
-                                }
+                .alert(
+                    "Confirm deletion",
+                    isPresented: $showDeleteConfirmationDialog
+                ) {
+                    if let selectedTask = selectedTask {
+                        Button(selectedTask.rrule == nil ? "Delete" : "Delete single", role: .destructive) {
+                            Task {
+                                await deleteTask(id: selectedTask.id, all: selectedTask.rrule == nil ? nil : false)
                             }
                         }
                         
-                        Button("Keep", role: .cancel) {
-                            showDeleteConfirmationDialog = false
+                        if selectedTask.rrule != nil {
+                            Button("Delete all", role: .destructive) {
+                                Task {
+                                    await deleteTask(id: selectedTask.id, all: true)
+                                }
+                            }
                         }
-                    },
-                    message: {
-                        Text("Are you sure you want to delete the\(selectedTask?.rrule != nil ? " recurring" : "") task \(selectedTask?.name ?? "")?")
                     }
-                )
+                    
+                    Button("Keep", role: .cancel) {
+                        showDeleteConfirmationDialog = false
+                    }
+                } message: {
+                    Text("Are you sure you want to delete the\(selectedTask?.rrule != nil ? " recurring" : "") task \(selectedTask?.name ?? "")?")
+                }
                 .sheet(
                     isPresented: $isAddingTask,
                     content: { [taskCreationDueDate] in
@@ -928,7 +926,33 @@ struct TasksTabView: View {
                     }
                 } onDelete: { task in
                     selectedTask = task
-                    showDeleteConfirmationDialog = true
+                    showDeleteCompletedConfirmationDialog = true
+                }
+                .alert(
+                    "Confirm deletion",
+                    isPresented: $showDeleteCompletedConfirmationDialog
+                ) {
+                    if let selectedTask = selectedTask {
+                        Button(selectedTask.rrule == nil ? "Delete" : "Delete single", role: .destructive) {
+                            Task {
+                                await deleteTask(id: selectedTask.id, all: selectedTask.rrule == nil ? nil : false)
+                            }
+                        }
+                        
+                        if selectedTask.rrule != nil {
+                            Button("Delete all", role: .destructive) {
+                                Task {
+                                    await deleteTask(id: selectedTask.id, all: true)
+                                }
+                            }
+                        }
+                    }
+                    
+                    Button("Keep", role: .cancel) {
+                        showDeleteCompletedConfirmationDialog = false
+                    }
+                } message: {
+                    Text("Are you sure you want to delete the\(selectedTask?.rrule != nil ? " recurring" : "") task \(selectedTask?.name ?? "")?")
                 }
                 .navigationTitle("Completed tasks")
                 .onAppear {

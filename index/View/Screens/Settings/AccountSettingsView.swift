@@ -74,15 +74,6 @@ struct AccountSettingsView: View {
             }, message: {
                 Text("The password must be between 8 and 100 characters, and contain a lowercase letter, an uppercase one, and a number.")
             })
-            .confirmationDialog("Logout", isPresented: $showLogoutDialog) {
-                Button("Logout", role: .destructive) {
-                    dismiss()
-                    navigationManager.clear()
-                    Task {
-                        await logout()
-                    }
-                }
-            }
             .alert("Delete account", isPresented: $showDeleteAccountAlert, actions: {
                 TextField("Type 'GOODBYE'", text: $deleteAccountGoodbyeText)
                 
@@ -120,6 +111,15 @@ struct AccountSettingsView: View {
                 }) {
                     Text("Logout")
                         .foregroundColor(.red)
+                }
+                .confirmationDialog("Logout", isPresented: $showLogoutDialog) {
+                    Button("Logout", role: .destructive) {
+                        dismiss()
+                        navigationManager.clear()
+                        Task {
+                            await logout()
+                        }
+                    }
                 }
                 
                 Button(action: {

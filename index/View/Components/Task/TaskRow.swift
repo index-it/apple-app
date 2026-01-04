@@ -194,7 +194,7 @@ struct TaskRowContentView: View {
                     if !task.subtasks.isEmpty {
                         let sortedSubTasks = task.subtasks.sorted { $0.completed && !$1.completed }
                         
-                        HStack(spacing: 3) {
+                        HStack(spacing: task.subtasks.count > 7 ? 2 : 3) {
                             ForEach(sortedSubTasks.indices, id: \.self) { index in
                                 UnevenRoundedRectangle(cornerRadii: .init(
                                     topLeading: index == 0 ? 50 : 0,

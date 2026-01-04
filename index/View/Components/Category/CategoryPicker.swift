@@ -9,9 +9,12 @@ import SwiftData
 import IxCoreKit
 
 struct CategoryPicker: View {
-    @Binding private var selectedCategory: IxListCategory?
+    @Binding private var selectedCategoryId: String
     
     @Query private var categories: [IxListCategory]
+    private var selectedCategory: IxListCategory? {
+        return categories.first { $0.id == selectedCategoryId }
+    }
     
     private var hideUncategorized: Bool
     private var onCreate: () -> Void
@@ -20,7 +23,7 @@ struct CategoryPicker: View {
     
     init(
         listId: String,
-        selectedCategory: Binding<IxListCategory?>,
+        selectedCategoryId: Binding<String>,
         sorting: CategoriesSorting,
         sortOrder: SortOrder,
         hideUncategorized: Bool,
@@ -28,7 +31,7 @@ struct CategoryPicker: View {
         onEdit: @escaping (_ category: IxListCategory) -> Void,
         onDelete: @escaping (_ category: IxListCategory) -> Void
     ) {
-        self._selectedCategory = selectedCategory
+        self._selectedCategoryId = selectedCategoryId
         self.hideUncategorized = hideUncategorized
         self.onCreate = onCreate
         self.onEdit = onEdit
@@ -76,10 +79,12 @@ struct CategoryPicker: View {
             
             ForEach(categories) { category in
                 Button {
-                    selectedCategory = category
+                    withAnimation {
+                        selectedCategoryId = category.id
+                    }
                 } label: {
                     HStack {
-                        if selectedCategory?.id == category.id {
+                        if selectedCategoryId == category.id {
                             Image(systemName: "checkmark")
                         }
                         
@@ -90,10 +95,10 @@ struct CategoryPicker: View {
             
             if !hideUncategorized {
                 Button {
-                    selectedCategory = nil
+                    selectedCategoryId = ""
                 } label: {
                     HStack {
-                        if selectedCategory == nil {
+                        if selectedCategoryId.isEmpty {
                             Image(systemName: "checkmark")
                         }
                         
@@ -115,12 +120,12 @@ struct CategoryPicker: View {
         }
         .onChange(of: categories, initial: true) { _, newCategories in
             if hideUncategorized && selectedCategory == nil {
-                selectedCategory = newCategories.first
+                selectedCategoryId = newCategories.first?.id ?? ""
             }
         }
         .onChange(of: hideUncategorized) { _, newValue in
             if newValue && selectedCategory == nil {
-                selectedCategory = categories.first
+                selectedCategoryId = categories.first?.id ?? ""
             }
         }
     }
