@@ -92,13 +92,13 @@ struct ListsGrid: View {
                                 onFilterClear()
                             } label: {
                                 Label("Clear filters", systemImage: "xmark")
-                            }.buttonStyle(.borderedProminent)
+                            }.buttonStyle(.glassProminent)
                         } else if !archived {
                             Button {
                                 onAdd()
                             } label: {
                                 Label("Create a list", systemImage: "plus")
-                            }.buttonStyle(.borderedProminent)
+                            }.buttonStyle(.glassProminent)
                         }
                     }
                 }

@@ -117,29 +117,20 @@ struct ItemsList: View {
         }.overlay {
             // MARK: Empty items overlay
             if items.isEmpty {
-                VStack {
-                    Spacer()
-                    
-                    ContentUnavailableView {
-                        Label("No items", systemImage: "binoculars")
-                            .labelStyle(.iconOnly)
-                    } description: {
-                        Text(category == nil ? "There are no uncategorized items" : "There are no items in this category")
-                    } actions: {
-                        Button {
-                            onCreateItem()
-                        } label: {
-                            Label("Create item", systemImage: "plus")
-                                .foregroundStyle(color.contrastColor().contrastColor())
-                        }
-                        .tint(color.contrastColor())
-                        .buttonStyle(.glass)
+                ContentUnavailableView {
+                    Label("No items", systemImage: "binoculars")
+                        .foregroundStyle(color.contrastColor())
+                } description: {
+                    Text(items.isEmpty ? "Start adding items to your list now!" : (category == nil ? "There are no uncategorized items" : "There are no items in this category"))
+                        .foregroundStyle(color.contrastColor())
+                } actions: {
+                    Button {
+                        onCreateItem()
+                    } label: {
+                        Label("Create item", systemImage: "plus")
                     }
-                    
-                    Spacer()
+                    .buttonStyle(.glass)
                 }
-                .foregroundStyle(color.contrastColor())
-                .frame(maxHeight: .infinity)
             }
         }
         .scrollContentBackground(.hidden)

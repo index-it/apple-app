@@ -44,6 +44,12 @@ struct ListScreen: View {
     @State private var newCategoryNamePlaceholder = "Category name"
     @State private var newCategoryColor = Color.accentColor
     
+    // MARK: Items
+    @Query private var items: [IxListItem]
+    private var completedItems: [IxListItem] {
+        return items.filter { $0.completed && $0.categoryId == selectedCategory?.id }
+    }
+    
     // MARK: Selected item
     @State private var selectedItem: IxListItem? = nil
     @State private var isEditingItem = false
@@ -108,6 +114,13 @@ struct ListScreen: View {
             }
         )
         _categories = Query(listCategoryDescriptor)
+        
+        let listItemsDescriptor = FetchDescriptor<IxListItem>(
+            predicate: #Predicate { item in
+                item.listId == listId
+            }
+        )
+        _items = Query(listItemsDescriptor)
     }
     
     // MARK: - Local storage savers
@@ -209,6 +222,26 @@ struct ListScreen: View {
             try await saveItem(item)
         } catch {
             errorService.insert(.localizedError(title: "Error \(completed ? "completing" : "un-completing") item", error: error))
+        }
+    }
+    
+    func setItemsCompletion(listId: String, itemIds: [String], completed: Bool) async {
+        do {
+            let items = try await ixApiClient.setListItemsCompletion(listId: listId, itemIds: itemIds, completed: completed)
+            try context.transaction {
+                try context.delete(
+                    model: IxListItem.self,
+                    where: #Predicate { item in
+                        itemIds.contains(item.id)
+                    }
+                )
+                
+                items.forEach { item in
+                    context.insert(item)
+                }
+            }
+        } catch {
+            errorService.insert(.localizedError(title: "Error \(completed ? "completing" : "un-completing") items", error: error))
         }
     }
     
@@ -499,6 +532,18 @@ struct ListScreen: View {
         
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
+                Section {
+                    if !completedItems.isEmpty {
+                        Button {
+                            Task {
+                                await setItemsCompletion(listId: listId, itemIds: completedItems.map(\.id), completed: false)
+                            }
+                        } label: {
+                            Label("Uncomplete all", systemImage: "checkmark.arrow.trianglehead.counterclockwise")
+                        }
+                    }
+                }
+                
                 Section {
                     Toggle("Show completed", isOn: Binding(
                         get: {

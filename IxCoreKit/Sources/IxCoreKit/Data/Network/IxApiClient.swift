@@ -1098,6 +1098,30 @@ public final class IxApiClient: Sendable {
         }
     }
     
+    @Sendable public func setListItemsCompletion(listId: String, itemIds: [String], completed: Bool) async throws -> [IxListItem] {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/items/completion")
+            .appending(queryItems: [URLQueryItem(name: "completed", value: "\(completed)")])
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try Self.encoder().encode(itemIds)
+        
+        let (data, response) = try await urlSession.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try Self.decoder().decode([NetworkListItem].self, from: data).map { IxListItem(networkListItem: $0) }
+        case 403:
+            throw IxApiClientError.missingPermission(.editor)
+        case 404:
+            throw IxApiClientError.notFound(.item)
+        default:
+            throw IxApiClientError.unknown
+        }
+    }
+    
     /// Deletes a list item
     ///
     /// ### Throws:

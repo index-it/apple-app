@@ -237,9 +237,11 @@ struct ListsGridScreen: View {
         ListsDisplayerView
             .navigationTitle(archived ? "Archived lists" : "Your lists")
             .navigationBarTitleDisplayMode(archived ? .inline : .large)
-            .floatingActionButton("plus") {
-                navigationManager.quickAddItemViewPresented = true
-            }
+            .if(!lists.isEmpty, transform: { view in
+                view.floatingActionButton("plus") {
+                    navigationManager.quickAddItemViewPresented = true
+                }
+            })
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
