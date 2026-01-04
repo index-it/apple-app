@@ -49,6 +49,12 @@ struct TasksTabView: View {
     @AppStorage(AppStorageKeys.Tasks.sorting) private var sorting = AppStorageKeys.Defaults.tasksSorting
     @AppStorage(AppStorageKeys.Tasks.sortOrder) private var sortOrder = AppStorageKeys.Defaults.tasksSortOrder
     
+    private var calendar: Calendar {
+        var cal = Calendar.current
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        return cal
+    }
+    
     
     private func saveTask(_ task: IxTask) async throws {
         try context.transaction {
@@ -347,6 +353,22 @@ struct TasksTabView: View {
                         }
                         
                         isReschedulingTask = true
+                    } onRescheduleNextDay: { task in
+                        Task {
+                            let nextDueDate = task.dueDate.flatMap { calendar.date(byAdding: .day, value: 1, to: $0) } ?? Date()
+
+                            await editTask(
+                                id: task.id,
+                                name: task.name,
+                                description: task.taskDescription,
+                                dueDate: nextDueDate,
+                                rrule: task.rrule,
+                                reminders: task.reminders,
+                                subtasks: task.subtasks,
+                                priority: task.priority,
+                                itemId: task.itemId
+                            )
+                        }
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -399,6 +421,25 @@ struct TasksTabView: View {
                     }
                     
                     isReschedulingTask = true
+                } onRescheduleNextDay: { task in
+                    Task {
+                        let nextDueDate = task.dueDate
+                            .map{ max(todayDate, $0) }
+                            .flatMap { calendar.date(byAdding: .day, value: 1, to: $0) }
+                            ?? Date()
+
+                        await editTask(
+                            id: task.id,
+                            name: task.name,
+                            description: task.taskDescription,
+                            dueDate: nextDueDate,
+                            rrule: task.rrule,
+                            reminders: task.reminders,
+                            subtasks: task.subtasks,
+                            priority: task.priority,
+                            itemId: task.itemId
+                        )
+                    }
                 } onDelete: { task in
                     selectedTask = task
                     showDeleteConfirmationDialog = true
@@ -441,6 +482,22 @@ struct TasksTabView: View {
                         }
                         
                         isReschedulingTask = true
+                    } onRescheduleNextDay: { task in
+                        Task {
+                            let nextDueDate = task.dueDate.flatMap { calendar.date(byAdding: .day, value: 1, to: $0) } ?? Date()
+
+                            await editTask(
+                                id: task.id,
+                                name: task.name,
+                                description: task.taskDescription,
+                                dueDate: nextDueDate,
+                                rrule: task.rrule,
+                                reminders: task.reminders,
+                                subtasks: task.subtasks,
+                                priority: task.priority,
+                                itemId: task.itemId
+                            )
+                        }
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -491,6 +548,22 @@ struct TasksTabView: View {
                         }
                         
                         isReschedulingTask = true
+                    } onRescheduleNextDay: { task in
+                        Task {
+                            let nextDueDate = task.dueDate.flatMap { calendar.date(byAdding: .day, value: 1, to: $0) } ?? Date()
+
+                            await editTask(
+                                id: task.id,
+                                name: task.name,
+                                description: task.taskDescription,
+                                dueDate: nextDueDate,
+                                rrule: task.rrule,
+                                reminders: task.reminders,
+                                subtasks: task.subtasks,
+                                priority: task.priority,
+                                itemId: task.itemId
+                            )
+                        }
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -540,6 +613,22 @@ struct TasksTabView: View {
                         }
                         
                         isReschedulingTask = true
+                    } onRescheduleNextDay: { task in
+                        Task {
+                            let nextDueDate = task.dueDate.flatMap { calendar.date(byAdding: .day, value: 1, to: $0) } ?? Date()
+
+                            await editTask(
+                                id: task.id,
+                                name: task.name,
+                                description: task.taskDescription,
+                                dueDate: nextDueDate,
+                                rrule: task.rrule,
+                                reminders: task.reminders,
+                                subtasks: task.subtasks,
+                                priority: task.priority,
+                                itemId: task.itemId
+                            )
+                        }
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -589,6 +678,22 @@ struct TasksTabView: View {
                         }
                         
                         isReschedulingTask = true
+                    } onRescheduleNextDay: { task in
+                        Task {
+                            let nextDueDate = task.dueDate.flatMap { calendar.date(byAdding: .day, value: 1, to: $0) } ?? Date()
+
+                            await editTask(
+                                id: task.id,
+                                name: task.name,
+                                description: task.taskDescription,
+                                dueDate: nextDueDate,
+                                rrule: task.rrule,
+                                reminders: task.reminders,
+                                subtasks: task.subtasks,
+                                priority: task.priority,
+                                itemId: task.itemId
+                            )
+                        }
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -638,6 +743,22 @@ struct TasksTabView: View {
                         }
                         
                         isReschedulingTask = true
+                    } onRescheduleNextDay: { task in
+                        Task {
+                            let nextDueDate = task.dueDate.flatMap { calendar.date(byAdding: .day, value: 1, to: $0) } ?? Date()
+
+                            await editTask(
+                                id: task.id,
+                                name: task.name,
+                                description: task.taskDescription,
+                                dueDate: nextDueDate,
+                                rrule: task.rrule,
+                                reminders: task.reminders,
+                                subtasks: task.subtasks,
+                                priority: task.priority,
+                                itemId: task.itemId
+                            )
+                        }
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -687,6 +808,22 @@ struct TasksTabView: View {
                         }
                         
                         isReschedulingTask = true
+                    } onRescheduleNextDay: { task in
+                        Task {
+                            let nextDueDate = task.dueDate.flatMap { calendar.date(byAdding: .day, value: 1, to: $0) } ?? Date()
+
+                            await editTask(
+                                id: task.id,
+                                name: task.name,
+                                description: task.taskDescription,
+                                dueDate: nextDueDate,
+                                rrule: task.rrule,
+                                reminders: task.reminders,
+                                subtasks: task.subtasks,
+                                priority: task.priority,
+                                itemId: task.itemId
+                            )
+                        }
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true
@@ -736,6 +873,22 @@ struct TasksTabView: View {
                         }
                         
                         isReschedulingTask = true
+                    } onRescheduleNextDay: { task in
+                        Task {
+                            let nextDueDate = task.dueDate.flatMap { calendar.date(byAdding: .day, value: 1, to: $0) } ?? Date()
+
+                            await editTask(
+                                id: task.id,
+                                name: task.name,
+                                description: task.taskDescription,
+                                dueDate: nextDueDate,
+                                rrule: task.rrule,
+                                reminders: task.reminders,
+                                subtasks: task.subtasks,
+                                priority: task.priority,
+                                itemId: task.itemId
+                            )
+                        }
                     } onDelete: { task in
                         selectedTask = task
                         showDeleteConfirmationDialog = true

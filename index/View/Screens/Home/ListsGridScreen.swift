@@ -48,6 +48,9 @@ struct ListsGridScreen: View {
     @State private var loadingSelectedListUserEditOrRevokePermissions: String? = nil
     @State private var showLeaveListConfirmation = false
     
+    // MARK: Quick add sheet
+    @State private var showQuickAddSheet: Bool = false
+    
     init(archived: Bool) {
         self.archived = archived
         
@@ -234,6 +237,9 @@ struct ListsGridScreen: View {
         ListsDisplayerView
             .navigationTitle(archived ? "Archived lists" : "Your lists")
             .navigationBarTitleDisplayMode(archived ? .inline : .large)
+            .floatingActionButton("plus") {
+                navigationManager.quickAddItemViewPresented = true
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -380,7 +386,7 @@ struct ListsGridScreen: View {
                 }.presentationDetents([.large])
             }
             .sheet(isPresented: $navigationManager.quickAddItemViewPresented) {
-                AddListItemFormSheet(onCancel: {
+                QuickAddItemView(onCancel: {
                     navigationManager.quickAddItemViewPresented = false
                 })
             }

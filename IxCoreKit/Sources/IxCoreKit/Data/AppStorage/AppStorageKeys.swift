@@ -46,6 +46,20 @@ public enum AppStorageKeys {
         }
     }
     
+    public enum QuickAdd {
+        public static let recentListId: String = "quick_add_recent_list_id"
+        public static func recentCategoryId(for listId: String) -> String {
+            return "quick_add_recent_category_id_for_\(listId)"
+        }
+    }
+    
+    public enum QuickSave {
+        public static let recentListId: String = "quick_save_recent_list_id"
+        public static func recentCategoryId(for listId: String) -> String {
+            return "quick_save_recent_category_id_for_\(listId)"
+        }
+    }
+    
     public enum Tasks {
         public static let sorting = "tasks_sorting"
         public static let sortOrder = "tasks_sorting_order"

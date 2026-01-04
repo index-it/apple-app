@@ -18,7 +18,7 @@ struct ShareExtensionView: View {
     }
     
     var body: some View {
-        AddListItemFormSheet(
+        QuickAddItemView(
             name: name,
             link: link,
             note: nil,
@@ -27,6 +27,7 @@ struct ShareExtensionView: View {
             onCancel: close
         )
         .environment(\.ixApiClient, IxApiClient() { _ in })
+        .environmentObject(ErrorStateService())
     }
 
     func close() {

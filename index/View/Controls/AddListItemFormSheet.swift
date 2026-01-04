@@ -193,3 +193,18 @@ struct AddListItemFormSheet: View {
         }
     }
 }
+
+#Preview {
+    AddListItemFormSheet(
+        name: nil,
+        link: nil,
+        note: nil,
+        selectedListId: nil,
+        selectedCategoryId: nil,
+        onCancel: {
+        
+    })
+    .environment(\.ixApiClient, IxApiClient(authChangeCallback: { _ in
+        
+    }))
+}

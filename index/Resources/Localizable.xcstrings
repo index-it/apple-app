@@ -252,13 +252,19 @@
     "Create category" : {
 
     },
+    "Create Category" : {
+
+    },
     "Create item" : {
 
     },
-    "Create task" : {
+    "Create List" : {
 
     },
-    "Create Task" : {
+    "Create list or category" : {
+
+    },
+    "Create task" : {
 
     },
     "Create your password" : {
@@ -405,7 +411,7 @@
     "I'd love to hear your feedback. I can't promise that I'll implement every change, but I'll listen and do what I can." : {
 
     },
-    "Index It" : {
+    "Index it" : {
 
     },
     "Index Pro" : {
@@ -432,6 +438,9 @@
     "Invite user" : {
 
     },
+    "Item info" : {
+
+    },
     "Keep" : {
 
     },
@@ -451,6 +460,9 @@
 
     },
     "List name" : {
+
+    },
+    "Loading website title..." : {
 
     },
     "Login" : {
@@ -570,12 +582,6 @@
     "Public list" : {
 
     },
-    "Quickly add a new item to a list." : {
-
-    },
-    "Quickly create a new task." : {
-
-    },
     "Register" : {
 
     },
@@ -613,6 +619,9 @@
 
     },
     "Save" : {
+
+    },
+    "Save in" : {
 
     },
     "Save to list" : {

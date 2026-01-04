@@ -17,9 +17,13 @@
 		092FE7C62D7F3C8200F38388 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 092FE7C52D7F3C8200F38388 /* SwiftUI.framework */; };
 		092FE7D72D7F3C8300F38388 /* indexWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 092FE7C22D7F3C8200F38388 /* indexWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		0932EB3B2CEB6BBF00321EEE /* DynamicColor in Frameworks */ = {isa = PBXBuildFile; productRef = 0932EB3A2CEB6BBF00321EEE /* DynamicColor */; };
+		096C022D2F09E4FA00425185 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 096C022C2F09E4FA00425185 /* RevenueCat */; };
+		096C022F2F09E4FA00425185 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 096C022E2F09E4FA00425185 /* RevenueCatUI */; };
+		096C02312F09E50A00425185 /* DynamicColor in Frameworks */ = {isa = PBXBuildFile; productRef = 096C02302F09E50A00425185 /* DynamicColor */; };
 		0992A7412D8A44B400EF7B33 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0992A7402D8A44B400EF7B33 /* FirebaseCore */; };
 		0992A7432D8A44BB00EF7B33 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 0992A7422D8A44BB00EF7B33 /* FirebaseMessaging */; };
-		099487EA2CEBC59500B3FC57 /* MCEmojiPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 099487E92CEBC59500B3FC57 /* MCEmojiPicker */; };
+		099C0F3B2F09AE47003C546F /* MCEmojiPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 099C0F3A2F09AE47003C546F /* MCEmojiPicker */; };
+		099C0F3D2F09AE47003C546F /* MCEmojiPickerJSON in Frameworks */ = {isa = PBXBuildFile; productRef = 099C0F3C2F09AE47003C546F /* MCEmojiPickerJSON */; };
 		09D9117F2DCB63730087D915 /* IxCoreKit in Frameworks */ = {isa = PBXBuildFile; productRef = 09D9117E2DCB63730087D915 /* IxCoreKit */; };
 		09D911812DCB63770087D915 /* IxCoreKit in Frameworks */ = {isa = PBXBuildFile; productRef = 09D911802DCB63770087D915 /* IxCoreKit */; };
 		09F48F452D7E623D00CA50AC /* indexShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 09F48F3B2D7E623D00CA50AC /* indexShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -81,27 +85,32 @@
 			);
 			target = 092FE7C12D7F3C8200F38388 /* indexWidgetExtension */;
 		};
-		092FE7E42D7F428700F38388 /* Exceptions for "index" folder in "indexWidgetExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Resources/GoogleService-Info.plist",
-				Resources/Localizable.xcstrings,
-			);
-			target = 092FE7C12D7F3C8200F38388 /* indexWidgetExtension */;
-		};
-		093CEDBE2D860DF800F7D463 /* Exceptions for "indexWidget" folder in "index" target */ = {
+		096C02182F09E2C500425185 /* Exceptions for "indexWidget" folder in "index" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				indexTasksWidget.swift,
 			);
 			target = 093287D82C9C811200A0717E /* index */;
 		};
-		09EA31C12D7E69F3003FD174 /* Exceptions for "index" folder in "indexShareExtension" target */ = {
+		096C021C2F09E3C900425185 /* Exceptions for "index" folder in "indexShareExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"Resources/GoogleService-Info.plist",
-				Resources/Localizable.xcstrings,
-				View/Controls/AddListItemFormSheet.swift,
+				Navigation/HomeTab.swift,
+				Navigation/NavigationManager.swift,
+				Navigation/NavigationRoute.swift,
+				View/Components/Category/CategoryEditor.swift,
+				View/Components/ColorPicker.swift,
+				View/Components/ColorSelector.swift,
+				View/Components/List/ListCard.swift,
+				View/Components/List/ListEditor.swift,
+				View/Components/Pro/PaywallModifier.swift,
+				View/Components/Pro/PaywallView.swift,
+				View/Error/ErrorAlert.swift,
+				View/Error/ErrorStateService.swift,
+				View/Modifier/IfModifier.swift,
+				View/Modifier/iOSCheckboxToggleStyle.swift,
+				View/Modifier/MeshGradientBackground.swift,
+				View/Screens/Lists/QuickAddItemView.swift,
 			);
 			target = 09F48F3A2D7E623D00CA50AC /* indexShareExtension */;
 		};
@@ -118,7 +127,7 @@
 		092FE7C72D7F3C8200F38388 /* indexWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				093CEDBE2D860DF800F7D463 /* Exceptions for "indexWidget" folder in "index" target */,
+				096C02182F09E2C500425185 /* Exceptions for "indexWidget" folder in "index" target */,
 				092FE7DB2D7F3C8300F38388 /* Exceptions for "indexWidget" folder in "indexWidgetExtension" target */,
 			);
 			path = indexWidget;
@@ -128,8 +137,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				0915C16D2CB80EC5003CF70B /* Exceptions for "index" folder in "index" target */,
-				09EA31C12D7E69F3003FD174 /* Exceptions for "index" folder in "indexShareExtension" target */,
-				092FE7E42D7F428700F38388 /* Exceptions for "index" folder in "indexWidgetExtension" target */,
+				096C021C2F09E3C900425185 /* Exceptions for "index" folder in "indexShareExtension" target */,
 			);
 			path = index;
 			sourceTree = "<group>";
@@ -160,15 +168,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				0992A7432D8A44BB00EF7B33 /* FirebaseMessaging in Frameworks */,
+				099C0F3B2F09AE47003C546F /* MCEmojiPicker in Frameworks */,
 				092FE7BD2D7F2BCC00F38388 /* Starscream in Frameworks */,
 				0915C1692CB80DA1003CF70B /* GoogleSignIn in Frameworks */,
 				0932EB3B2CEB6BBF00321EEE /* DynamicColor in Frameworks */,
 				092F90AF2D7296A300760176 /* RevenueCat in Frameworks */,
+				099C0F3D2F09AE47003C546F /* MCEmojiPickerJSON in Frameworks */,
 				090499B62DC52D9800E9AE3D /* IxCoreKit in Frameworks */,
 				092F90B12D7296A300760176 /* RevenueCatUI in Frameworks */,
 				0915C16B2CB80DA1003CF70B /* GoogleSignInSwift in Frameworks */,
 				0992A7412D8A44B400EF7B33 /* FirebaseCore in Frameworks */,
-				099487EA2CEBC59500B3FC57 /* MCEmojiPicker in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -176,7 +185,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				096C02312F09E50A00425185 /* DynamicColor in Frameworks */,
+				096C022D2F09E4FA00425185 /* RevenueCat in Frameworks */,
 				09D9117F2DCB63730087D915 /* IxCoreKit in Frameworks */,
+				096C022F2F09E4FA00425185 /* RevenueCatUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -263,13 +275,14 @@
 				0915C1682CB80DA1003CF70B /* GoogleSignIn */,
 				0915C16A2CB80DA1003CF70B /* GoogleSignInSwift */,
 				0932EB3A2CEB6BBF00321EEE /* DynamicColor */,
-				099487E92CEBC59500B3FC57 /* MCEmojiPicker */,
 				092F90AE2D7296A300760176 /* RevenueCat */,
 				092F90B02D7296A300760176 /* RevenueCatUI */,
 				092FE7BC2D7F2BCC00F38388 /* Starscream */,
 				0992A7402D8A44B400EF7B33 /* FirebaseCore */,
 				0992A7422D8A44BB00EF7B33 /* FirebaseMessaging */,
 				090499B52DC52D9800E9AE3D /* IxCoreKit */,
+				099C0F3A2F09AE47003C546F /* MCEmojiPicker */,
+				099C0F3C2F09AE47003C546F /* MCEmojiPickerJSON */,
 			);
 			productName = index;
 			productReference = 093287D92C9C811200A0717E /* index.app */;
@@ -293,6 +306,9 @@
 			name = indexShareExtension;
 			packageProductDependencies = (
 				09D9117E2DCB63730087D915 /* IxCoreKit */,
+				096C022C2F09E4FA00425185 /* RevenueCat */,
+				096C022E2F09E4FA00425185 /* RevenueCatUI */,
+				096C02302F09E50A00425185 /* DynamicColor */,
 			);
 			productName = indexShareExtension;
 			productReference = 09F48F3B2D7E623D00CA50AC /* indexShareExtension.appex */;
@@ -331,10 +347,10 @@
 			packageReferences = (
 				0915C1672CB80DA1003CF70B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 				0932EB392CEB6BBF00321EEE /* XCRemoteSwiftPackageReference "DynamicColor" */,
-				099487E82CEBC59500B3FC57 /* XCRemoteSwiftPackageReference "MCEmojiPicker" */,
 				092F90AD2D7296A300760176 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 				092FE7BB2D7F2AF600F38388 /* XCRemoteSwiftPackageReference "Starscream" */,
 				0992A5C72D8A3A3400EF7B33 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				099C0F392F09AE47003C546F /* XCRemoteSwiftPackageReference "MCEmojiPicker" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 093287DA2C9C811200A0717E /* Products */;
@@ -422,7 +438,7 @@
 				INFOPLIST_FILE = indexWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = indexWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -451,7 +467,7 @@
 				INFOPLIST_FILE = indexWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = indexWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -687,7 +703,7 @@
 				INFOPLIST_FILE = indexShareExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = indexShareExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -714,7 +730,7 @@
 				INFOPLIST_FILE = indexShareExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = indexShareExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -814,12 +830,12 @@
 				minimumVersion = 11.10.0;
 			};
 		};
-		099487E82CEBC59500B3FC57 /* XCRemoteSwiftPackageReference "MCEmojiPicker" */ = {
+		099C0F392F09AE47003C546F /* XCRemoteSwiftPackageReference "MCEmojiPicker" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/izyumkin/MCEmojiPicker";
+			repositoryURL = "https://github.com/jeanno/MCEmojiPicker";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.2.3;
+				minimumVersion = 1.2.6;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -859,6 +875,21 @@
 			package = 0932EB392CEB6BBF00321EEE /* XCRemoteSwiftPackageReference "DynamicColor" */;
 			productName = DynamicColor;
 		};
+		096C022C2F09E4FA00425185 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 092F90AD2D7296A300760176 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+		096C022E2F09E4FA00425185 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 092F90AD2D7296A300760176 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCatUI;
+		};
+		096C02302F09E50A00425185 /* DynamicColor */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0932EB392CEB6BBF00321EEE /* XCRemoteSwiftPackageReference "DynamicColor" */;
+			productName = DynamicColor;
+		};
 		0992A7402D8A44B400EF7B33 /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 0992A5C72D8A3A3400EF7B33 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
@@ -869,10 +900,15 @@
 			package = 0992A5C72D8A3A3400EF7B33 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseMessaging;
 		};
-		099487E92CEBC59500B3FC57 /* MCEmojiPicker */ = {
+		099C0F3A2F09AE47003C546F /* MCEmojiPicker */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 099487E82CEBC59500B3FC57 /* XCRemoteSwiftPackageReference "MCEmojiPicker" */;
+			package = 099C0F392F09AE47003C546F /* XCRemoteSwiftPackageReference "MCEmojiPicker" */;
 			productName = MCEmojiPicker;
+		};
+		099C0F3C2F09AE47003C546F /* MCEmojiPickerJSON */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 099C0F392F09AE47003C546F /* XCRemoteSwiftPackageReference "MCEmojiPicker" */;
+			productName = MCEmojiPickerJSON;
 		};
 		09D9117E2DCB63730087D915 /* IxCoreKit */ = {
 			isa = XCSwiftPackageProductDependency;

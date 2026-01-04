@@ -421,9 +421,13 @@ struct ListScreen: View {
                         Task {
                             await fetchList()
                         }
+                    }
+                    if await SyncRegister.shared.hasExpired(SyncResource.listCategories(listId)) {
                         Task {
                             await fetchCategories()
                         }
+                    }
+                    if await SyncRegister.shared.hasExpired(SyncResource.listItems(listId)) {
                         Task {
                             await fetchItems()
                         }

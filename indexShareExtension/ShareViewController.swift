@@ -17,30 +17,37 @@ class ShareViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        Task {
+            await loadExtensionItems()
+        }
+    }
+    
+    func loadExtensionItems() async {
         let textDataType = UTType.plainText.identifier
         let urlDataType = UTType.url.identifier
         
-        if let inputItem = (extensionContext?.inputItems.first as? NSExtensionItem),
-           let itemProvider = inputItem.attachments?.first {
-            if itemProvider.hasItemConformingToTypeIdentifier(urlDataType) {
-                itemProvider.loadItem(forTypeIdentifier: urlDataType, options: nil) { (url, error) in
-                    if error == nil {
-                        if let url = (url as? URL) {
-                            self.showView(name: nil, url: url.absoluteString)
-                        }
+        guard let extensionContext else { return }
+        
+        var name: String? = nil
+        var url: String? = nil
+        
+        let itemProviders = extensionContext.inputItems.compactMap { ($0 as? NSExtensionItem)?.attachments }.flatMap { $0 }
+        for itemProvider in itemProviders {
+            if itemProvider.hasItemConformingToTypeIdentifier(urlDataType) && url == nil {
+                let unparsedUrl = try? await itemProvider.loadItem(forTypeIdentifier: urlDataType, options: nil)
+                    if let parsedUrl = (unparsedUrl as? URL) {
+                        url = parsedUrl.absoluteString
                     }
-                }
             }
-           else if itemProvider.hasItemConformingToTypeIdentifier(textDataType) {
-                itemProvider.loadItem(forTypeIdentifier: textDataType, options: nil) { (text, error) in
-                    if error == nil {
-                        if let text = text as? String {
-                            self.showView(name: text, url: nil)
-                        }
-                    }
+            else if itemProvider.hasItemConformingToTypeIdentifier(textDataType) && name == nil {
+                let text = try? await itemProvider.loadItem(forTypeIdentifier: textDataType, options: nil)
+                if let text = text as? String {
+                    name = text
                 }
             }
         }
+        
+        self.showView(name: name, url: url)
         
         NotificationCenter.default.addObserver(forName: NSNotification.Name("close.share.extension"), object: nil, queue: nil) { _ in
             DispatchQueue.main.async {

@@ -14,6 +14,14 @@ public enum SyncResource {
         return "\(lists)/\(listId)"
     }
     
+    public static func listCategories(_ listId: String) -> String {
+        return "\(lists)/\(listId)/categories"
+    }
+    
+    public static func listItems(_ listId: String) -> String {
+        return "\(lists)/\(listId)/items"
+    }
+    
     public static func listItem(_ listId: String, _ itemId: String) -> String {
         return "\(lists)/\(listId)/\(itemId)"
     }

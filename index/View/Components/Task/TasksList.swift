@@ -18,6 +18,7 @@ struct TasksList: View {
     private var onOpen: (_ task: IxTask) -> ()
     private var onCompletionToggle: (_ task: IxTask) -> ()
     private var onReschedule: (_ task: IxTask) -> ()
+    private var onRescheduleNextDay: (_ task: IxTask) -> ()
     private var onDelete: (_ task: IxTask) -> ()
     
     @Query private var tasks: [IxTask]
@@ -33,6 +34,7 @@ struct TasksList: View {
         onOpen: @escaping (_: IxTask) -> Void,
         onCompletionToggle: @escaping (_: IxTask) -> Void,
         onReschedule: @escaping (_: IxTask) -> Void,
+        onRescheduleNextDay: @escaping (_: IxTask) -> Void,
         onDelete: @escaping (_: IxTask) -> Void
     ) {
         self.dateFilter = dateFilter
@@ -43,6 +45,7 @@ struct TasksList: View {
         self.onOpen = onOpen
         self.onCompletionToggle = onCompletionToggle
         self.onReschedule = onReschedule
+        self.onRescheduleNextDay = onRescheduleNextDay
         self.onDelete = onDelete
         
         let completedFilter = taskFilter == .completed
@@ -88,6 +91,7 @@ struct TasksList: View {
             sortDescriptors.append(SortDescriptor(\IxTask.name, order: sortOrder))
         case .priority:
             sortDescriptors.append(SortDescriptor(\IxTask.priority, order: sortOrder))
+            sortDescriptors.append(SortDescriptor(\IxTask.dueDate, order:.forward))
             sortDescriptors.append(SortDescriptor(\IxTask.name, order: .forward))
 //        case .manual:
 //            sortDescriptor = SortDescriptor(\IxTask.priority, order: sortOrder)
@@ -147,11 +151,18 @@ struct TasksList: View {
                 }.tint(task.completed ? .orange : .accentColor)
                 
                 Button {
+                    onRescheduleNextDay(task)
+                } label: {
+                    Image(systemName: "arrow.uturn.down")
+                        .rotationEffect(.degrees(90))
+                }.tint(.gray)
+                
+                Button {
                     onReschedule(task)
                 } label: {
-                    Label("Reschedule", systemImage: "arrow.uturn.forward.circle")
+                    Label("Reschedule", systemImage: "calendar")
                         .labelStyle(.iconOnly)
-                }.tint(.brown)
+                }.tint(.gray)
             }
         }
     }
