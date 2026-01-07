@@ -531,6 +531,9 @@
     "None" : {
 
     },
+    "Note" : {
+
+    },
     "Notes" : {
 
     },
@@ -547,6 +550,9 @@
 
     },
     "Open link" : {
+
+    },
+    "Open note" : {
 
     },
     "Options" : {
@@ -636,7 +642,7 @@
     "Scroll horizontally for more colors" : {
 
     },
-    "See notes" : {
+    "See note" : {
 
     },
     "Select %@" : {

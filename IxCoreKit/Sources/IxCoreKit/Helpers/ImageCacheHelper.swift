@@ -7,8 +7,8 @@
 
 import UIKit
 
-public actor CachedFaviconHelper {
-    public static let shared = CachedFaviconHelper()
+public actor ImageCacheHelper {
+    public static let shared = ImageCacheHelper()
     private let cache = NSCache<NSString, UIImage>()
     
     private init() {

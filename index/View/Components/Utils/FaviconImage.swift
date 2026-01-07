@@ -1,5 +1,17 @@
-struct FaviconImage: View {
+//
+//  FaviconImage.swift
+//  index
+//
+//  Created by Giulio Pimenoff Verdolin on 07/01/26.
+//
+
+import SwiftUI
+
+struct FaviconImage<Content: View, Placeholder: View>: View {
     let link: String
+    let scale: CGFloat
+    let content: (Image) -> Content
+    let placeholder: () -> Placeholder
     
     private var faviconURL: URL? {
         guard let url = URL(string: link),
@@ -7,22 +19,28 @@ struct FaviconImage: View {
         return URL(string: "https://www.google.com/s2/favicons?domain=\(host)&sz=64")
     }
     
+    init(
+        link: String,
+        scale: CGFloat = 1.0,
+        @ViewBuilder content: @escaping (Image) -> Content,
+        @ViewBuilder placeholder: @escaping () -> Placeholder
+    ) {
+        self.link = link
+        self.scale = scale
+        self.content = content
+        self.placeholder = placeholder
+    }
+    
     var body: some View {
         Group {
             if let faviconURL = faviconURL {
-                CachedAsyncImage(url: faviconURL) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
+                CachedAsyncImage(url: faviconURL, scale: scale) { image in
+                    content(image)
                 } placeholder: {
-                    Image(systemName: "globe")
-                        .foregroundColor(.gray)
+                    placeholder()
                 }
-                .frame(width: 16, height: 16)
             } else {
-                Image(systemName: "globe")
-                    .frame(width: 16, height: 16)
-                    .foregroundColor(.gray)
+                placeholder()
             }
         }
     }

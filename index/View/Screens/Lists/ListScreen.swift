@@ -534,10 +534,14 @@ struct ListScreen: View {
             Menu {
                 Section {
                     if !completedItems.isEmpty {
-                        Button {
-                            Task {
-                                await setItemsCompletion(listId: listId, itemIds: completedItems.map(\.id), completed: false)
+                        Menu {
+                            Button("Uncomplete all", systemImage: "checkmark.arrow.trianglehead.counterclockwise", role: .destructive) {
+                                Task {
+                                    await setItemsCompletion(listId: listId, itemIds: completedItems.map(\.id), completed: false)
+                                }
                             }
+                            
+                            Button("Cancel", role: .cancel) {}
                         } label: {
                             Label("Uncomplete all", systemImage: "checkmark.arrow.trianglehead.counterclockwise")
                         }

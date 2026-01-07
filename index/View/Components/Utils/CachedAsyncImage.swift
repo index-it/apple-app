@@ -1,3 +1,14 @@
+//
+//  CachedAsyncImage.swift
+//  index
+//
+//  Created by Giulio Pimenoff Verdolin on 07/01/26.
+//
+
+import SwiftUI
+import IxCoreKit
+
+
 struct CachedAsyncImage<Content: View, Placeholder: View>: View {
     let url: URL
     let scale: CGFloat
@@ -26,8 +37,9 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
                 AsyncImage(url: url, scale: scale) { phase -> AnyView in
                     switch phase {
                     case .success(let image):
-                        // Save to cache when AsyncImage successfully loads
-                        saveToCache(from: url)
+                        Task {
+                            await saveToCache(from: url)
+                        }
                         return AnyView(content(image))
                     case .failure(_):
                         return AnyView(placeholder())
@@ -40,31 +52,34 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
             }
         }
         .onAppear {
-            loadFromCache()
+            Task {
+                await loadFromCache()
+            }
         }
     }
 
-    private func loadFromCache() {
-        if let cached = ImageCache.shared.object(forKey: url as NSURL) {
-            cachedImage = cached
+    private func loadFromCache() async {
+        if let cached = await ImageCacheHelper.shared.get(for: url.absoluteString) {
+            await MainActor.run {
+                cachedImage = cached
+            }
         }
     }
     
-    private func saveToCache(from url: URL) {
-        Task {
-            do {
-                let (data, _) = try await URLSession.shared.data(from: url)
-                if let uiImage = UIImage(data: data) {
-                    await MainActor.run {
-                        ImageCache.shared.setObject(uiImage, forKey: url as NSURL)
-                        if cachedImage == nil {
-                            cachedImage = uiImage
-                        }
+    private func saveToCache(from url: URL) async {
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            if let uiImage = UIImage(data: data) {
+                await ImageCacheHelper.shared.set(uiImage, for: url.absoluteString)
+                
+                await MainActor.run {
+                    if cachedImage == nil {
+                        cachedImage = uiImage
                     }
                 }
-            } catch {
-                print("Image caching failed: \(error)")
             }
+        } catch {
+            print("Image caching failed: \(error)")
         }
     }
 }
