@@ -73,7 +73,7 @@ struct SettingsView: View {
                         } label: {
                             HStack {
                                 Label("Account", systemImage: "person.fill")
-                                    .labelStyle(ColorfulIconLabelStyle(color: .accentColor))
+                                    .labelStyle(ListLabelStyle(color: .accentColor))
                                 
                                 Spacer()
                                 
@@ -89,7 +89,7 @@ struct SettingsView: View {
                             } label: {
                                 HStack {
                                     Label("Pro", systemImage: "crown.fill")
-                                        .labelStyle(ColorfulIconLabelStyle(color: .purple))
+                                        .labelStyle(ListLabelStyle(color: .purple))
                                     
                                     Spacer()
                                     
@@ -105,14 +105,14 @@ struct SettingsView: View {
                             showOnboarding = true
                         }) {
                             Label("Show onboarding", systemImage: "signpost.right.fill")
-                                .labelStyle(ColorfulIconLabelStyle(color: .green))
+                                .labelStyle(ListLabelStyle(color: .green))
                         }.tint(.primary)
                     }
                     
                     Section(header: Text("SUPPORT AND FEEDBACK")) {
                         Link(destination: URL(string: "https://index-it.app/support")!) {
                             Label("Support", systemImage: "lifepreserver.fill")
-                                .labelStyle(ColorfulIconLabelStyle(color: .red))
+                                .labelStyle(ListLabelStyle(color: .red))
                         }.tint(.primary)
                         
                         Button {
@@ -120,7 +120,7 @@ struct SettingsView: View {
                         } label: {
                             HStack {
                                 Label("About & Feedback", systemImage: "heart.fill")
-                                    .labelStyle(ColorfulIconLabelStyle(color: .orange))
+                                    .labelStyle(ListLabelStyle(color: .orange))
                                 
                                 Spacer()
                                 

@@ -78,7 +78,7 @@ struct TaskConnectedItemSectionView: View {
             }, icon: {
                 Image(systemName: "app.connected.to.app.below.fill")
             })
-            .labelStyle(ColorfulIconLabelStyle(color: .blue))
+            .labelStyle(ListLabelStyle(color: .blue))
             
             Spacer()
             

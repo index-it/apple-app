@@ -209,7 +209,7 @@ struct PaywallView: View {
                         )) {
                             Text("Select \(package.identifier)")
                         }
-                        .toggleStyle(iOSCheckboxToggleStyle())
+                        .toggleStyle(CheckmarkToggleStyle())
                         .scaleEffect(1.2)
                     }.padding()
                 }

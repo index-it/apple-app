@@ -118,16 +118,17 @@ struct TaskEditor: View {
             .navigationTitle(addingNew ? "Add Task" : "Edit Task")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel", systemImage: "xmark") {
                         isPresented = false
                     }
                 }
                 
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         onSaveSubmit()
                     }
+                    .buttonStyle(.glassProminent)
                     .disabled(isNameInvalid)
                 }
             }
@@ -174,7 +175,7 @@ struct TaskEditor: View {
                 Text("High")
                     .tag(3)
             }
-        }.labelStyle(ColorfulIconLabelStyle(color: .red))
+        }.labelStyle(ListLabelStyle(color: .red))
     }
     
     // MARK: - Subtasks Section
@@ -186,7 +187,7 @@ struct TaskEditor: View {
                 addSubtaskButton
             } label: {
                 Label("Subtasks", systemImage: "checklist.unchecked")
-                    .labelStyle(ColorfulIconLabelStyle(color: .brown))
+                    .labelStyle(ListLabelStyle(color: .brown))
             }
             
         } header: {

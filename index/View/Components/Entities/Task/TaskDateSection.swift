@@ -58,7 +58,7 @@ struct TaskDateSection: View {
             } icon: {
                 Image(systemName: "calendar")
             }
-        }.labelStyle(ColorfulIconLabelStyle(color: .blue))
+        }.labelStyle(ListLabelStyle(color: .blue))
     }
     
     // MARK: - Due Date Picker
@@ -75,7 +75,7 @@ struct TaskDateSection: View {
         } label: {
             HStack {
                 Label("Reminders", systemImage: "bell.fill")
-                    .labelStyle(ColorfulIconLabelStyle(color: .purple))
+                    .labelStyle(ListLabelStyle(color: .purple))
                 
                 Spacer()
                 
@@ -93,7 +93,7 @@ struct TaskDateSection: View {
         }) {
             HStack {
                 Label("Repeat", systemImage: "repeat")
-                    .labelStyle(ColorfulIconLabelStyle(color: .gray))
+                    .labelStyle(ListLabelStyle(color: .gray))
                 
                 Spacer()
                 

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct iOSCheckboxToggleStyle: ToggleStyle {
+struct CheckmarkToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
         Button(action: {
             configuration.isOn.toggle()
@@ -20,9 +20,9 @@ struct iOSCheckboxToggleStyle: ToggleStyle {
 #Preview {
     Toggle(isOn: .constant(false)) {
         Text("Hi")
-    }.toggleStyle(iOSCheckboxToggleStyle())
+    }.toggleStyle(CheckmarkToggleStyle())
     
     Toggle(isOn: .constant(true)) {
         Text("Hi")
-    }.toggleStyle(iOSCheckboxToggleStyle())
+    }.toggleStyle(CheckmarkToggleStyle())
 }

@@ -13,6 +13,7 @@ import IxCoreKit
 struct ListScreen: View {
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
+    @Environment(\.showToast) private var showToast
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var errorService: ErrorStateService
@@ -240,6 +241,8 @@ struct ListScreen: View {
                     context.insert(item)
                 }
             }
+            
+            showToast("Uncompleted all")
         } catch {
             errorService.insert(.localizedError(title: "Error \(completed ? "completing" : "un-completing") items", error: error))
         }
@@ -328,6 +331,9 @@ struct ListScreen: View {
                 context.insert(task)
             }
             
+            showToast("Task created") {
+                navigationManager.navigateToTab(.tasks)
+            }
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch IxApiClientError.proRequired(_) {
             showPaywall = true

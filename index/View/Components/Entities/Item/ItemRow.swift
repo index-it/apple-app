@@ -10,6 +10,7 @@ import DynamicColor
 import IxCoreKit
 
 struct ItemRow: View {
+    @Environment(\.showToast) private var showToast
     @Environment(\.colorScheme) var colorScheme
     var item: IxListItem
     var color: Color?
@@ -101,48 +102,65 @@ struct ItemRow: View {
         }
         
         Section {
-            Menu {
-                Button("Name", systemImage: "textformat") {
+            if note == nil && link == nil {
+                Button("Copy", systemImage: "document.on.document") {
                     UIPasteboard.general.string = item.name
+                    showToast("Item copied", systemImage: "document.on.document")
                 }
-                
-                if let note = item.note {
-                    Button("Note", systemImage: "note.text") {
-                        UIPasteboard.general.string = note
+            } else {
+                Menu {
+                    Button("Name", systemImage: "textformat") {
+                        UIPasteboard.general.string = item.name
+                        showToast("Item copied", systemImage: "document.on.document")
                     }
-                }
-                
-                if let link = item.link {
-                    Button("Link", systemImage: "link") {
-                        if let url = url {
-                            UIPasteboard.general.url = url
-                        } else {
-                            UIPasteboard.general.string = link
+                    
+                    if let note = item.note {
+                        Button("Note", systemImage: "note.text") {
+                            UIPasteboard.general.string = note
+                            showToast("Note copied", systemImage: "document.on.document")
                         }
                     }
+                    
+                    if let link = item.link {
+                        Button("Link", systemImage: "link") {
+                            if let url = url {
+                                UIPasteboard.general.url = url
+                            } else {
+                                UIPasteboard.general.string = link
+                            }
+                            
+                            showToast("Link copied", systemImage: "document.on.document")
+                        }
+                    }
+                } label: {
+                    Label("Copy", systemImage: "document.on.document")
                 }
-            } label: {
-                Label("Copy", systemImage: "document.on.document")
             }
             
-            Menu {
+            if note == nil && link == nil {
                 ShareLink(item: item.name) {
-                    Label("Name", systemImage: "textformat")
+                    Label("Share", systemImage: "square.and.arrow.up")
                 }
-                
-                if let note = item.note {
-                    ShareLink(item: note) {
-                        Label("Note", systemImage: "note.text")
+            } else {
+                Menu {
+                    ShareLink(item: item.name) {
+                        Label("Name", systemImage: "textformat")
                     }
-                }
-                
-                if let link = item.link {
-                    ShareLink(item: link) {
-                        Label("Link", systemImage: "link")
+                    
+                    if let note = item.note {
+                        ShareLink(item: note) {
+                            Label("Note", systemImage: "note.text")
+                        }
                     }
+                    
+                    if let link = item.link {
+                        ShareLink(item: link) {
+                            Label("Link", systemImage: "link")
+                        }
+                    }
+                } label: {
+                    Label("Share", systemImage: "square.and.arrow.up")
                 }
-            } label: {
-                Label("Share", systemImage: "square.and.arrow.up")
             }
         }
         

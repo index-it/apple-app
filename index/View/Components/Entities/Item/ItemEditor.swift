@@ -112,14 +112,14 @@ struct ItemEditor: View {
             .navigationTitle(addingNew ? "Add Item" : "Edit Item")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel", systemImage: "xmark") {
                         isPresented = false
                     }
                 }
                 
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Save") {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save", systemImage: "checkmark") {
                         onSubmit()
                     }
                     .disabled(isNameInvalid)

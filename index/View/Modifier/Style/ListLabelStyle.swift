@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ColorfulIconLabelStyle: LabelStyle {
+struct ListLabelStyle: LabelStyle {
     var color: Color
     
     func makeBody(configuration: Configuration) -> some View {

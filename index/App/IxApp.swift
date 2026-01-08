@@ -179,6 +179,7 @@ struct IxApp: App {
                 .modelContainer(modelContainer)
                 .defaultAppStorage(UserDefaults(suiteName: IxIdentifiers.APP_GROUP)!)
                 .alertPresentationWindow(service: errorService)
+                .setupToast()
                 .onOpenURL { url in
                     if GIDSignIn.sharedInstance.handle(url) {
                         return
