@@ -206,11 +206,39 @@ struct ListScreen: View {
         }
     }
     
-    func editItem(listId: String, itemId: String, name: String, categoryId: String?, link: String?, note: String?) async {
+    func editItem(
+        listId: String,
+        itemId: String,
+        name: String,
+        categoryId: String?,
+        link: String?,
+        note: String?,
+    ) async {
         do {
             let item = try await ixApiClient.updateListItem(listId: listId, itemId: itemId, name: name, categoryId: categoryId, link: link, note: note)
             
             try await saveItem(item)
+        } catch {
+            errorService.insert(.localizedError(title: "Error editing item", error: error))
+        }
+    }
+    
+    func categorizeItem(item: IxListItem, category: IxListCategory?) async {
+        do {
+            let item = try await ixApiClient.updateListItem(
+                listId: item.listId,
+                itemId: item.id,
+                name: item.name,
+                categoryId: category?.id,
+                link: item.link,
+                note: item.note
+            )
+            
+            try await saveItem(item)
+            
+            showToast(category == nil ? "Uncategorized" : "Moved to \(category!.name)", systemImage: "tray") {
+                selectedCategoryId = category?.id ?? ""
+            }
         } catch {
             errorService.insert(.localizedError(title: "Error editing item", error: error))
         }
@@ -493,6 +521,7 @@ struct ListScreen: View {
             listId: listId,
             listColor: contentColor,
             category: selectedCategory,
+            categories: categories,
             showCompleted: showCompletedItems,
             sorting: itemSorting,
             sortOrder: itemsSortOrder) {
@@ -516,6 +545,12 @@ struct ListScreen: View {
                 Task {
                     await setItemCompletion(listId: item.listId, itemId: item.id, completed: !item.completed)
                 }
+            } onCategorize: { item, category in
+                Task {
+                    await categorizeItem(item: item, category: category)
+                }
+            } onCreateCategory: {
+                isAddingCategory = true
             } onCreateTask: { item in
                 selectedItem = item
                 showTaskCreationSheet = true

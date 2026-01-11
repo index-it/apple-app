@@ -13,11 +13,13 @@ struct ItemRow: View {
     @Environment(\.showToast) private var showToast
     @Environment(\.colorScheme) var colorScheme
     var item: IxListItem
-    var color: Color?
+    var categories: [IxListCategory]
     
     var onOpenNotes: (IxListItem) -> ()
     var onOpenLink: (IxListItem) -> ()
     var onCompletionToggle: (IxListItem) -> ()
+    var onCategorize: (IxListItem, IxListCategory?) -> ()
+    var onCreateCategory: () -> ()
     var onCreateTask: (IxListItem) -> ()
     var onEdit: (IxListItem) -> ()
     var onDelete: (IxListItem) -> ()
@@ -44,7 +46,7 @@ struct ItemRow: View {
                     .fontWeight(.semibold)
             }
             
-            VStack(alignment: .leading, spacing: note != nil ? 0 : 7) {
+            VStack(alignment: .leading, spacing: note != nil ? 2 : 9) {
                 HStack {
                     Menu {
                         MenuContentView()
@@ -164,10 +166,49 @@ struct ItemRow: View {
             }
         }
         
-        // TODO: Move and Categorize
-        
-        Button("Create task", systemImage: "rectangle.grid.1x2") {
-            onCreateTask(item)
+        Section {
+            Menu {
+                
+                ForEach(categories) { category in
+                    Button {
+                        if item.categoryId != category.id {
+                            onCategorize(item, category)
+                        }
+                    } label: {
+                        HStack {
+                            if item.categoryId == category.id {
+                                Image(systemName: "checkmark")
+                            }
+                            
+                            Text(category.name)
+                        }
+                    }
+                }
+                
+                Button {
+                    onCategorize(item, nil)
+                } label: {
+                    HStack {
+                        if item.categoryId == nil {
+                            Image(systemName: "checkmark")
+                        }
+                        
+                        Text("Uncategorized")
+                    }
+                }
+                
+                Section {
+                    Button("Create category", systemImage: "plus") {
+                        onCreateCategory()
+                    }
+                }
+            } label: {
+                Label("Categorize", systemImage: "tray")
+            }
+            
+            Button("Create task", systemImage: "rectangle.grid.1x2") {
+                onCreateTask(item)
+            }
         }
         
         Section {
@@ -341,10 +382,12 @@ struct ItemRow: View {
                 edited_at: 0,
                 completed_at: nil
             ),
-            color: Color.green,
+            categories: [],
             onOpenNotes: { _ in },
             onOpenLink: { _ in },
             onCompletionToggle: { _ in },
+            onCategorize: { _, _ in },
+            onCreateCategory: {},
             onCreateTask: { _ in },
             onEdit: { _ in },
             onDelete: { _ in }
@@ -364,10 +407,12 @@ struct ItemRow: View {
                 edited_at: 0,
                 completed_at: 0
             ),
-            color: .orange,
+            categories: [],
             onOpenNotes: { _ in },
             onOpenLink: { _ in },
             onCompletionToggle: { _ in },
+            onCategorize: { _, _ in },
+            onCreateCategory: {},
             onCreateTask: { _ in },
             onEdit: { _ in },
             onDelete: { _ in }
@@ -387,9 +432,12 @@ struct ItemRow: View {
                 edited_at: 0,
                 completed_at: 0
             ),
+            categories: [],
             onOpenNotes: { _ in },
             onOpenLink: { _ in },
             onCompletionToggle: { _ in },
+            onCategorize: { _, _ in },
+            onCreateCategory: {},
             onCreateTask: { _ in },
             onEdit: { _ in },
             onDelete: { _ in }
@@ -409,9 +457,12 @@ struct ItemRow: View {
                 edited_at: 0,
                 completed_at: 0
             ),
+            categories: [],
             onOpenNotes: { _ in },
             onOpenLink: { _ in },
             onCompletionToggle: { _ in },
+            onCategorize: { _, _ in },
+            onCreateCategory: {},
             onCreateTask: { _ in },
             onEdit: { _ in },
             onDelete: { _ in }
@@ -431,9 +482,12 @@ struct ItemRow: View {
                 edited_at: 0,
                 completed_at: 0
             ),
+            categories: [],
             onOpenNotes: { _ in },
             onOpenLink: { _ in },
             onCompletionToggle: { _ in },
+            onCategorize: { _, _ in },
+            onCreateCategory: {},
             onCreateTask: { _ in },
             onEdit: { _ in },
             onDelete: { _ in }

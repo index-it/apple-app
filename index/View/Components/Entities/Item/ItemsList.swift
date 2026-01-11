@@ -13,6 +13,7 @@ struct ItemsList: View {
     private var listId: String
     private var listColor: Color
     private var category: IxListCategory?
+    private var categories: [IxListCategory]
     
     private var showCompleted: Bool
     private var onClearItemFilter: () -> Void
@@ -22,6 +23,8 @@ struct ItemsList: View {
     private var onOpenNotes: (IxListItem) -> ()
     private var onOpenLink: (IxListItem) -> ()
     private var onCompletionToggle: (IxListItem) -> ()
+    private var onCategorize: (IxListItem, IxListCategory?) -> ()
+    private var onCreateCategory: () -> ()
     private var onCreateTask: (IxListItem) -> ()
     private var onEdit: (IxListItem) -> ()
     private var onDelete: (IxListItem) -> ()
@@ -37,6 +40,7 @@ struct ItemsList: View {
         listId: String,
         listColor: Color,
         category: IxListCategory?,
+        categories: [IxListCategory],
         showCompleted: Bool,
         sorting: ItemsSorting,
         sortOrder: SortOrder,
@@ -45,6 +49,8 @@ struct ItemsList: View {
         onOpenNotes: @escaping (IxListItem) -> Void,
         onOpenLink: @escaping (IxListItem) -> Void,
         onCompletionToggle: @escaping (IxListItem) -> Void,
+        onCategorize: @escaping (IxListItem, IxListCategory?) -> Void,
+        onCreateCategory: @escaping () -> Void,
         onCreateTask: @escaping (IxListItem) -> Void,
         onEdit: @escaping (IxListItem) -> Void,
         onDelete: @escaping (IxListItem) -> Void
@@ -52,6 +58,7 @@ struct ItemsList: View {
         self.listId = listId
         self.listColor = listColor
         self.category = category
+        self.categories = categories
         self.showCompleted = showCompleted
         self.onClearItemFilter = onClearItemFilter
         self.onCreateItem = onCreateItem
@@ -59,6 +66,8 @@ struct ItemsList: View {
         self.onOpenNotes = onOpenNotes
         self.onOpenLink = onOpenLink
         self.onCompletionToggle = onCompletionToggle
+        self.onCategorize = onCategorize
+        self.onCreateCategory = onCreateCategory
         self.onCreateTask = onCreateTask
         self.onEdit = onEdit
         self.onDelete = onDelete
@@ -93,10 +102,12 @@ struct ItemsList: View {
         List(items) { item in
             ItemRow(
                 item: item,
-                color: color,
+                categories: categories,
                 onOpenNotes: onOpenNotes,
                 onOpenLink: onOpenLink,
                 onCompletionToggle: onCompletionToggle,
+                onCategorize: onCategorize,
+                onCreateCategory: onCreateCategory,
                 onCreateTask: onCreateTask,
                 onEdit: onEdit,
                 onDelete: onDelete
