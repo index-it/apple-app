@@ -4,23 +4,23 @@
 //
 //  Created by Giulio Pimenoff Verdolin on 07/12/24.
 //
-import SwiftUI
-import SwiftData
 import IxCoreKit
+import SwiftData
+import SwiftUI
 
 struct CategoryPicker: View {
     @Binding private var selectedCategoryId: String
-    
+
     @Query private var categories: [IxListCategory]
     private var selectedCategory: IxListCategory? {
         return categories.first { $0.id == selectedCategoryId }
     }
-    
+
     private var hideUncategorized: Bool
     private var onCreate: () -> Void
     private var onEdit: (_ category: IxListCategory) -> Void
     private var onDelete: (_ category: IxListCategory) -> Void
-    
+
     init(
         listId: String,
         selectedCategoryId: Binding<String>,
@@ -31,16 +31,16 @@ struct CategoryPicker: View {
         onEdit: @escaping (_ category: IxListCategory) -> Void,
         onDelete: @escaping (_ category: IxListCategory) -> Void
     ) {
-        self._selectedCategoryId = selectedCategoryId
+        _selectedCategoryId = selectedCategoryId
         self.hideUncategorized = hideUncategorized
         self.onCreate = onCreate
         self.onEdit = onEdit
         self.onDelete = onDelete
-        
+
         let filterPredicate = #Predicate<IxListCategory> { category in
             category.listId == listId
         }
-        
+
         let sortDescriptor = switch sorting {
         case .name:
             SortDescriptor(\IxListCategory.name, order: sortOrder)
@@ -49,34 +49,34 @@ struct CategoryPicker: View {
 //        case .manual:
 //            SortDescriptor(\IxListCategory.editedAt, order: sortOrder)
         }
-        
+
         _categories = Query(filter: filterPredicate, sort: [sortDescriptor])
     }
-    
+
     var body: some View {
         Menu {
             Section {
                 if let selectedCategory = selectedCategory {
                     Menu {
                         Button("Cancel", role: .cancel) {}
-                        
+
                         Button("Delete", systemImage: "trash", role: .destructive) {
                             onDelete(selectedCategory)
                         }
                     } label: {
                         Label("Delete category", systemImage: "trash")
                     }
-                    
+
                     Button("Edit category", systemImage: "square.and.pencil") {
                         onEdit(selectedCategory)
                     }
                 }
-                
+
                 Button("Create category", systemImage: "plus") {
                     onCreate()
                 }
             }
-            
+
             ForEach(categories) { category in
                 Button {
                     withAnimation {
@@ -87,12 +87,12 @@ struct CategoryPicker: View {
                         if selectedCategoryId == category.id {
                             Image(systemName: "checkmark")
                         }
-                        
+
                         Text(category.name)
                     }
                 }
             }
-            
+
             if !hideUncategorized {
                 Button {
                     selectedCategoryId = ""
@@ -101,7 +101,7 @@ struct CategoryPicker: View {
                         if selectedCategoryId.isEmpty {
                             Image(systemName: "checkmark")
                         }
-                        
+
                         Text("Uncategorized")
                     }
                 }
@@ -130,4 +130,3 @@ struct CategoryPicker: View {
         }
     }
 }
-

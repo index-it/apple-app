@@ -1,14 +1,14 @@
 //
-//  ItemFormSheet.swift
+//  ItemEditor.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 15/12/24.
 //
 
-import SwiftUI
 import IxCoreKit
+import SwiftUI
 
-fileprivate enum FocusField: Hashable {
+private enum FocusField: Hashable {
     case name
     case link
     case note
@@ -16,31 +16,31 @@ fileprivate enum FocusField: Hashable {
 
 struct ItemEditor: View {
     @FocusState private var focusField: FocusField?
-    
+
     @Binding private var config: EditorConfig<IxListItem>
     private var onCancel: () -> Void
     private var onSave: () -> Void
-    
+
     private var categories: [IxListCategory]
-    
+
     private var item: IxListItem {
         return config.entity
     }
-    
+
     init(
         config: Binding<EditorConfig<IxListItem>>,
         categories: [IxListCategory],
         onCancel: @escaping () -> Void,
-        onSave: @escaping () -> Void,
+        onSave: @escaping () -> Void
     ) {
-        self._config = config
+        _config = config
         self.categories = categories.sorted {
             $0.name < $1.name
         }
         self.onCancel = onCancel
         self.onSave = onSave
     }
-    
+
     var body: some View {
         NavigationView {
             VStack {
@@ -51,17 +51,17 @@ struct ItemEditor: View {
                         .onSubmit {
                             focusField = .link
                         }
-                    
+
                     Section {
                         Picker("Category", selection: $config.entity.categoryId) {
                             Text("No category").tag(nil as String?)
-                            
+
                             ForEach(categories, id: \.id) { category in
                                 Text(category.name).tag(category.id)
                             }
                         }
                         .pickerStyle(.menu)
-                        
+
                         TextField("Link", text: $config.entity.link ?? "", axis: .vertical)
                             .keyboardType(.URL)
                             .textInputAutocapitalization(.never)
@@ -71,8 +71,8 @@ struct ItemEditor: View {
                             .onSubmit {
                                 focusField = .note
                             }
-                            
-                        TextField("Notes", text: $config.entity.note ?? "",  axis: .vertical)
+
+                        TextField("Notes", text: $config.entity.note ?? "", axis: .vertical)
                             .lineLimit(3...)
                             .focused($focusField, equals: .note)
                             .submitLabel(.done)
@@ -96,7 +96,7 @@ struct ItemEditor: View {
                         onCancel()
                     }
                 }
-                
+
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save", systemImage: "checkmark") {
                         onSave()
@@ -115,7 +115,7 @@ struct ItemEditor: View {
 
 #Preview {
 //    @Previewable @State var isPresented = false
-//    
+//
 //    ItemEditor(
 //        isPresented: $isPresented,
 //        addingNew: true,
@@ -125,6 +125,6 @@ struct ItemEditor: View {
 //        note: nil,
 //        categories: []
 //    ) { name, categoryId, link, note in
-//        
+//
 //    }
 }

@@ -5,17 +5,17 @@
 //  Created by Giulio Pimenoff Verdolin on 07/03/25.
 //
 
-import SwiftUI
-import SwiftData
 import IxCoreKit
+import SwiftData
+import SwiftUI
 
 struct CompletedTasksList: View {
-    private var onOpen: (_ task: IxTask) -> ()
-    private var onCompletionToggle: (_ task: IxTask) -> ()
-    private var onDelete: (_ task: IxTask) -> ()
-    
+    private var onOpen: (_ task: IxTask) -> Void
+    private var onCompletionToggle: (_ task: IxTask) -> Void
+    private var onDelete: (_ task: IxTask) -> Void
+
     @Query private var tasks: [IxTask]
-    
+
     init(
         onOpen: @escaping (_: IxTask) -> Void,
         onCompletionToggle: @escaping (_: IxTask) -> Void,
@@ -24,17 +24,17 @@ struct CompletedTasksList: View {
         self.onOpen = onOpen
         self.onCompletionToggle = onCompletionToggle
         self.onDelete = onDelete
-        
+
         let filterPredicate = #Predicate<IxTask> { task in
             task.completed
         }
-        
+
         _tasks = Query(filter: filterPredicate, sort: [SortDescriptor(\IxTask.completedAt, order: .reverse)])
     }
-    
+
     var body: some View {
         let subtasksMaxWidth = UIScreen.main.bounds.width / 3
-        
+
         List(tasks) { task in
             TaskRow(
                 task: task,
@@ -72,11 +72,8 @@ struct CompletedTasksList: View {
 }
 
 #Preview {
-    CompletedTasksList { task in
-        
-    } onCompletionToggle: { task in
-        
-    } onDelete: { task in
-        
+    CompletedTasksList { _ in
+    } onCompletionToggle: { _ in
+    } onDelete: { _ in
     }
 }

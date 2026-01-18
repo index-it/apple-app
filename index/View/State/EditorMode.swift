@@ -6,6 +6,6 @@
 //
 
 enum EditorMode {
-    case create;
-    case edit;
+    case create
+    case edit
 }

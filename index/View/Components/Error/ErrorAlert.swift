@@ -10,26 +10,26 @@ import Foundation
 public struct ErrorAlert: Identifiable {
     public struct Button {
         public let title: String
-        
+
         public let isDestructive: Bool
-        
+
         public let action: () -> Void
-        
+
         public init(title: String, isDestructive: Bool, action: @escaping () -> Void) {
             self.title = title
             self.isDestructive = isDestructive
             self.action = action
         }
     }
-    
+
     public let id: String
-    
+
     public let title: String?
-    
+
     public let message: String
-    
+
     public let underlying: Error?
-    
+
     public let buttons: [Button]
 }
 
@@ -48,7 +48,7 @@ public extension ErrorAlert {
             buttons: buttons
         )
     }
-    
+
     static func customMessageLocalizedError(
         id: String = UUID().uuidString,
         title: String?,
@@ -64,7 +64,7 @@ public extension ErrorAlert {
             buttons: buttons
         )
     }
-    
+
     static func customMessage(
         id: String = UUID().uuidString,
         title: String? = nil,

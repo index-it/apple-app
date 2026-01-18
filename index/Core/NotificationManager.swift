@@ -11,23 +11,23 @@ import SwiftUI
 @MainActor
 class NotificationManager: ObservableObject {
     static let shared = NotificationManager()
-    
+
     private var permitted = false
-    
+
     private init() {
         Task {
             await checkForPermissions()
         }
     }
-    
+
     func request() async -> Bool {
         let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
-        
+
         do {
             try await UNUserNotificationCenter.current().requestAuthorization(options: authOptions)
             let appDelegate = UIApplication.shared
             appDelegate.registerForRemoteNotifications()
-            
+
             permitted = true
             return true
         } catch {
@@ -36,10 +36,10 @@ class NotificationManager: ObservableObject {
             return false
         }
     }
-    
+
     func checkForPermissions() async {
         let status = await UNUserNotificationCenter.current().notificationSettings()
-        
+
         switch status.authorizationStatus {
         case .authorized:
             permitted = true
@@ -47,11 +47,11 @@ class NotificationManager: ObservableObject {
             permitted = false
         }
     }
-    
+
     func hasPermissions() -> Bool {
         return permitted
     }
-    
+
     func setupNotificationCategories() {
         let taskCategory = UNNotificationCategory(
             identifier: "TASK_REMINDER",
@@ -59,7 +59,7 @@ class NotificationManager: ObservableObject {
             intentIdentifiers: [],
             options: []
         )
-        
+
         UNUserNotificationCenter.current().setNotificationCategories([taskCategory])
     }
 }

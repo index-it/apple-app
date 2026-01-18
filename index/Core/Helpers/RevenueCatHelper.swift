@@ -5,25 +5,25 @@
 //  Created by Giulio Pimenoff Verdolin on 04/05/25.
 //
 
-import RevenueCat
-import os
 import Foundation
 import IxCoreKit
+import os
+import RevenueCat
 
-fileprivate let log = Logger(subsystem: IxSubsystems.APP, category: "RevenueCatHelper")
+private let log = Logger(subsystem: IxSubsystems.APP, category: "RevenueCatHelper")
 
-public struct RevenueCatHelper {
+public enum RevenueCatHelper {
     private static let apiKey = "appl_nPoYUABJDUWtNxeVeGCrIxTnPJA"
-    
+
     /// Call this once at application startup to configure RevenueCat
     public static func configure() {
         #if DEBUG
-        Purchases.logLevel = .debug
+            Purchases.logLevel = .debug
         #endif
-        
+
         Purchases.configure(withAPIKey: RevenueCatHelper.apiKey)
     }
-    
+
     public static func login(userId: String) async {
         do {
             _ = try await Purchases.shared.logIn(userId)
@@ -31,7 +31,7 @@ public struct RevenueCatHelper {
             log.error("Failed logging in user in revenue cat: \(error)")
         }
     }
-    
+
     public static func logout() async {
         do {
             _ = try await Purchases.shared.logOut()

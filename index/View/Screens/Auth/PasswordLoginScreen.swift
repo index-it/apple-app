@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import SwiftUI
 import IxCoreKit
+import SwiftUI
 
 struct PasswordLoginScreen: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
@@ -15,16 +15,16 @@ struct PasswordLoginScreen: View {
     @EnvironmentObject private var errorService: ErrorStateService
 
     var email: String
-    
+
     @State private var password: String = ""
     @State private var isPasswordSecure: Bool = true
     @FocusState private var isPasswordFocused: Bool
     @State private var loading = false
-    
+
     @State private var passwordResetEmailSending = false
     @State private var isPasswordResetAlertShown = false
     @State private var isPasswordResetSentAlertShown = false
-    
+
     func login() async {
         do {
             loading = true
@@ -43,7 +43,7 @@ struct PasswordLoginScreen: View {
             errorService.insert(.localizedError(title: nil, error: error))
         }
     }
-    
+
     func sendPasswordForgottenEmail() async {
         do {
             try await ixApiClient.passwordForgotten(email: email)
@@ -56,7 +56,7 @@ struct PasswordLoginScreen: View {
             errorService.insert(.localizedError(title: nil, error: error))
         }
     }
-    
+
     var body: some View {
         VStack {
             ZStack {
@@ -81,7 +81,7 @@ struct PasswordLoginScreen: View {
                             await login()
                         }
                     }
-                
+
                 Button {
                     isPasswordSecure.toggle()
                 } label: {
@@ -91,9 +91,7 @@ struct PasswordLoginScreen: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing).padding()
             }
-                
-            
-            
+
             Button {
                 Task {
                     await login()
@@ -104,12 +102,12 @@ struct PasswordLoginScreen: View {
                         ProgressView()
                             .controlSize(.regular)
                     }
-                    
+
                     Text("Login")
                 }.frame(maxWidth: .infinity)
             }.buttonStyle(.borderedProminent)
                 .controlSize(.large)
-            
+
         }.frame(maxHeight: .infinity, alignment: .top)
             .padding()
             .navigationTitle("Login with password")
@@ -130,15 +128,15 @@ struct PasswordLoginScreen: View {
                             isPasswordResetAlertShown = false
                         }
                     }
-                    
+
                     Button("Cancel", role: .cancel) {
-                        
                         isPasswordResetAlertShown = false
                     }
                 },
                 message: {
                     Text("We will send an email to \(email) with instructions on how to reset the password!")
-                })
+                }
+            )
             .alert(
                 "Instructions sent!",
                 isPresented: $isPasswordResetSentAlertShown,

@@ -5,7 +5,6 @@
 //  Created by Giulio Pimenoff Verdolin on 29/12/25.
 //
 
-
 //
 //  TaskRemindersView.swift
 //  index
@@ -13,43 +12,44 @@
 //  Created by Giulio Pimenoff Verdolin on 29/12/25.
 //
 
-import SwiftUI
 import IxCoreKit
+import SwiftUI
 
 struct TaskRemindersView: View {
     @EnvironmentObject private var errorService: ErrorStateService
     @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
-    
+
     @Binding var reminders: [IxTaskReminder]
     @State private var showPaywall = false
-    
+
     @State private var showCreateReminderDaysPicker = false
     @State private var showCreateReminderTimePicker = false
     @State private var createReminderDays = 0
     @State private var createReminderTime = Date.now
-    
+
     private var createDaysBeforeText: String {
         return createReminderDays == 0 ? "On the same day" : "\(createReminderDays) day\(createReminderDays > 1 ? "s" : "") before"
     }
-    
+
     var body: some View {
         Form {
             if !reminders.isEmpty {
                 existingRemindersSection
             }
-            
+
             createReminderSection
         }
         .navigationTitle("Reminders")
         .paywallCover(isPresented: $showPaywall)
     }
-    
+
     // MARK: - Existing Reminders Section
+
     var existingRemindersSection: some View {
         Section {
             ForEach(Array(reminders.enumerated()), id: \.offset) { index, reminder in
                 let dayText = reminder.daysBefore == 0 ? "On the same day" : "\(reminder.daysBefore) day\(reminder.daysBefore > 1 ? "s" : "") before"
-                
+
                 Text("\(dayText) at \(reminder.hourAndMinuteString())")
                     .swipeActions(allowsFullSwipe: true) {
                         Button("Delete", systemImage: "trash.fill", role: .destructive) {
@@ -63,8 +63,9 @@ struct TaskRemindersView: View {
             Text("Swipe left to delete a reminder")
         }
     }
-    
+
     // MARK: - Create Reminder Section
+
     var createReminderSection: some View {
         Section {
             Button {
@@ -81,11 +82,11 @@ struct TaskRemindersView: View {
                         .foregroundStyle(showCreateReminderDaysPicker ? .accentColor : UIColor.label.toColor())
                 }
             }
-            
+
             if showCreateReminderDaysPicker {
                 createReminderDaysPicker
             }
-            
+
             Button {
                 withAnimation {
                     showCreateReminderTimePicker = !showCreateReminderTimePicker
@@ -100,20 +101,21 @@ struct TaskRemindersView: View {
                         .foregroundStyle(showCreateReminderTimePicker ? .accentColor : UIColor.label.toColor())
                 }
             }
-            
+
             if showCreateReminderTimePicker {
                 createReminderTimePicker
             }
-            
+
             addReminderButton
         }
     }
-    
+
     // MARK: - Create Reminder Days Picker
+
     var createReminderDaysPicker: some View {
         Picker("Days before", selection: $createReminderDays) {
-            ForEach(RecurrenceFrequency.allCases) { frequency in
-                ForEach(0...999, id: \.self) { days in
+            ForEach(RecurrenceFrequency.allCases) { _ in
+                ForEach(0 ... 999, id: \.self) { days in
                     HStack {
                         Text("\(days)")
                             .tag(days)
@@ -123,14 +125,16 @@ struct TaskRemindersView: View {
         }
         .pickerStyle(.wheel)
     }
-    
+
     // MARK: - Create Reminder Time Picker
+
     var createReminderTimePicker: some View {
         DatePicker("At time", selection: $createReminderTime, displayedComponents: .hourAndMinute)
             .datePickerStyle(.wheel)
     }
-    
+
     // MARK: - Add Reminder Button
+
     var addReminderButton: some View {
         Button {
             Task {
@@ -150,13 +154,13 @@ struct TaskRemindersView: View {
                 .frame(maxWidth: .infinity)
         }
     }
-    
+
     func addReminder() {
-        if !reminders.isEmpty && user?.has_pro != true {
+        if !reminders.isEmpty, user?.has_pro != true {
             showPaywall = true
         } else {
             let timeOffset = (Calendar.current.component(.hour, from: createReminderTime) * 60 * 60 * 1000) + (Calendar.current.component(.minute, from: createReminderTime) * 60 * 1000)
-            
+
             reminders.append(
                 IxTaskReminder(
                     daysBefore: Int64(createReminderDays),

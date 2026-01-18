@@ -1,13 +1,13 @@
 //
-//  AccountTab.swift
+//  SettingsView.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 18/11/24.
 //
 
-import SwiftUI
-import RevenueCat
 import IxCoreKit
+import RevenueCat
+import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var context
@@ -17,22 +17,22 @@ struct SettingsView: View {
     @EnvironmentObject private var navigationManager: NavigationManager
 
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
-    
+
     @State private var showOnboarding = false
     @State private var showPaywall = false
-    
+
     @State private var manageSubscriptionLoading: Bool = false
 
     private func manageSubscriptions() {
         manageSubscriptionLoading = true
-        
+
         Purchases.shared.getCustomerInfo { customer, error in
             manageSubscriptionLoading = false
             if let error = error {
                 errorService.insert(.localizedError(title: "Couldn't open subscriptions page", error: error))
                 return
             }
-            
+
             if let customer = customer {
                 if let url = customer.managementURL {
                     openURL(url)
@@ -40,7 +40,7 @@ struct SettingsView: View {
             }
         }
     }
-    
+
     var body: some View {
         Settings
             .fullScreenCover(isPresented: $showOnboarding) {
@@ -53,9 +53,8 @@ struct SettingsView: View {
                     showPaywall = false
                 }
             }
-        
     }
-    
+
     private var Settings: some View {
         NavigationView {
             VStack(spacing: 0) {
@@ -66,7 +65,7 @@ struct SettingsView: View {
                             .listRowBackground(Color.clear)
                             .padding(.top, 12)
                     }
-                    
+
                     Section {
                         Button {
                             navigationManager.push(.accountSettings)
@@ -74,15 +73,15 @@ struct SettingsView: View {
                             HStack {
                                 Label("Account", systemImage: "person.fill")
                                     .labelStyle(ListLabelStyle(color: .accentColor))
-                                
+
                                 Spacer()
-                                
+
                                 Image(systemName: "chevron.forward")
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
                             }
                         }
-                        
+
                         if let user = user, user.has_pro {
                             Button {
                                 navigationManager.push(.proSettings)
@@ -90,17 +89,16 @@ struct SettingsView: View {
                                 HStack {
                                     Label("Pro", systemImage: "crown.fill")
                                         .labelStyle(ListLabelStyle(color: .purple))
-                                    
+
                                     Spacer()
-                                    
+
                                     Image(systemName: "chevron.forward")
                                         .font(.footnote)
                                         .foregroundStyle(.secondary)
                                 }
                             }
                         }
-                        
-                        
+
                         Button(action: {
                             showOnboarding = true
                         }) {
@@ -108,29 +106,29 @@ struct SettingsView: View {
                                 .labelStyle(ListLabelStyle(color: .green))
                         }.tint(.primary)
                     }
-                    
+
                     Section(header: Text("SUPPORT AND FEEDBACK")) {
                         Link(destination: URL(string: "https://index-it.app/support")!) {
                             Label("Support", systemImage: "lifepreserver.fill")
                                 .labelStyle(ListLabelStyle(color: .red))
                         }.tint(.primary)
-                        
+
                         Button {
                             navigationManager.push(.about)
                         } label: {
                             HStack {
                                 Label("About & Feedback", systemImage: "heart.fill")
                                     .labelStyle(ListLabelStyle(color: .orange))
-                                
+
                                 Spacer()
-                                
+
                                 Image(systemName: "chevron.forward")
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
                             }
                         }
                     }
-                    
+
                     Section(header: Text("ABOUT")) {
                         Link(destination: URL(string: "https://index-it.app/privacy")!) {
                             Label(title: {
@@ -163,7 +161,7 @@ struct SettingsView: View {
         .navigationBarTitleDisplayMode(.automatic)
         .navigationTitle("Settings")
     }
-    
+
     var getProView: some View {
         Button {
             showPaywall = true
@@ -174,21 +172,21 @@ struct SettingsView: View {
                         Image(systemName: "bolt.circle.fill")
                             .scaleEffect(1.75)
                             .opacity(0.8)
-                        
+
                         VStack(alignment: .leading) {
                             Text("Index Pro")
                                 .font(.title2)
                                 .fontWeight(.bold)
-                            
+
                             Text("Unlock all features")
                                 .foregroundStyle(.secondary)
                                 .font(.footnote)
                                 .fontWeight(.semibold)
                         }
                     }
-                    
+
                     Spacer()
-                    
+
                     Button {
                         showPaywall = true
                     } label: {
@@ -198,12 +196,12 @@ struct SettingsView: View {
                             .padding(.horizontal)
                             .padding(.vertical, 8)
                             .background {
-                                Color(red: 25/255, green: 65/255, blue: 45/255)
+                                Color(red: 25 / 255, green: 65 / 255, blue: 45 / 255)
                                     .brightness(0.2)
                                     .saturation(0.7)
                             }
                             .clipShape(RoundedRectangle(cornerRadius: 32))
-                            
+
                     }.buttonStyle(.plain)
                 }
                 .padding(.horizontal, 32)
@@ -212,8 +210,8 @@ struct SettingsView: View {
                     LinearGradient(
                         gradient: Gradient(
                             colors: [
-                                Color(red: 15/255, green: 40/255, blue: 25/255), // Darker green
-                                Color(red: 25/255, green: 65/255, blue: 45/255)  // Lighter green
+                                Color(red: 15 / 255, green: 40 / 255, blue: 25 / 255), // Darker green
+                                Color(red: 25 / 255, green: 65 / 255, blue: 45 / 255), // Lighter green
                             ]
                         ),
                         startPoint: .top,
@@ -226,7 +224,7 @@ struct SettingsView: View {
         .buttonStyle(.plain)
         .foregroundStyle(.white)
     }
-    
+
     var currentlySubscribedCardView: some View {
         ZStack {
             HStack {
@@ -234,19 +232,19 @@ struct SettingsView: View {
                     Image(systemName: "bolt.circle.fill")
                         .scaleEffect(1.75)
                         .opacity(0.8)
-                    
+
                     VStack(alignment: .leading) {
                         Text("Pro enabled")
                             .font(.title2)
                             .fontWeight(.bold)
-                        
+
                         Text("Thank you for supporting the app :)")
                             .foregroundStyle(.secondary)
                             .font(.footnote)
                             .fontWeight(.semibold)
                     }
                 }
-                
+
                 Spacer()
             }
             .padding(.horizontal, 32)
@@ -255,8 +253,8 @@ struct SettingsView: View {
                 LinearGradient(
                     gradient: Gradient(
                         colors: [
-                            Color(red: 15/255, green: 40/255, blue: 25/255), // Darker green
-                            Color(red: 25/255, green: 65/255, blue: 45/255)  // Lighter green
+                            Color(red: 15 / 255, green: 40 / 255, blue: 25 / 255), // Darker green
+                            Color(red: 25 / 255, green: 65 / 255, blue: 45 / 255), // Lighter green
                         ]
                     ),
                     startPoint: .top,

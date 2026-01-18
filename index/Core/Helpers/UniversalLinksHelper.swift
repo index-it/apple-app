@@ -6,24 +6,24 @@
 //
 
 import Foundation
-import os
 import IxCoreKit
+import os
 
-fileprivate let log = Logger(subsystem: IxSubsystems.APP, category: "UniversalLinksHelper")
+private let log = Logger(subsystem: IxSubsystems.APP, category: "UniversalLinksHelper")
 
-struct UniversalLinksHelper {
+enum UniversalLinksHelper {
     static func handleUniversalLink(_ url: URL, navigationManager: NavigationManager) {
         if url.host() != "web.index-it.app" {
             navigationManager.navigateToTab(.tasks)
             return
         }
-        
+
         // Extract the path components, ignoring the domain for Universal Links
         let pathComponents = url.pathComponents.filter { $0 != "/" && !$0.isEmpty }
         guard pathComponents.count >= 1 else { return }
-        
+
         let section = pathComponents[0]
-        
+
         switch section {
         case IxUniversalLinks.Sections.lists:
             if let listId = pathComponents[safe: 1] {

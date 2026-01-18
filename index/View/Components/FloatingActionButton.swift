@@ -14,7 +14,7 @@ struct FloatingActionButton: ViewModifier {
     func body(content: Content) -> some View {
         ZStack(alignment: .bottomTrailing) {
             content
-            
+
             Button(action: action) {
                 Image(systemName: "plus")
                     .font(.title.weight(.semibold))
@@ -32,14 +32,12 @@ struct FloatingActionButton: ViewModifier {
 
 extension View {
     func floatingActionButton(_ imageName: String, action: @escaping () -> Void) -> some View {
-        self.modifier(FloatingActionButton(imageName: imageName, action: action))
+        modifier(FloatingActionButton(imageName: imageName, action: action))
     }
 }
 
 #Preview {
     VStack {
         Text("Hi")
-    }.frame(maxWidth: .infinity, maxHeight: .infinity).floatingActionButton("plus") {
-        
-    }
+    }.frame(maxWidth: .infinity, maxHeight: .infinity).floatingActionButton("plus") {}
 }

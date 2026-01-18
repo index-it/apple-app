@@ -1,5 +1,5 @@
 //
-//  iOSCheckboxToggleStyle.swift
+//  CheckmarkToggleStyle.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 28/02/25.
@@ -21,7 +21,7 @@ struct CheckmarkToggleStyle: ToggleStyle {
     Toggle(isOn: .constant(false)) {
         Text("Hi")
     }.toggleStyle(CheckmarkToggleStyle())
-    
+
     Toggle(isOn: .constant(true)) {
         Text("Hi")
     }.toggleStyle(CheckmarkToggleStyle())

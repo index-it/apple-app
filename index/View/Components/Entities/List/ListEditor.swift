@@ -1,37 +1,37 @@
 //
-//  ListFormSheet.swift
+//  ListEditor.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 19/11/24.
 //
 
-import SwiftUI
-import MCEmojiPicker
 import IxCoreKit
+import MCEmojiPicker
+import SwiftUI
 
 struct ListEditor: View {
     @Binding var isPresented: Bool
     private var addingNew: Bool
-    
+
     @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
     @State private var showPaywall = false
-    
+
     @State private var showEmojiPicker = false
     @FocusState private var isNameFocused: Bool
-    
+
     @State private var name: String
     @State private var color: Color
     private var colors: [Color]
-    
+
     @State private var emoji: String
     @State private var isPublic: Bool
-    
+
     private var isNameInvalid: Bool {
         name.isEmpty || name.count >= 100
     }
 
     private var onSave: (_ name: String, _ color: Color, _ icon: String, _ isPublic: Bool) -> Void
-    
+
     init(
         isPresented: Binding<Bool>,
         addingNew: Bool = true,
@@ -42,15 +42,15 @@ struct ListEditor: View {
         colors: [Color],
         onSave: @escaping (_ name: String, _ color: Color, _ icon: String, _ isPublic: Bool) -> Void
     ) {
-        self._isPresented = isPresented
+        _isPresented = isPresented
         self.addingNew = addingNew
-        
+
         self.name = name
         self.color = color
         self.emoji = emoji
         self.isPublic = isPublic
         self.colors = colors
-        
+
         self.onSave = onSave
     }
 
@@ -61,8 +61,7 @@ struct ListEditor: View {
                     ListCard(
                         list: IxList.mock(name: name.isEmpty ? "List name" : name, emoji: emoji, color: color.hexString),
                         owner: false,
-                        onTap: {
-                        },
+                        onTap: {},
                         onShare: {},
                         onEdit: {},
                         onArchiveToggle: {},
@@ -72,10 +71,10 @@ struct ListEditor: View {
                     )
                     .frame(maxWidth: 200)
                     .padding()
-                    
+
                     Spacer()
                         .frame(height: 20)
-                    
+
                     HStack(spacing: 12) {
                         Button {
                             isNameFocused = false
@@ -84,7 +83,7 @@ struct ListEditor: View {
                             Text(emoji)
                                 .font(.title2)
                                 .padding()
-                                
+
                         }.background(.quaternary)
                             .clipShape(.circle)
                             .emojiPicker(
@@ -92,7 +91,7 @@ struct ListEditor: View {
                                 selectedEmoji: $emoji,
                                 arrowDirection: .up
                             )
-                        
+
                         TextField("List name", text: $name)
                             .font(.title2)
                             .fontWeight(.bold)
@@ -105,26 +104,25 @@ struct ListEditor: View {
                             .background(isNameFocused ? .quaternary : .quinary)
                             .clipShape(.buttonBorder)
                     }
-                    
                 }
                 .padding()
                 .background(RoundedRectangle(cornerRadius: 12).fill(.background))
                 .padding()
-                
+
                 Section {
                     ColorSelector(color: $color, colors: colors)
                         .padding()
                 }
                 .background(RoundedRectangle(cornerRadius: 12).fill(.background))
                 .padding()
-                
+
                 Form {
-                    Section() {
+                    Section {
                         Toggle("Public", isOn: Binding(
                             get: { isPublic },
                             set: { newValue in
                                 let hasPro = user?.has_pro == true
-                                
+
                                 if hasPro {
                                     isPublic = newValue
                                 } else {
@@ -138,7 +136,6 @@ struct ListEditor: View {
                         Text("By making the list public anyone with a link to it will be able to see it but not modify it.")
                     }
                 }
-                
             }
             .background(Color(UIColor.systemGroupedBackground))
             .frame(maxHeight: .infinity, alignment: .top)
@@ -152,7 +149,7 @@ struct ListEditor: View {
                         Text("Cancel")
                     }
                 }
-                
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         onSave(name, color, emoji, isPublic)
@@ -174,7 +171,7 @@ struct ListEditor: View {
 
 #Preview {
     @Previewable @State var isPresented = true
-    
+
     ListEditor(
         isPresented: $isPresented,
         name: "",
@@ -182,7 +179,6 @@ struct ListEditor: View {
         emoji: "",
         isPublic: false,
         colors: []
-    ) { name, color, icon, isPublic in
-        
+    ) { _, _, _, _ in
     }
 }

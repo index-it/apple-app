@@ -10,24 +10,24 @@ import SwiftUI
 struct ColorSelector: View {
     @Binding var color: Color
     var colors: [Color]
-    
+
     @State var hue: Double = 0.3
     @State var brightness: Double = 0.7
     @State var saturation: Double = 0.6
     @State private var showColorPicker = false
-    
+
     private var gradientColorList = stride(from: 0, through: 1, by: 0.2).map {
         Color(hue: $0, saturation: 0.8, brightness: 1)
     }
-    
+
     init(
         color: Binding<Color>,
         colors: [Color]
     ) {
-        self._color = color
+        _color = color
         self.colors = colors
     }
-    
+
     var body: some View {
         VStack {
             ScrollView(.horizontal, showsIndicators: false) {
@@ -52,19 +52,18 @@ struct ColorSelector: View {
                                 Circle()
                                     .fill(.white)
                                     .padding(.all, 10)
-                                    
                             }
                         }
                         .scrollTransition { content, phase in
                             content.blur(radius: phase.isIdentity ? 0 : 8)
                         }
                     }
-                    
+
                     RoundedRectangle(cornerRadius: 8)
                         .fill(.secondary)
                         .frame(width: 1, height: 28)
                         .edgesIgnoringSafeArea(.horizontal)
-                    
+
                     ForEach(colors, id: \.hashValue) { color in
                         Circle()
                             .fill(color)
@@ -73,7 +72,6 @@ struct ColorSelector: View {
                                     Circle()
                                         .fill(.white)
                                         .padding(.all, 10)
-                                        
                                 }
                             }
                             .onTapGesture {
@@ -87,16 +85,16 @@ struct ColorSelector: View {
                             }
                     }
                 }.scrollTargetLayout()
-                .frame(height: 42)
+                    .frame(height: 42)
             }
-            
+
             if showColorPicker {
                 VStack(spacing: 27) {
                     ColorSlider(
                         value: $hue,
                         colorList: gradientColorList
                     )
-                    
+
                     ColorSlider(
                         value: $brightness,
                         colorList: [
@@ -104,7 +102,7 @@ struct ColorSelector: View {
                             Color(hue: hue, saturation: saturation, brightness: 0.9),
                         ]
                     )
-                    
+
                     ColorSlider(
                         value: $saturation,
                         colorList: [
@@ -135,13 +133,13 @@ struct ColorSelector: View {
 
 #Preview {
     @Previewable @State var color = Color.red
-    
+
     VStack {
         color
             .frame(width: 50, height: 50)
             .padding(.bottom, 24)
-        
+
         ColorSelector(color: $color, colors: [.red, .green, .yellow, .blue, .pink, .purple, .black])
-        
+
     }.padding()
 }

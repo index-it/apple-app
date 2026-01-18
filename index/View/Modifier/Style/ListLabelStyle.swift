@@ -1,5 +1,5 @@
 //
-//  LabelStyle.swift
+//  ListLabelStyle.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 18/02/25.
@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ListLabelStyle: LabelStyle {
     var color: Color
-    
+
     func makeBody(configuration: Configuration) -> some View {
         Label {
             configuration.title

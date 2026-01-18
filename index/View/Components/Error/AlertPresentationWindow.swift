@@ -9,7 +9,7 @@ import SwiftUI
 
 private struct AlertPresentationWindow: View {
     @ObservedObject var service: ErrorStateService
-    
+
     var body: some View {
         Color.clear
             .alert(
@@ -31,17 +31,17 @@ private struct AlertPresentationWindow: View {
 
 private struct AlertPresentationWindowContext: ViewModifier {
     let service: ErrorStateService
-    
+
     @State private var alertWindow: UIWindow?
-    
+
     func body(content: Content) -> some View {
         content.onAppear {
             guard alertWindow == nil else { return }
             let windowScene = UIApplication.shared.connectedScenes
-                .compactMap { $0 as? UIWindowScene}
+                .compactMap { $0 as? UIWindowScene }
                 .first { $0.windows.contains(where: \.isKeyWindow) }
             guard let windowScene else { return assertionFailure("Could not get a UIWindowScene") }
-            
+
             let alertWindow = PassThroughWindow(windowScene: windowScene)
             let alertViewController = UIHostingController(rootView: AlertPresentationWindow(service: service))
             alertViewController.view.backgroundColor = .clear

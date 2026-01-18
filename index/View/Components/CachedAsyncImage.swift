@@ -5,9 +5,8 @@
 //  Created by Giulio Pimenoff Verdolin on 07/01/26.
 //
 
-import SwiftUI
 import IxCoreKit
-
+import SwiftUI
 
 struct CachedAsyncImage<Content: View, Placeholder: View>: View {
     let url: URL
@@ -36,12 +35,12 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
             } else {
                 AsyncImage(url: url, scale: scale) { phase -> AnyView in
                     switch phase {
-                    case .success(let image):
+                    case let .success(image):
                         Task {
                             await saveToCache(from: url)
                         }
                         return AnyView(content(image))
-                    case .failure(_):
+                    case .failure:
                         return AnyView(placeholder())
                     case .empty:
                         return AnyView(placeholder())
@@ -65,13 +64,13 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
             }
         }
     }
-    
+
     private func saveToCache(from url: URL) async {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             if let uiImage = UIImage(data: data) {
                 await ImageCacheHelper.shared.set(uiImage, for: url.absoluteString)
-                
+
                 await MainActor.run {
                     if cachedImage == nil {
                         cachedImage = uiImage

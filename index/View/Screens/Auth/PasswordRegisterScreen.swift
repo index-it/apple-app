@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import SwiftUI
 import IxCoreKit
+import SwiftUI
 
 struct PasswordRegisterScreen: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
@@ -15,7 +15,7 @@ struct PasswordRegisterScreen: View {
     @EnvironmentObject private var errorService: ErrorStateService
 
     var email: String
-    
+
     @State private var password: String = ""
     @State private var passwordRepeat: String = ""
     @FocusState private var isPasswordFocused: Bool
@@ -26,24 +26,25 @@ struct PasswordRegisterScreen: View {
 
     @State private var loading = false
     private var passwordValid: Bool {
-        (8...100).contains(password.count) && password.wholeMatch(of: /(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/) != nil
+        (8 ... 100).contains(password.count) && password.wholeMatch(of: /(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/) != nil
     }
+
     private var passwordsMatch: Bool {
         password == passwordRepeat
     }
-    
+
     func register() async {
         do {
             loading = true
             let emailSent = try await ixApiClient.register(email: email, password: password)
             loading = false
-            
-            if (!emailSent) {
+
+            if !emailSent {
                 Task {
                     try await ixApiClient.sendVerificationEmail(email: email, password: password)
                 }
             }
-            
+
             authNavigationManager.push(.emailVerification(email: email, password: password, verificationEmailSent: true))
         } catch IxApiClientError.emailOrPasswordFormatInvalid {
             loading = false
@@ -53,7 +54,7 @@ struct PasswordRegisterScreen: View {
             errorService.insert(.localizedError(title: nil, error: error))
         }
     }
-    
+
     var body: some View {
         VStack {
             ZStack {
@@ -77,7 +78,6 @@ struct PasswordRegisterScreen: View {
                         isPasswordRepeatFocused = true
                     }
 
-                
                 Button {
                     isPasswordSecure.toggle()
                 } label: {
@@ -86,7 +86,7 @@ struct PasswordRegisterScreen: View {
                         .font(.title2)
                 }.frame(maxWidth: .infinity, alignment: .trailing).padding()
             }
-            
+
             ZStack {
                 Group {
                     if isPasswordRepeatSecure {
@@ -106,12 +106,12 @@ struct PasswordRegisterScreen: View {
                     }
                     .onSubmit {
                         Task {
-                            if (passwordValid && passwordsMatch) {
+                            if passwordValid && passwordsMatch {
                                 await register()
                             }
                         }
                     }
-                
+
                 Button {
                     isPasswordRepeatSecure.toggle()
                 } label: {
@@ -120,26 +120,24 @@ struct PasswordRegisterScreen: View {
                         .font(.title2)
                 }.frame(maxWidth: .infinity, alignment: .trailing).padding()
             }
-            
-            
-            if (passwordValid && !passwordsMatch && !passwordRepeat.isEmpty) {
+
+            if passwordValid && !passwordsMatch && !passwordRepeat.isEmpty {
                 Text("The passwords don't match")
                     .font(.footnote)
                     .foregroundStyle(.red)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.bottom)
-            } else if (password.isEmpty || !passwordValid) {
+            } else if password.isEmpty || !passwordValid {
                 Text("Your password must contain an uppercase, a lowercase letter and a number")
                     .font(.footnote)
                     .foregroundStyle(passwordValid || password.isEmpty ? .gray : .red)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.bottom)
             }
-            
-            
+
             Button {
                 Task {
-                    if (passwordValid && passwordsMatch) {
+                    if passwordValid && passwordsMatch {
                         await register()
                     }
                 }
@@ -149,13 +147,13 @@ struct PasswordRegisterScreen: View {
                         ProgressView()
                             .controlSize(.regular)
                     }
-                    
+
                     Text("Register")
                 }.frame(maxWidth: .infinity)
             }.buttonStyle(.borderedProminent)
                 .disabled(!passwordValid || !passwordsMatch)
                 .controlSize(.large)
-            
+
         }.frame(maxHeight: .infinity, alignment: .top)
             .padding()
             .navigationTitle("Create your password")
@@ -164,4 +162,3 @@ struct PasswordRegisterScreen: View {
             }
     }
 }
-

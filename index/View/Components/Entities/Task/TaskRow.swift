@@ -1,26 +1,26 @@
 //
-//  TaskCard.swift
+//  TaskRow.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 01/03/25.
 //
 
-import SwiftUI
-import SwiftData
 import IxCoreKit
+import SwiftData
+import SwiftUI
 
 struct TaskRow: View {
     private var task: IxTask
     private var showDate: Bool
     private var redDate: Bool
     private var subtasksMaxWidth: CGFloat
-    
-    var onOpen: (IxTask) -> ()
-    var onCompletionToggle: (IxTask) -> ()
-    var onDelete: (IxTask) -> ()
-    
+
+    var onOpen: (IxTask) -> Void
+    var onCompletionToggle: (IxTask) -> Void
+    var onDelete: (IxTask) -> Void
+
     @Query var taskItem: [IxListItem]
-    
+
     init(
         task: IxTask,
         showDate: Bool,
@@ -34,14 +34,14 @@ struct TaskRow: View {
         self.showDate = showDate
         self.redDate = redDate
         self.subtasksMaxWidth = subtasksMaxWidth
-        
+
         self.onOpen = onOpen
         self.onCompletionToggle = onCompletionToggle
         self.onDelete = onDelete
-        
+
         let itemId = task.itemId
         var itemDescriptor: FetchDescriptor<IxListItem>
-        
+
         if itemId != nil {
             itemDescriptor = FetchDescriptor<IxListItem>(
                 predicate: #Predicate { item in
@@ -56,7 +56,7 @@ struct TaskRow: View {
         itemDescriptor.fetchLimit = 1
         _taskItem = Query(itemDescriptor)
     }
-    
+
     var body: some View {
         TaskRowContentView(
             task: task,
@@ -77,11 +77,11 @@ struct TaskRowContentView: View {
     var showDate: Bool
     var redDate: Bool
     var subtasksMaxWidth: CGFloat
-    
-    var onOpen: (IxTask) -> ()
-    var onCompletionToggle: (IxTask) -> ()
-    var onDelete: (IxTask) -> ()
-    
+
+    var onOpen: (IxTask) -> Void
+    var onCompletionToggle: (IxTask) -> Void
+    var onDelete: (IxTask) -> Void
+
     var priorityColor: Color {
         switch task.priority {
         case 0: .gray
@@ -91,10 +91,10 @@ struct TaskRowContentView: View {
         default: .gray
         }
     }
-    
+
     @Query var taskItemCategory: [IxListCategory]
     @Query var taskItemList: [IxList]
-    
+
     init(
         task: IxTask,
         item: IxListItem?,
@@ -109,48 +109,47 @@ struct TaskRowContentView: View {
         self.showDate = showDate
         self.redDate = redDate
         self.subtasksMaxWidth = subtasksMaxWidth
-        
+
         self.onOpen = onOpen
         self.onCompletionToggle = onCompletionToggle
         self.onDelete = onDelete
-        
+
         let listId = item?.listId
         var listDescriptor: FetchDescriptor<IxList>
-        
-        if (listId != nil) {
+
+        if listId != nil {
             listDescriptor = FetchDescriptor<IxList>(
-               predicate: #Predicate { list in
-                   list.id == listId!
-               }
-           )
+                predicate: #Predicate { list in
+                    list.id == listId!
+                }
+            )
         } else {
             listDescriptor = FetchDescriptor<IxList>(
-               predicate: #Predicate { _ in false }
-           )
+                predicate: #Predicate { _ in false }
+            )
         }
-        
+
         listDescriptor.fetchLimit = 1
         _taskItemList = Query(listDescriptor)
-        
-        
+
         let categoryId = item?.categoryId
         var categoryDescriptor: FetchDescriptor<IxListCategory>
-        
-        if (categoryId != nil) {
+
+        if categoryId != nil {
             categoryDescriptor = FetchDescriptor<IxListCategory>(
-               predicate: #Predicate { category in
-                   category.id == categoryId!
-               }
-           )
+                predicate: #Predicate { category in
+                    category.id == categoryId!
+                }
+            )
         } else {
             categoryDescriptor = FetchDescriptor<IxListCategory>(
-               predicate: #Predicate { _ in false }
-           )
+                predicate: #Predicate { _ in false }
+            )
         }
         categoryDescriptor.fetchLimit = 1
         _taskItemCategory = Query(categoryDescriptor)
     }
-    
+
     var body: some View {
         Button {
             onOpen(task)
@@ -159,7 +158,7 @@ struct TaskRowContentView: View {
         }
         .listRowBackground(taskItemList.first?.color.toColorOrNil())
     }
-    
+
     var TaskRowContent: some View {
         VStack(alignment: .leading) {
             HStack {
@@ -170,30 +169,30 @@ struct TaskRowContentView: View {
 //                                .foregroundStyle(.secondary)
 //                        }
 //                    }
-                    
+
                     Text(task.name)
                         .multilineTextAlignment(.leading)
                         .if(task.completed) { view in
                             view.strikethrough()
                         }
-                    
+
                     if let listName = taskItemList.first?.name {
                         Text([listName, taskItemCategory.first?.name].compactMap { $0 }.joined(separator: " / "))
                             .textCase(.uppercase)
                             .foregroundStyle(.secondary)
                             .font(.caption)
                     }
-                    
+
                     if showDate {
                         Text(task.taskRowDate)
                             .foregroundStyle(redDate ? .red : .secondary)
                             .textCase(.uppercase)
                             .font(.caption)
                     }
-                    
+
                     if !task.subtasks.isEmpty {
                         let sortedSubTasks = task.subtasks.sorted { $0.completed && !$1.completed }
-                        
+
                         HStack(spacing: task.subtasks.count > 7 ? 2 : 3) {
                             ForEach(sortedSubTasks.indices, id: \.self) { index in
                                 UnevenRoundedRectangle(cornerRadii: .init(
@@ -205,23 +204,21 @@ struct TaskRowContentView: View {
                                 .frame(height: 6)
                                 .foregroundColor(sortedSubTasks[index].completed ? .primary : .gray)
                             }
-                            
+
                             Spacer(minLength: subtasksMaxWidth)
                         }.padding(.leading, 2)
                     }
                 }
-                
+
                 Spacer()
-                
+
                 if task.priority != nil {
                     Image(systemName: "flag.fill")
                         .foregroundStyle(priorityColor)
                 }
-                
             }
-            
         }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .foregroundStyle(taskItemList.first?.color.toColorOrNil()?.contrastColor() ?? UIColor.label.toColor())
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .foregroundStyle(taskItemList.first?.color.toColorOrNil()?.contrastColor() ?? UIColor.label.toColor())
     }
 }

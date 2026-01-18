@@ -12,13 +12,13 @@ struct FaviconImage<Content: View, Placeholder: View>: View {
     let scale: CGFloat
     let content: (Image) -> Content
     let placeholder: () -> Placeholder
-    
+
     private var faviconURL: URL? {
         guard let url = URL(string: link),
               let host = url.host else { return nil }
         return URL(string: "https://www.google.com/s2/favicons?domain=\(host)&sz=64")
     }
-    
+
     init(
         link: String,
         scale: CGFloat = 1.0,
@@ -30,7 +30,7 @@ struct FaviconImage<Content: View, Placeholder: View>: View {
         self.content = content
         self.placeholder = placeholder
     }
-    
+
     var body: some View {
         Group {
             if let faviconURL = faviconURL {

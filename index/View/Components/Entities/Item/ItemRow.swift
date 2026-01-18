@@ -1,51 +1,51 @@
 //
-//  ItemCard.swift
+//  ItemRow.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 09/12/24.
 //
 
-import SwiftUI
 import DynamicColor
 import IxCoreKit
+import SwiftUI
 
 struct ItemRow: View {
     @Environment(\.showToast) private var showToast
     @Environment(\.colorScheme) var colorScheme
     var item: IxListItem
     var categories: [IxListCategory]
-    
-    var onOpenNotes: (IxListItem) -> ()
-    var onOpenLink: (IxListItem) -> ()
-    var onCompletionToggle: (IxListItem) -> ()
-    var onCategorize: (IxListItem, IxListCategory?) -> ()
-    var onCreateCategory: () -> ()
-    var onCreateTask: (IxListItem) -> ()
-    var onEdit: (IxListItem) -> ()
-    var onDelete: (IxListItem) -> ()
-    
+
+    var onOpenNotes: (IxListItem) -> Void
+    var onOpenLink: (IxListItem) -> Void
+    var onCompletionToggle: (IxListItem) -> Void
+    var onCategorize: (IxListItem, IxListCategory?) -> Void
+    var onCreateCategory: () -> Void
+    var onCreateTask: (IxListItem) -> Void
+    var onEdit: (IxListItem) -> Void
+    var onDelete: (IxListItem) -> Void
+
     private var url: URL? {
         guard let link = item.link else { return nil }
         return URL(string: link)
     }
-    
+
     private var note: String? {
         guard let note = item.note else { return nil }
         return note.isEmpty ? nil : note
     }
-    
+
     private var link: String? {
         guard let link = item.link else { return nil }
         return link.isEmpty ? nil : link
     }
-    
+
     var body: some View {
         HStack(spacing: 12) {
             if item.completed {
                 Image(systemName: "checkmark")
                     .fontWeight(.semibold)
             }
-            
+
             VStack(alignment: .leading, spacing: note != nil ? 2 : 9) {
                 HStack {
                     Menu {
@@ -54,10 +54,10 @@ struct ItemRow: View {
                         Text(item.name)
                             .multilineTextAlignment(.leading)
                             .foregroundStyle(Color.systemLabel)
-                        
+
                         Spacer()
                     }
-                    
+
                     if note != nil {
                         Button("See note", systemImage: "note.text") {
                             onOpenNotes(item)
@@ -77,14 +77,14 @@ struct ItemRow: View {
 //                        .buttonStyle(.bordered)
                     }
                 }
-                
+
                 if let link = link {
                     linkButtonView(link)
                 }
             }
         }
     }
-    
+
     @ViewBuilder
     private func MenuContentView() -> some View {
         if item.note != nil || item.link != nil {
@@ -94,7 +94,7 @@ struct ItemRow: View {
                         onOpenNotes(item)
                     }
                 }
-                
+
                 if link != nil {
                     Button("Open link", systemImage: "link") {
                         onOpenLink(item)
@@ -102,7 +102,7 @@ struct ItemRow: View {
                 }
             }
         }
-        
+
         Section {
             if note == nil && link == nil {
                 Button("Copy", systemImage: "document.on.document") {
@@ -115,14 +115,14 @@ struct ItemRow: View {
                         UIPasteboard.general.string = item.name
                         showToast("Item copied", systemImage: "document.on.document")
                     }
-                    
+
                     if let note = item.note {
                         Button("Note", systemImage: "note.text") {
                             UIPasteboard.general.string = note
                             showToast("Note copied", systemImage: "document.on.document")
                         }
                     }
-                    
+
                     if let link = item.link {
                         Button("Link", systemImage: "link") {
                             if let url = url {
@@ -130,7 +130,7 @@ struct ItemRow: View {
                             } else {
                                 UIPasteboard.general.string = link
                             }
-                            
+
                             showToast("Link copied", systemImage: "document.on.document")
                         }
                     }
@@ -138,7 +138,7 @@ struct ItemRow: View {
                     Label("Copy", systemImage: "document.on.document")
                 }
             }
-            
+
             if note == nil && link == nil {
                 ShareLink(item: item.name) {
                     Label("Share", systemImage: "square.and.arrow.up")
@@ -148,13 +148,13 @@ struct ItemRow: View {
                     ShareLink(item: item.name) {
                         Label("Name", systemImage: "textformat")
                     }
-                    
+
                     if let note = item.note {
                         ShareLink(item: note) {
                             Label("Note", systemImage: "note.text")
                         }
                     }
-                    
+
                     if let link = item.link {
                         ShareLink(item: link) {
                             Label("Link", systemImage: "link")
@@ -165,10 +165,9 @@ struct ItemRow: View {
                 }
             }
         }
-        
+
         Section {
             Menu {
-                
                 ForEach(categories) { category in
                     Button {
                         if item.categoryId != category.id {
@@ -179,12 +178,12 @@ struct ItemRow: View {
                             if item.categoryId == category.id {
                                 Image(systemName: "checkmark")
                             }
-                            
+
                             Text(category.name)
                         }
                     }
                 }
-                
+
                 Button {
                     onCategorize(item, nil)
                 } label: {
@@ -192,11 +191,11 @@ struct ItemRow: View {
                         if item.categoryId == nil {
                             Image(systemName: "checkmark")
                         }
-                        
+
                         Text("Uncategorized")
                     }
                 }
-                
+
                 Section {
                     Button("Create category", systemImage: "plus") {
                         onCreateCategory()
@@ -205,29 +204,29 @@ struct ItemRow: View {
             } label: {
                 Label("Categorize", systemImage: "tray")
             }
-            
+
             Button("Create task", systemImage: "rectangle.grid.1x2") {
                 onCreateTask(item)
             }
         }
-        
+
         Section {
             Button("Edit", systemImage: "pencil") {
                 onEdit(item)
             }
-            
+
             Menu {
                 Button("Delete", systemImage: "trash", role: .destructive) {
                     onDelete(item)
                 }
-                
+
                 Button("Cancel", role: .cancel) {}
             } label: {
                 Label("Delete", systemImage: "trash")
             }
         }
     }
-    
+
     private func linkButtonView(_ link: String) -> some View {
         Button {
             onOpenLink(item)
@@ -243,11 +242,11 @@ struct ItemRow: View {
                     Image(systemName: "globe")
                         .frame(width: 16, height: 24)
                 }
-                
+
                 Group {
                     if let url = url,
-                       let host = url.host {
-                        
+                       let host = url.host
+                    {
                         Text(host.hasPrefix("www.") ? String(host.dropFirst(4)) : host)
                     } else {
                         Text(link)
@@ -264,7 +263,7 @@ struct ItemRow: View {
             Button("Copy", systemImage: "document.on.document") {
                 UIPasteboard.general.url = url
             }
-            
+
             if let url = url {
                 ShareLink(item: url) {
                     Label("Share", systemImage: "square.and.arrow.up")
@@ -276,7 +275,7 @@ struct ItemRow: View {
             }
         }
     }
-    
+
     //    var body: some View {
 //        HStack {
 //            Menu {
@@ -286,33 +285,33 @@ struct ItemRow: View {
 //                            onOpenNotes(item)
 //                        }
 //                    }
-//                    
+//
 //                    if item.link != nil {
 //                        Button("Open link", systemImage: "link") {
 //                            onOpenLink(item)
 //                        }
 //                    }
 //                }
-//                
+//
 //                Button(item.completed ? "Uncomplete" : "Complete", systemImage: item.completed ? "xmark" : "checkmark") {
 //                    onCompletionToggle(item)
 //                }
-//                
-//                
+//
+//
 //                Button("Create task", systemImage: "rectangle.grid.1x2.fill") {
 //                    onCreateTask(item)
 //                }
-//                
+//
 //                Section {
 //                    Button("Edit", systemImage: "pencil") {
 //                        onEdit(item)
 //                    }
-//                    
+//
 //                    Menu {
 //                        Button("Delete", systemImage: "trash", role: .destructive) {
 //                            onDelete(item)
 //                        }
-//                        
+//
 //                        Button("Cancel", role: .cancel) {}
 //                    } label: {
 //                        Label("Delete", systemImage: "trash")
@@ -321,7 +320,7 @@ struct ItemRow: View {
 //            } label: {
 //                ItemRowContent
 //            }
-//            
+//
 //            HStack(spacing: 8) {
 //                if item.note != nil {
 //                    Button {
@@ -333,7 +332,7 @@ struct ItemRow: View {
 //                            .foregroundStyle(color?.contrastColor() ?? Color.accentColor)
 //                    }.background(Color.clear)
 //                }
-//                
+//
 //                if item.link != nil {
 //                    Button {
 //                        onOpenLink(item)
@@ -346,9 +345,9 @@ struct ItemRow: View {
 //                }
 //            }.frame(alignment: .trailing)
 //        }
-////        .listRowBackground(color)
+    ////        .listRowBackground(color)
 //    }
-//    
+//
 //    // MARK: Item card
 //    var ItemRowContent: some View {
 //        HStack {
@@ -356,10 +355,10 @@ struct ItemRow: View {
 //                Image(systemName: "checkmark")
 //                    .fontWeight(.semibold)
 //            }
-//            
+//
 //            Text(item.name)
 //                .multilineTextAlignment(.leading)
-//            
+//
 //        }
 //        .frame(maxWidth: .infinity, alignment: .leading)
 //        .foregroundStyle(UIColor.label.toColor())
@@ -392,7 +391,7 @@ struct ItemRow: View {
             onEdit: { _ in },
             onDelete: { _ in }
         )
-        
+
         ItemRow(
             item: IxListItem(
                 id: UUID().uuidString,
@@ -417,7 +416,7 @@ struct ItemRow: View {
             onEdit: { _ in },
             onDelete: { _ in }
         )
-        
+
         ItemRow(
             item: IxListItem(
                 id: UUID().uuidString,
@@ -442,7 +441,7 @@ struct ItemRow: View {
             onEdit: { _ in },
             onDelete: { _ in }
         )
-        
+
         ItemRow(
             item: IxListItem(
                 id: UUID().uuidString,
@@ -467,7 +466,7 @@ struct ItemRow: View {
             onEdit: { _ in },
             onDelete: { _ in }
         )
-        
+
         ItemRow(
             item: IxListItem(
                 id: UUID().uuidString,

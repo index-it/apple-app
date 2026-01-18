@@ -1,36 +1,36 @@
 //
-//  ListsDisplayer.swift
+//  ListsGrid.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 29/12/24.
 //
 
-import SwiftUI
-import SwiftData
 import IxCoreKit
+import SwiftData
+import SwiftUI
 
 struct ListsGrid: View {
     @Query private var lists: [IxList]
-    
+
     private var userId: String
     private var filter: ListsFilter
     private var archived: Bool
-    private var onFilterClear: () -> ()
-    private var onAdd: () -> ()
-    private var onListCardTap: (_ list: IxList) -> ()
-    private var onShare: (_ list: IxList) -> ()
-    private var onEdit: (_ list: IxList) -> ()
-    private var onArchiveToggle: (_ list: IxList) -> ()
-    private var onDelete: (_ list: IxList) -> ()
-    private var onLeave: (_ list: IxList) -> ()
-    
+    private var onFilterClear: () -> Void
+    private var onAdd: () -> Void
+    private var onListCardTap: (_ list: IxList) -> Void
+    private var onShare: (_ list: IxList) -> Void
+    private var onEdit: (_ list: IxList) -> Void
+    private var onArchiveToggle: (_ list: IxList) -> Void
+    private var onDelete: (_ list: IxList) -> Void
+    private var onLeave: (_ list: IxList) -> Void
+
     init(
         userId: String,
         filter: ListsFilter,
         archived: Bool,
         sorting: ListsSorting,
         sortOrder: SortOrder,
-        onFilterClear: @escaping () -> (),
+        onFilterClear: @escaping () -> Void,
         onAdd: @escaping () -> Void,
         onListCardTap: @escaping (_: IxList) -> Void,
         onShare: @escaping (_: IxList) -> Void,
@@ -50,11 +50,11 @@ struct ListsGrid: View {
         self.onEdit = onEdit
         self.onDelete = onDelete
         self.onLeave = onLeave
-        
+
         var filterPredicate = #Predicate<IxList> { list in
             list.archived == archived
         }
-        
+
         if filter == .ownedByMe {
             filterPredicate = #Predicate<IxList> { list in
                 list.userId == userId && list.archived == archived
@@ -64,7 +64,7 @@ struct ListsGrid: View {
                 list.userId != userId && list.archived == archived
             }
         }
-        
+
         let sortDescriptor = switch sorting {
         case .name:
             SortDescriptor(\IxList.name, order: sortOrder)
@@ -73,11 +73,10 @@ struct ListsGrid: View {
 //        case .manual:
 //            SortDescriptor(\IxList.createdAt, order: sortOrder)
         }
-        
+
         _lists = Query(filter: filterPredicate, sort: [sortDescriptor])
     }
-    
-    
+
     var body: some View {
         ListsGridView
             .overlay {
@@ -104,7 +103,7 @@ struct ListsGrid: View {
                 }
             }
     }
-    
+
     private var ListsGridView: some View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
@@ -125,7 +124,7 @@ struct ListsGrid: View {
                             onArchiveToggle(list)
                         },
                         onDelete: {
-                           onDelete(list)
+                            onDelete(list)
                         },
                         onLeave: {
                             onLeave(list)

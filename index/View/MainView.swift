@@ -1,17 +1,17 @@
 //
-//  ContentView.swift
+//  MainView.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 19/09/24.
 //
 
-import SwiftUI
-import SwiftData
 import IxCoreKit
+import SwiftData
+import SwiftUI
 
 struct MainView: View {
     @EnvironmentObject var navigationManager: NavigationManager
-    
+
     let authStatus: AuthStatus
 
     var body: some View {

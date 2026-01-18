@@ -7,22 +7,22 @@
 
 import SwiftUI
 
-fileprivate let SLIDER_HEIGHT = 34.0
-fileprivate let KNOB_DIAMETER = SLIDER_HEIGHT + 4.0
+private let SLIDER_HEIGHT = 34.0
+private let KNOB_DIAMETER = SLIDER_HEIGHT + 4.0
 
 struct ColorSlider: View {
     @Binding var value: Double
     let colorList: [Color]
-    
+
     @Environment(\.self) private var environment
     @State private var currentOffset = 0.0
     @State private var isDragging: Bool = false
     @GestureState private var dragTranslation = 0.0
-    
+
     var body: some View {
         GeometryReader { container in
             let sliderWidth = container.size.width - KNOB_DIAMETER
-            
+
             Capsule()
                 .fill(
                     LinearGradient(
@@ -71,45 +71,42 @@ struct ColorSlider: View {
                     currentOffset = convertValueToOffset(value: value, sliderWidth: sliderWidth)
                 }
         }
-            .frame(height: SLIDER_HEIGHT)
+        .frame(height: SLIDER_HEIGHT)
     }
-    
+
     private func clampOffset(offset: Double, sliderWidth: Double) -> Double {
         min(max(offset, -1 * sliderWidth / 2.0), sliderWidth / 2.0)
     }
-    
+
     private func convertOffsetToValue(offset: Double, sliderWidth: Double) -> Double {
         return (offset / sliderWidth) + 0.5
     }
-    
+
     private func convertValueToOffset(value: Double, sliderWidth: Double) -> Double {
         return (value - 0.5) * sliderWidth
     }
-    
+
     private func calculateKnobColor(value: Double, colorList: [Color]) -> Color {
         let valueIndex = Double(colorList.count - 1) * value
         let leadingColorIndex = Int(floor(valueIndex))
         let trailingColorIndex = Int(ceil(valueIndex))
         let proportion = valueIndex - Double(leadingColorIndex)
-        
+
         let resolvedLeadingColor = colorList[leadingColorIndex].resolve(in: environment)
         let resolvedTrailingColor = colorList[trailingColorIndex].resolve(in: environment)
-        
+
         return Color(
             red: Double(resolvedLeadingColor.red) * (1 - proportion) + Double(resolvedTrailingColor.red) * proportion,
             green: Double(resolvedLeadingColor.green) * (1 - proportion) + Double(resolvedTrailingColor.green) * proportion,
             blue: Double(resolvedLeadingColor.blue) * (1 - proportion) + Double(resolvedTrailingColor.blue) * proportion
         )
-        
     }
-    
 }
 
 #Preview {
-    
-    @Previewable @State var hue: Double = 0.3
-    @Previewable @State var lightness: Double = 0.7
-    
+    @Previewable @State var hue = 0.3
+    @Previewable @State var lightness = 0.7
+
     VStack(spacing: 27) {
         ColorSlider(
             value: $hue,
@@ -117,13 +114,13 @@ struct ColorSlider: View {
                 Color(hue: $0, saturation: 0.8, brightness: 1)
             }
         )
-        
+
         ColorSlider(
             value: $lightness,
             colorList: [
                 Color(hue: hue, saturation: 0.1, brightness: 1),
                 Color(hue: hue, saturation: 1.0, brightness: 0.7),
-                Color(hue: hue, saturation: 1.0, brightness: 0)
+                Color(hue: hue, saturation: 1.0, brightness: 0),
             ]
         )
     }

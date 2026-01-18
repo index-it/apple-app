@@ -1,28 +1,28 @@
 //
-//  TasksDisplayer.swift
+//  TasksList.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 01/03/25.
 //
 
-import SwiftUI
-import SwiftData
 import IxCoreKit
+import SwiftData
+import SwiftUI
 
 struct TasksList: View {
     private var dateFilter: Date?
     private var noDateFilter: Bool
     private var earlierThanDateFilter: Bool
     private var laterThanDateFilter: Bool
-    
-    private var onOpen: (_ task: IxTask) -> ()
-    private var onCompletionToggle: (_ task: IxTask) -> ()
-    private var onReschedule: (_ task: IxTask) -> ()
-    private var onRescheduleNextDay: (_ task: IxTask) -> ()
-    private var onDelete: (_ task: IxTask) -> ()
-    
+
+    private var onOpen: (_ task: IxTask) -> Void
+    private var onCompletionToggle: (_ task: IxTask) -> Void
+    private var onReschedule: (_ task: IxTask) -> Void
+    private var onRescheduleNextDay: (_ task: IxTask) -> Void
+    private var onDelete: (_ task: IxTask) -> Void
+
     @Query private var tasks: [IxTask]
-    
+
     init(
         dateFilter: Date?,
         noDateFilter: Bool,
@@ -41,18 +41,18 @@ struct TasksList: View {
         self.noDateFilter = noDateFilter
         self.earlierThanDateFilter = earlierThanDateFilter
         self.laterThanDateFilter = laterThanDateFilter
-        
+
         self.onOpen = onOpen
         self.onCompletionToggle = onCompletionToggle
         self.onReschedule = onReschedule
         self.onRescheduleNextDay = onRescheduleNextDay
         self.onDelete = onDelete
-        
+
         let completedFilter = taskFilter == .completed
-        
+
         let filterPredicate = #Predicate<IxTask> { task in
             (completedFilter && task.completed) ||
-            (!completedFilter && !task.completed)
+                (!completedFilter && !task.completed)
             // fuck swift compiler
 //            ) &&
 //            (
@@ -62,70 +62,69 @@ struct TasksList: View {
 //                (laterThanDateFilter && task.due_date != nil && dateFilter != nil && task.due_date! >= dateFilter!)
 //            )
 //            let completionFilterResult: Bool
-//            
+//
 //            if taskFilter == .completed {
 //                completionFilterResult = task.completed == true
 //            } else {
 //                completionFilterResult = task.completed == false
 //            }
-//            
+//
 //            var dateFilterResult = false
 //            if let date = dateFilter, let dueDate = task.due_date {
 //                dateFilterResult = dueDate == date
 //            }
-//            
+//
 //            if noDateFilter && task.due_date == nil {
 //                dateFilterResult = true
 //            }
-//            
+//
 //            if let dueDate = task.due_date, let date = dateFilter {
 //                if laterThanDateFilter && dueDate >= date {
 //                    dateFilterResult = true
 //                }
 //            }
         }
-        
+
         var sortDescriptors: [SortDescriptor<IxTask>] = []
         switch taskSorting {
         case .name:
             sortDescriptors.append(SortDescriptor(\IxTask.name, order: sortOrder))
         case .priority:
             sortDescriptors.append(SortDescriptor(\IxTask.priority, order: sortOrder))
-            sortDescriptors.append(SortDescriptor(\IxTask.dueDate, order:.forward))
+            sortDescriptors.append(SortDescriptor(\IxTask.dueDate, order: .forward))
             sortDescriptors.append(SortDescriptor(\IxTask.name, order: .forward))
 //        case .manual:
 //            sortDescriptor = SortDescriptor(\IxTask.priority, order: sortOrder)
         case .creation:
             sortDescriptors.append(SortDescriptor(\IxTask.createdAt, order: sortOrder))
         }
-        
+
         // add dueDate to sort 'Later' tasks
         sortDescriptors.append(SortDescriptor(\IxTask.dueDate, order: .forward))
-       
+
         _tasks = Query(
             filter: filterPredicate,
             sort: sortDescriptors
         )
     }
-    
+
     private var calendar: Calendar {
         var cal = Calendar.current
         cal.timeZone = TimeZone(identifier: "UTC")!
         return cal
     }
-    
+
     var body: some View {
         let subtasksMaxWidth = UIScreen.main.bounds.width / 3
-        
+
         ForEach(tasks.filter {
             (dateFilter != nil && $0.dueDate != nil && calendar.isDate($0.dueDate!, inSameDayAs: dateFilter!)) ||
-            (noDateFilter && $0.dueDate == nil) ||
-            (earlierThanDateFilter && $0.dueDate != nil && dateFilter != nil && calendar.compare($0.dueDate!, to: dateFilter!, toGranularity: .day) == .orderedAscending) ||
-            (laterThanDateFilter && $0.dueDate != nil && dateFilter != nil && calendar.compare($0.dueDate!, to: dateFilter!, toGranularity: .day) == .orderedDescending)
+                (noDateFilter && $0.dueDate == nil) ||
+                (earlierThanDateFilter && $0.dueDate != nil && dateFilter != nil && calendar.compare($0.dueDate!, to: dateFilter!, toGranularity: .day) == .orderedAscending) ||
+                (laterThanDateFilter && $0.dueDate != nil && dateFilter != nil && calendar.compare($0.dueDate!, to: dateFilter!, toGranularity: .day) == .orderedDescending)
         }) { task in
-            
             let dateComparison = task.dueDate != nil ? calendar.compare(task.dueDate!, to: dateFilter!, toGranularity: .day) : ComparisonResult.orderedSame
-            
+
             TaskRow(
                 task: task,
                 showDate: (task.dueDate != nil && dateComparison == .orderedAscending) || (task.dueDate != nil && dateFilter != nil && dateComparison == .orderedDescending),
@@ -149,14 +148,14 @@ struct TasksList: View {
                     Label(task.completed ? "Uncomplete" : "Complete", systemImage: task.completed ? "xmark" : "checkmark")
                         .labelStyle(.iconOnly)
                 }.tint(task.completed ? .orange : .accentColor)
-                
+
                 Button {
                     onRescheduleNextDay(task)
                 } label: {
                     Image(systemName: "arrow.uturn.down")
                         .rotationEffect(.degrees(90))
                 }.tint(.gray)
-                
+
                 Button {
                     onReschedule(task)
                 } label: {

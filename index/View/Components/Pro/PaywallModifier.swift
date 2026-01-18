@@ -9,7 +9,7 @@ import SwiftUI
 
 struct PaywallModifier: ViewModifier {
     @Binding var isPresented: Bool
-    
+
     func body(content: Content) -> some View {
         content
             .fullScreenCover(isPresented: $isPresented) {
@@ -22,6 +22,6 @@ struct PaywallModifier: ViewModifier {
 
 extension View {
     func paywallCover(isPresented: Binding<Bool>) -> some View {
-        self.modifier(PaywallModifier(isPresented: isPresented))
+        modifier(PaywallModifier(isPresented: isPresented))
     }
 }

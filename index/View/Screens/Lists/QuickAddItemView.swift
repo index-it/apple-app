@@ -1,55 +1,60 @@
 //
-//  QuickAdd.swift
+//  QuickAddItemView.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 03/01/26.
 //
 
-import SwiftUI
-import SwiftData
 import IxCoreKit
 import OSLog
+import SwiftData
+import SwiftUI
 
-
-fileprivate let log = Logger(subsystem: IxSubsystems.APP, category: "QuickAddItemView")
+private let log = Logger(subsystem: IxSubsystems.APP, category: "QuickAddItemView")
 
 struct QuickAddItemView: View {
     // MARK: Environment vars
+
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @Environment(\.modelContext) private var context
     @EnvironmentObject private var errorService: ErrorStateService
-    
+
     @State private var showPaywall: Bool = false
 
     // MARK: Form vars
+
     @State private var name: String
     @State private var link: String
     @State private var note: String = ""
     @State private var selectedListId: String
     @State private var selectedCategoryId: String?
-    
+
     @State private var loadingLinkTitle = false
-    
+
     @FocusState private var isNameFieldFocused: Bool
-    
+
     // MARK: List creation form vars
+
     @State private var isAddingList = false
     @State private var newListColor: Color = ColorHelper.randomIxColor()
     @State private var newListEmoji: String = EmojiHelper.randomEmojiForPickerInitial()
-    
+
     // MARK: Category creation form vars
+
     @State private var isAddingCategory = false
     @State private var newCategoryName = ""
     @State private var newCategoryNamePlaceholder = "Category name"
     @State private var newCategoryColor = Color.accentColor
 
     // MARK: Config vars
+
     private var onCancel: () -> Void
     private var syncThreeshold: Int64
 
     // MARK: Data vars
+
     @AppStorage(AppStorageKeys.QuickAdd.recentListId) var recentListId: String = ""
-    
+
     @Query(sort: [SortDescriptor(\IxList.name)])
     private var lists: [IxList]
     @Query(sort: [SortDescriptor(\IxListCategory.name)])
@@ -62,7 +67,7 @@ struct QuickAddItemView: View {
         selectedListId: String? = nil,
         selectedCategoryId: String? = nil,
         onCancel: @escaping () -> Void,
-        syncThreeshold: Int64 = 3600000
+        syncThreeshold: Int64 = 3_600_000
     ) {
         self.name = name ?? ""
         self.link = link ?? ""
@@ -72,13 +77,13 @@ struct QuickAddItemView: View {
         self.onCancel = onCancel
         self.syncThreeshold = syncThreeshold
     }
-    
+
     private func loadLinkTitle(_ url: URL) async {
         loadingLinkTitle = true
-        
+
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            
+
             if let html = String(data: data, encoding: .utf8) {
                 if let titleRange = html.range(of: "<title>(.*?)</title>", options: .regularExpression) {
                     let titleWithTags = String(html[titleRange])
@@ -86,11 +91,11 @@ struct QuickAddItemView: View {
                         .replacingOccurrences(of: "<title>", with: "")
                         .replacingOccurrences(of: "</title>", with: "")
                         .trimmingCharacters(in: .whitespacesAndNewlines)
-                    
+
                     name = title
                 }
             }
-            
+
             loadingLinkTitle = false
         } catch {
             log.error("Error loading link page to get title: \(error.localizedDescription)")
@@ -105,7 +110,7 @@ struct QuickAddItemView: View {
             try context.transaction {
                 try context.delete(model: IxList.self)
 
-                lists.forEach { ixList in
+                for ixList in lists {
                     context.insert(ixList)
                 }
             }
@@ -125,21 +130,21 @@ struct QuickAddItemView: View {
                     }
                 )
 
-                categories.forEach { category in
+                for category in categories {
                     context.insert(category)
                 }
             }
         } catch {}
     }
-    
+
     private func createList(name: String, color: Color, emoji: String, isPublic: Bool) async {
         do {
             let list = try await ixApiClient.createList(name: name, icon: emoji, color: color.hexString, archived: false, is_public: isPublic)
-            
+
             try context.transaction {
                 context.insert(list)
             }
-            
+
             selectedListId = list.id
         } catch IxApiClientError.proRequired(_) {
             showPaywall = true
@@ -147,15 +152,15 @@ struct QuickAddItemView: View {
             errorService.insert(.localizedError(title: "Error creating list", error: error))
         }
     }
-    
+
     func createCategory(listId: String, name: String, color: Color?) async {
         do {
             let category = try await ixApiClient.createCategory(listId: listId, name: name, color: color?.hexString)
-            
+
             try context.transaction {
                 context.insert(category)
             }
-            
+
             selectedCategoryId = category.id
         } catch {
             errorService.insert(.localizedError(title: "Error creating category", error: error))
@@ -192,13 +197,13 @@ struct QuickAddItemView: View {
                 if name.isEmpty && link.isEmpty {
                     isNameFieldFocused = true
                 }
-                
+
                 if !link.isEmpty, let url = URL(string: link) {
                     Task {
                         await loadLinkTitle(url)
                     }
                 }
-                
+
                 Task {
                     if await SyncRegister.shared.hasExpired(SyncResource.lists, threshold: syncThreeshold) {
                         await fetchLists()
@@ -221,7 +226,7 @@ struct QuickAddItemView: View {
                 }
             }
     }
-    
+
     private var QuickAddView: some View {
         NavigationStack {
             Form {
@@ -241,14 +246,14 @@ struct QuickAddItemView: View {
                         if loadingLinkTitle {
                             ProgressView()
                         }
-                        
+
                         Text("Item info")
                     }
                 }
 
                 Section {
                     Picker(selection: $selectedListId) {
-                        ForEach(lists.sorted{ $0.name < $1.name }, id: \.id) { list in
+                        ForEach(lists.sorted { $0.name < $1.name }, id: \.id) { list in
                             Text("\(list.icon)  \(list.name)")
                                 .tag(list.id)
                         }
@@ -256,11 +261,11 @@ struct QuickAddItemView: View {
                         Text("List")
                     }
                     .pickerStyle(.menu)
-                    
+
                     Picker(selection: $selectedCategoryId) {
                         Text("No category").tag(nil as String?)
 
-                        ForEach(categories.filter { cat in cat.listId == selectedListId }.sorted{ $0.name < $1.name }, id: \.id) { category in
+                        ForEach(categories.filter { cat in cat.listId == selectedListId }.sorted { $0.name < $1.name }, id: \.id) { category in
                             Text(category.name).tag(category.id)
                         }
                     } label: {
@@ -270,14 +275,14 @@ struct QuickAddItemView: View {
                 } header: {
                     HStack {
                         Text("Save in")
-                        
+
                         Spacer()
-                        
+
                         Menu {
                             Button("Create List", systemImage: "plus") {
                                 isAddingList = true
                             }
-                            
+
                             Button("Create Category", systemImage: "plus") {
                                 isAddingCategory = true
                             }
@@ -318,14 +323,15 @@ struct QuickAddItemView: View {
                             await createCategory(listId: selectedListId, name: name, color: color)
                         }
                     }
-                })
+                }
+            )
 
             .toolbar {
                 ToolbarViewContent
             }
         }
     }
-    
+
     @ToolbarContentBuilder
     private var ToolbarViewContent: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
@@ -340,11 +346,11 @@ struct QuickAddItemView: View {
                 // update recents
                 recentListId = selectedListId
                 UserDefaults.standard.set(selectedCategoryId ?? "", forKey: AppStorageKeys.QuickAdd.recentCategoryId(for: selectedListId))
-                
+
                 // validate values
                 let link = link.isEmpty ? nil : link.trimmingCharacters(in: .whitespacesAndNewlines)
                 let note = note.isEmpty ? nil : note
-                
+
                 // perform save
                 Task {
                     await save(listId: selectedListId, categoryId: selectedCategoryId, name: name, link: link, note: note)
@@ -363,10 +369,8 @@ struct QuickAddItemView: View {
         note: nil,
         selectedListId: nil,
         selectedCategoryId: nil,
-        onCancel: {
-        
-    })
+        onCancel: {}
+    )
     .environment(\.ixApiClient, IxApiClient(authChangeCallback: { _ in
-        
     }))
 }

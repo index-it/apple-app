@@ -8,23 +8,22 @@
 import SwiftUI
 
 struct ToastView: View {
-    
     let info: ToastInfo
-    
+
     init(info: ToastInfo) {
         self.info = info
     }
-    
+
     init(message: String, systemImage: String?, onTap: @escaping () -> Void) {
-        self.info = ToastInfo(message: message, systemImage: systemImage, onTap: onTap)
+        info = ToastInfo(message: message, systemImage: systemImage, onTap: onTap)
     }
-    
+
     var body: some View {
         HStack {
             if let systemImage = info.systemImage {
                 Image(systemName: systemImage)
             }
-                
+
             Text(info.message)
                 .font(.callout)
                 .fontWeight(.semibold)

@@ -1,41 +1,41 @@
 //
-//  ItemsDisplayer.swift
+//  ItemsList.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 09/12/24.
 //
 
-import SwiftUI
-import SwiftData
 import IxCoreKit
+import SwiftData
+import SwiftUI
 
 struct ItemsList: View {
     private var listId: String
     private var listColor: Color
     private var category: IxListCategory?
     private var categories: [IxListCategory]
-    
+
     private var showCompleted: Bool
     private var onClearItemFilter: () -> Void
-    
+
     private var onCreateItem: () -> Void
 
-    private var onOpenNotes: (IxListItem) -> ()
-    private var onOpenLink: (IxListItem) -> ()
-    private var onCompletionToggle: (IxListItem) -> ()
-    private var onCategorize: (IxListItem, IxListCategory?) -> ()
-    private var onCreateCategory: () -> ()
-    private var onCreateTask: (IxListItem) -> ()
-    private var onEdit: (IxListItem) -> ()
-    private var onDelete: (IxListItem) -> ()
-    
+    private var onOpenNotes: (IxListItem) -> Void
+    private var onOpenLink: (IxListItem) -> Void
+    private var onCompletionToggle: (IxListItem) -> Void
+    private var onCategorize: (IxListItem, IxListCategory?) -> Void
+    private var onCreateCategory: () -> Void
+    private var onCreateTask: (IxListItem) -> Void
+    private var onEdit: (IxListItem) -> Void
+    private var onDelete: (IxListItem) -> Void
+
     @Query private var items: [IxListItem]
-    
+
     private var color: Color {
         guard let categoryColor = category?.color else { return listColor }
         return categoryColor.toColor()
     }
-    
+
     init(
         listId: String,
         listColor: Color,
@@ -62,7 +62,7 @@ struct ItemsList: View {
         self.showCompleted = showCompleted
         self.onClearItemFilter = onClearItemFilter
         self.onCreateItem = onCreateItem
-        
+
         self.onOpenNotes = onOpenNotes
         self.onOpenLink = onOpenLink
         self.onCompletionToggle = onCompletionToggle
@@ -71,11 +71,11 @@ struct ItemsList: View {
         self.onCreateTask = onCreateTask
         self.onEdit = onEdit
         self.onDelete = onDelete
-        
+
         let categoryId = category?.id
-        
+
         var filterPredicate = #Predicate<IxListItem> { _ in true }
-        
+
         if !showCompleted {
             filterPredicate = #Predicate<IxListItem> { item in
                 item.listId == listId && item.categoryId == categoryId && item.completed == false
@@ -85,7 +85,7 @@ struct ItemsList: View {
                 item.listId == listId && item.categoryId == categoryId
             }
         }
-        
+
         let sortDescriptor = switch sorting {
         case .name:
             SortDescriptor(\IxListItem.name, order: sortOrder)
@@ -94,10 +94,10 @@ struct ItemsList: View {
 //        case .manual:
 //            SortDescriptor(\IxListItem.editedAt, order: sortOrder)
         }
-       
+
         _items = Query(filter: filterPredicate, sort: [SortDescriptor(\IxListItem.completed), sortDescriptor])
     }
-    
+
     var body: some View {
         List(items) { item in
             ItemRow(
@@ -127,6 +127,7 @@ struct ItemsList: View {
             }
         }.overlay {
             // MARK: Empty items overlay
+
             if items.isEmpty {
                 ContentUnavailableView {
                     Label("No items", systemImage: "binoculars")

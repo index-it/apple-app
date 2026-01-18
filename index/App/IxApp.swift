@@ -1,20 +1,20 @@
 //
-//  indexApp.swift
+//  IxApp.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 19/09/24.
 //
 
-import os
-import SwiftUI
-import SwiftData
-import GoogleSignIn
 import FirebaseCore
 import FirebaseMessaging
-import RevenueCat
+import GoogleSignIn
 import IxCoreKit
+import os
+import RevenueCat
+import SwiftData
+import SwiftUI
 
-fileprivate let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "AppEntrypoint")
+private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "AppEntrypoint")
 
 ///
 /// ## Authentication
@@ -47,48 +47,48 @@ fileprivate let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category:
 @main
 struct IxApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
+
     @StateObject private var authenticationHelper: AuthenticationHelper
     @AppStorage(AppStorageKeys.loggedInUser, store: UserDefaults(suiteName: IxIdentifiers.APP_GROUP)!) private var user: User?
-    
+
     @StateObject private var navigationManager = NavigationManager()
     @StateObject private var authNavigationManager = AuthNavigationManager()
     @StateObject private var errorService = ErrorStateService()
-    
+
     private var modelContainer: ModelContainer
     private var ixApiClient: IxApiClient
     private var ixWebsocketClient: IxWebsocketClient
-    
+
     @State private var presentingSafariView = false
     @State private var urlToPresentInSafariView: URL?
-    
+
     init() {
-        self.modelContainer = ModelContainerProvider.shared
-        
+        modelContainer = ModelContainerProvider.shared
+
         let authHelper = AuthenticationHelper()
-        self._authenticationHelper = StateObject(wrappedValue: authHelper)
-        
-        self.ixApiClient = IxApiClient { newAuthStatus in
+        _authenticationHelper = StateObject(wrappedValue: authHelper)
+
+        ixApiClient = IxApiClient { newAuthStatus in
             Task { @MainActor in
                 authHelper.setBackendAuthStatus(newAuthStatus)
             }
         }
-        
+
         let websocketEventHandler = IxWebsocketEventHandler(ixApiClient: ixApiClient, modelContext: modelContainer.mainContext)
         let websocketClient = IxWebsocketClient(ixWebsocketEventHandler: websocketEventHandler)
-        self.ixWebsocketClient = websocketClient
+        ixWebsocketClient = websocketClient
     }
-    
+
     func onBackendAuthStatusChange(_ authStatus: AuthStatus) {
         switch authStatus {
         case .loading:
             log.debug("api client authentication loading")
         case .unauthenticated:
             log.debug("api client unauthenticated")
-            
+
             Task { @MainActor in
                 self.user = nil
-                
+
                 do {
                     try modelContainer.mainContext.transaction {
                         try modelContainer.mainContext.delete(model: IxList.self)
@@ -100,37 +100,36 @@ struct IxApp: App {
                     log.error("Failed to clear database data: \(error)")
                 }
             }
-            
-            
+
             Task.detached {
                 log.info("Disconnecting websocket")
                 async let disconnectResult: () = ixWebsocketClient.disconnect()
                 async let clearRegisterResult: () = SyncRegister.shared.clear()
                 async let revenueCatResult: () = RevenueCatHelper.logout()
-                
+
                 _ = await (disconnectResult, clearRegisterResult, revenueCatResult)
             }
         case let .authenticated(user: networkUser):
             log.debug("network client authenticated - id: \(networkUser.id) - email: \(networkUser.email)")
-            
+
             Task { @MainActor in
                 self.user = networkUser
             }
-            
+
             Task.detached {
                 await SyncRegister.shared.clear()
                 await ixWebsocketClient.connectAndHandleMessages()
             }
-            
+
             Task.detached {
                 async let firebaseTask: () = registerFirebaseToken(ixApiClient: ixApiClient)
                 async let revenueCatTask: () = RevenueCatHelper.login(userId: networkUser.id)
-                
-                await (_, _) = (firebaseTask, revenueCatTask)
+
+                await _ = (firebaseTask, revenueCatTask)
             }
         }
     }
-    
+
     func onLocalAuthStatusChange(_ authStatus: AuthStatus) {
         switch authStatus {
         case .loading:
@@ -139,13 +138,13 @@ struct IxApp: App {
             log.debug("user not locally authenticated, AppStorage user is nil")
             authNavigationManager.clear()
             errorService.clear()
-        case .authenticated(user: let user):
+        case let .authenticated(user: user):
             log.debug("received user from AppStorage - id: \(user.id) - email: \(user.email)")
             errorService.clear()
             authNavigationManager.clear()
         }
     }
-    
+
     private func registerFirebaseToken(ixApiClient: IxApiClient) async {
         do {
             let firebaseMessagingToken = try await Messaging.messaging().token()
@@ -154,8 +153,7 @@ struct IxApp: App {
             log.error("Failed sending firebase messaging token to server: \(error)")
         }
     }
-    
-    
+
     var body: some Scene {
         WindowGroup {
             MainView(authStatus: authenticationHelper.localAuthStatus)
@@ -165,7 +163,7 @@ struct IxApp: App {
                 .onChange(of: authenticationHelper.localAuthStatus, initial: true) { _, newLocalAuthStatus in
                     onLocalAuthStatusChange(newLocalAuthStatus)
                 }
-                .onChange(of: user, initial: true) { oldLocalUser, newLocalUser in
+                .onChange(of: user, initial: true) { _, newLocalUser in
                     if let newLocalUser = newLocalUser {
                         authenticationHelper.setLocalAuthStatus(.authenticated(user: newLocalUser))
                     } else {
@@ -184,7 +182,7 @@ struct IxApp: App {
                     if GIDSignIn.sharedInstance.handle(url) {
                         return
                     }
-                    
+
                     UniversalLinksHelper.handleUniversalLink(url, navigationManager: navigationManager)
                 }
                 .environment(\.openURL, OpenURLAction { url in

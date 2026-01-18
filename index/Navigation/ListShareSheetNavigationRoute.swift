@@ -8,6 +8,6 @@
 import Foundation
 
 enum ListShareSheetNavigationRoute: Hashable {
-    case inviteUser;
-    case editUser;
+    case inviteUser
+    case editUser
 }

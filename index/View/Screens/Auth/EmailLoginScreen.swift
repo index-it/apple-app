@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import SwiftUI
 import IxCoreKit
+import SwiftUI
 
 struct EmailLoginScreen: View {
     @Environment(\.dismiss) private var dismiss
@@ -18,17 +18,17 @@ struct EmailLoginScreen: View {
     @State private var email: String = ""
     @FocusState private var isEmailFocused: Bool
     @State private var loading: Bool = false
-    
+
     private var isEmailValid: Bool {
         email.contains("@") && email.contains(".") && email.count >= 5
     }
-    
+
     func getWelcomeActionAndNavigateToPasswordScreen() async {
         do {
             loading = true
             let welcomeAction = try await ixApiClient.welcomeAction(email: email)
             loading = false
-            
+
             switch welcomeAction {
             case .LOGIN:
                 authNavigationManager.push(.passwordLogin(email: email))
@@ -40,7 +40,7 @@ struct EmailLoginScreen: View {
             errorService.insert(.localizedError(title: nil, error: error))
         }
     }
-    
+
     var body: some View {
         VStack {
             TextField("Insert your email", text: $email)
@@ -56,13 +56,13 @@ struct EmailLoginScreen: View {
                     isEmailFocused = true
                 }
                 .onSubmit {
-                    if (isEmailValid) {
+                    if isEmailValid {
                         Task {
                             await getWelcomeActionAndNavigateToPasswordScreen()
                         }
                     }
                 }
-            
+
             Button {
                 Task {
                     await getWelcomeActionAndNavigateToPasswordScreen()
@@ -73,13 +73,13 @@ struct EmailLoginScreen: View {
                         ProgressView()
                             .controlSize(.regular)
                     }
-                    
+
                     Text("Continue")
                 }.frame(maxWidth: .infinity)
             }.buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .disabled(!isEmailValid)
-            
+
         }.frame(maxHeight: .infinity, alignment: .top)
             .padding()
             .navigationTitle("What's your email?")
@@ -92,7 +92,7 @@ struct EmailLoginScreen: View {
                 }
             }
             .onAppear {
-                isEmailFocused =  true
+                isEmailFocused = true
             }
     }
 }

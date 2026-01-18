@@ -1,28 +1,28 @@
 //
-//  CategoryFormSheet.swift
+//  CategoryEditor.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 23/12/24.
 //
 
-import SwiftUI
 import IxCoreKit
+import SwiftUI
 
 struct CategoryEditor: View {
     @Binding var isPresented: Bool
-    
+
     private var addingNew: Bool
     @FocusState private var isNameFocused: Bool
     @State private var name: String
     @State private var noColor: Bool
     @State private var color: Color
-    
+
     private var isNameInvalid: Bool {
         name.isEmpty || name.count >= 100
     }
 
     private var onSave: (_ name: String, _ color: Color?) -> Void
-    
+
     init(
         isPresented: Binding<Bool>,
         addingNew: Bool = true,
@@ -30,21 +30,21 @@ struct CategoryEditor: View {
         color: Color? = nil,
         onSave: @escaping (_ name: String, _ color: Color?) -> Void
     ) {
-        self._isPresented = isPresented
+        _isPresented = isPresented
         self.addingNew = addingNew
         self.name = name
-        self.noColor = color == nil
+        noColor = color == nil
         self.color = color ?? ColorHelper.randomIxColor()
         self.onSave = onSave
     }
-    
+
     var body: some View {
         NavigationView {
             VStack {
                 Form {
                     TextField("Name", text: $name)
                         .focused($isNameFocused)
-                    
+
                     Section {
                         Toggle("Use list color", isOn: $noColor)
                         if !noColor {
@@ -54,8 +54,8 @@ struct CategoryEditor: View {
                         Text("Color")
                     } footer: {
                         Text(noColor ?
-                             "The color of the category will be the same as the one of the list" :
-                             "Scroll horizontally for more colors"
+                            "The color of the category will be the same as the one of the list" :
+                            "Scroll horizontally for more colors"
                         )
                     }
                 }
@@ -70,7 +70,7 @@ struct CategoryEditor: View {
                         isPresented = false
                     }
                 }
-                
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
                         onSave(name, noColor ? nil : color)
@@ -92,8 +92,7 @@ struct CategoryEditor: View {
     @Previewable @State var isPresented = true
 
     CategoryEditor(
-        isPresented: $isPresented,
-    ) { name, color in
-        
+        isPresented: $isPresented
+    ) { _, _ in
     }
 }
