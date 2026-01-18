@@ -5,14 +5,14 @@
 //  Created by Giulio Pimenoff Verdolin on 15/03/25.
 //
 
+import IxCoreKit
+import SwiftData
 import SwiftUI
 import WidgetKit
-import SwiftData
-import IxCoreKit
 
 struct TodayTasksWidget: Widget {
     let kind: String = IxKinds.tasksWidget
-    
+
     var body: some WidgetConfiguration {
         StaticConfiguration(
             kind: kind,
@@ -32,17 +32,17 @@ struct TodayTasksEntry: TimelineEntry {
     let tasks: [IxTask]
 }
 
-struct TodayTasksWidgetView : View {
+struct TodayTasksWidgetView: View {
     var entry: TodayTasksProvider.Entry
-    
+
     @Environment(\.widgetFamily) var widgetFamily
     @Environment(\.openURL) var openUrl
-    
+
     var body: some View {
         tasksView
             .containerBackground(.background, for: .widget)
     }
-    
+
     @ViewBuilder
     var tasksView: some View {
         switch widgetFamily {
@@ -56,7 +56,7 @@ struct TodayTasksWidgetView : View {
             systemSmallView
         }
     }
-    
+
     @ViewBuilder
     var systemSmallView: some View {
         VStack(alignment: .leading) {
@@ -70,7 +70,7 @@ struct TodayTasksWidgetView : View {
                     .fontWeight(.semibold)
                     .contentTransition(.numericText())
             }
-            
+
             if entry.tasks.isEmpty {
                 Text("No Tasks")
                     .foregroundStyle(.secondary)
@@ -78,19 +78,19 @@ struct TodayTasksWidgetView : View {
             } else {
                 tasksListView(entry.tasks.prefix(3))
             }
-            
+
             Spacer()
         }
     }
-    
+
     @ViewBuilder
     var systemMediumView: some View {
         HStack {
             VStack {
                 createTaskButtonView
-                
+
                 Spacer()
-                
+
                 VStack(alignment: .leading) {
                     Text("\(entry.tasks.count)")
                         .font(.title)
@@ -101,7 +101,7 @@ struct TodayTasksWidgetView : View {
                         .foregroundStyle(Color.accentColor)
                 }
             }
-            
+
             if entry.tasks.isEmpty {
                 HStack {
                     Spacer()
@@ -113,15 +113,15 @@ struct TodayTasksWidgetView : View {
                 Spacer(minLength: 16)
                 VStack(alignment: .leading) {
                     tasksListView(entry.tasks.prefix(4))
-                    
+
                     Spacer()
                 }
             }
-            
+
             Spacer()
         }
     }
-    
+
     @ViewBuilder
     var systemLargeView: some View {
         VStack(alignment: .leading) {
@@ -135,14 +135,14 @@ struct TodayTasksWidgetView : View {
                         .fontWeight(.semibold)
                         .foregroundStyle(Color.accentColor)
                 }
-                
+
                 Spacer()
-                
+
                 createTaskButtonView
             }
-            
+
             Divider()
-            
+
             if entry.tasks.isEmpty {
                 VStack {
                     Spacer()
@@ -153,18 +153,18 @@ struct TodayTasksWidgetView : View {
                 }
             } else {
                 Spacer(minLength: 10)
-                
+
                 VStack(alignment: .leading) {
                     tasksListView(entry.tasks.prefix(7))
-                    
+
                     Spacer()
                 }
             }
-            
+
             Spacer()
         }
     }
-    
+
     @ViewBuilder
     var createTaskButtonView: some View {
         Button(intent: QuickAddTaskIntent()) {
@@ -172,7 +172,7 @@ struct TodayTasksWidgetView : View {
                 .labelStyle(.iconOnly)
         }
     }
-    
+
     @ViewBuilder
     func tasksListView(_ tasks: ArraySlice<IxTask>) -> some View {
         ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
@@ -183,16 +183,14 @@ struct TodayTasksWidgetView : View {
                         .font(.title3)
                         .foregroundStyle(.secondary)
                 }.buttonStyle(.plain)
-                    
-                
+
                 Text(task.name)
                     .lineLimit(1)
                     .font(.footnote)
-                
+
                 Spacer()
             }
-            
-            
+
             if index != tasks.count - 1 {
                 Divider()
                     .padding(.leading, 32)
@@ -202,28 +200,28 @@ struct TodayTasksWidgetView : View {
 }
 
 struct TodayTasksProvider: TimelineProvider {
-    func placeholder(in context: Context) -> TodayTasksEntry {
+    func placeholder(in _: Context) -> TodayTasksEntry {
         TodayTasksEntry(date: Date(), tasks: [])
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (TodayTasksEntry) -> ()) {
+    func getSnapshot(in _: Context, completion: @escaping (TodayTasksEntry) -> Void) {
         // Get sample data for preview
         let entry = TodayTasksEntry(
             date: Date.now,
             tasks: [
                 IxTask(id: "1", userId: "1", itemId: nil, name: "Buy Gocciole", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
-                IxTask(id: "2", userId: "1", itemId: nil, name: "Clean windsurf", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil)
+                IxTask(id: "2", userId: "1", itemId: nil, name: "Clean windsurf", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
             ]
         )
         completion(entry)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<TodayTasksEntry>) -> ()) {
+    func getTimeline(in _: Context, completion: @escaping (Timeline<TodayTasksEntry>) -> Void) {
         Task { @MainActor in
             var tasks: [IxTask] = []
-            
+
             let modelContext = ModelContext(ModelContainerProvider.shared)
-            
+
             // Create a predicate for today's tasks
             var calendar = Calendar.current
             calendar.timeZone = TimeZone(identifier: "UTC")!
@@ -232,27 +230,27 @@ struct TodayTasksProvider: TimelineProvider {
             let predicate = #Predicate<IxTask> {
                 !$0.completed
             }
-            
+
             let descriptor = FetchDescriptor<IxTask>(predicate: predicate, sortBy: [SortDescriptor(\IxTask.priority)])
-            
+
             do {
                 tasks = try modelContext.fetch(descriptor)
             } catch {
                 print("Failed to fetch tasks: \(error)")
             }
-            
+
             // Create the timeline entry with fetched tasks
             let entry = TodayTasksEntry(
                 date: Date(),
-                tasks: tasks.filter({
+                tasks: tasks.filter {
                     $0.dueDate == nil || calendar.compare($0.dueDate!, to: now, toGranularity: .day).rawValue <= 0
-                })
+                }
             )
-            
+
             // Update every hour or when the widget refreshes
             let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!
             let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
-            
+
             completion(timeline)
         }
     }
@@ -260,7 +258,7 @@ struct TodayTasksProvider: TimelineProvider {
 
 struct TodayTasksWidget_Previews: PreviewProvider {
     static var tasks = [
-        IxTask(id: "1", userId: "1", itemId: nil, name: "Buy Gocciole", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil)
+        IxTask(id: "1", userId: "1", itemId: nil, name: "Buy Gocciole", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
     ]
     static var previews: some View {
         TodayTasksWidgetView(entry: TodayTasksEntry(
@@ -268,13 +266,13 @@ struct TodayTasksWidget_Previews: PreviewProvider {
             tasks: tasks
         ))
         .previewContext(WidgetPreviewContext(family: .systemSmall))
-        
+
         TodayTasksWidgetView(entry: TodayTasksEntry(
             date: Date(),
             tasks: tasks
         ))
         .previewContext(WidgetPreviewContext(family: .systemMedium))
-        
+
         TodayTasksWidgetView(entry: TodayTasksEntry(
             date: Date(),
             tasks: tasks

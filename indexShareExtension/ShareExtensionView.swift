@@ -5,18 +5,18 @@
 //  Created by Giulio Pimenoff Verdolin on 10/03/25.
 //
 
-import SwiftUI
 import IxCoreKit
+import SwiftUI
 
 struct ShareExtensionView: View {
     @State private var name: String
     @State private var link: String
-    
+
     init(name: String?, link: String?) {
         self.name = name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         self.link = link?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     }
-    
+
     var body: some View {
         QuickAddItemView(
             name: name,
@@ -26,7 +26,7 @@ struct ShareExtensionView: View {
             selectedCategoryId: nil,
             onCancel: close
         )
-        .environment(\.ixApiClient, IxApiClient() { _ in })
+        .environment(\.ixApiClient, IxApiClient { _ in })
         .environmentObject(ErrorStateService())
     }
 

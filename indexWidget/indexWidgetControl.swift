@@ -6,9 +6,9 @@
 //
 
 import AppIntents
+import IxCoreKit
 import SwiftUI
 import WidgetKit
-import IxCoreKit
 
 struct QuickAddTaskControlWidget: ControlWidget {
     var body: some ControlWidgetConfiguration {
@@ -49,4 +49,3 @@ struct QuickAddItemControlWidget: ControlWidget {
         .description("Quickly add a new item to a list.")
     }
 }
-
