@@ -11,7 +11,7 @@ struct ListCreateOrEditReqBody: Codable {
     let color: String
     let archived: Bool
     let isPublic: Bool
-    
+
     enum CodingKeys: String, CodingKey {
         case name
         case icon

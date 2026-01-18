@@ -7,44 +7,44 @@
 
 import Foundation
 
-public struct EmojiHelper {
+public enum EmojiHelper {
     public static let emojiRanges: [UInt32] = [
-        0x1f600...0x1f64f,
-        0x1f680...0x1f6c5,
-        0x1f6cb...0x1f6d2,
-        0x1f6e0...0x1f6e5,
-        0x1f6f3...0x1f6fa,
-        0x1f7e0...0x1f7eb,
-        0x1f90d...0x1f93a,
-        0x1f93c...0x1f945,
-        0x1f947...0x1f971,
-        0x1f973...0x1f976,
-        0x1f97a...0x1f9a2,
-        0x1f9a5...0x1f9aa,
-        0x1f9ae...0x1f9ca,
-        0x1f9cd...0x1f9ff,
-        0x1fa70...0x1fa73,
-        0x1fa78...0x1fa7a,
-        0x1fa80...0x1fa82,
-        0x1fa90...0x1fa95,
+        0x1F600 ... 0x1F64F,
+        0x1F680 ... 0x1F6C5,
+        0x1F6CB ... 0x1F6D2,
+        0x1F6E0 ... 0x1F6E5,
+        0x1F6F3 ... 0x1F6FA,
+        0x1F7E0 ... 0x1F7EB,
+        0x1F90D ... 0x1F93A,
+        0x1F93C ... 0x1F945,
+        0x1F947 ... 0x1F971,
+        0x1F973 ... 0x1F976,
+        0x1F97A ... 0x1F9A2,
+        0x1F9A5 ... 0x1F9AA,
+        0x1F9AE ... 0x1F9CA,
+        0x1F9CD ... 0x1F9FF,
+        0x1FA70 ... 0x1FA73,
+        0x1FA78 ... 0x1FA7A,
+        0x1FA80 ... 0x1FA82,
+        0x1FA90 ... 0x1FA95,
     ].reduce([], +)
-    
+
     public static let emojiRangesForPickerInitialEmoji: [UInt32] = [
-        0x1f6cb...0x1f6d2,
-        0x1f6e0...0x1f6e5,
-        0x1f93c...0x1f945,
-        0x1fa78...0x1fa7a,
-        0x1fa90...0x1fa95,
+        0x1F6CB ... 0x1F6D2,
+        0x1F6E0 ... 0x1F6E5,
+        0x1F93C ... 0x1F945,
+        0x1FA78 ... 0x1FA7A,
+        0x1FA90 ... 0x1FA95,
     ].reduce([], +)
-    
+
     public static func randomEmoji() -> String {
-        let ascii = emojiRanges[Int(drand48() * (Double(emojiRanges.count)))]
+        let ascii = emojiRanges[Int(drand48() * Double(emojiRanges.count))]
         let emoji = UnicodeScalar(ascii)?.description ?? "🎨"
         return emoji
     }
-    
+
     public static func randomEmojiForPickerInitial() -> String {
-        let ascii = emojiRangesForPickerInitialEmoji[Int(drand48() * (Double(emojiRangesForPickerInitialEmoji.count)))]
+        let ascii = emojiRangesForPickerInitialEmoji[Int(drand48() * Double(emojiRangesForPickerInitialEmoji.count))]
         let emoji = UnicodeScalar(ascii)?.description ?? "🎨"
         return emoji
     }

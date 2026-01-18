@@ -1,5 +1,5 @@
 //
-//  NetworkUser.swift
+//  User.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 09/10/24.
@@ -13,7 +13,7 @@ public struct User: Encodable, Decodable, Equatable, Sendable {
     public var has_pro: Bool
     public var creation_timestamp: Int64
     public var creation_source: UserCreationSource
-    
+
     public enum CodingKeys: String, CodingKey {
         case id
         case email
@@ -21,15 +21,15 @@ public struct User: Encodable, Decodable, Equatable, Sendable {
         case creation_timestamp
         case creation_source
     }
-    
+
     public init(from networkUser: NetworkUser) {
-        self.id = networkUser.id
-        self.email = networkUser.email
-        self.has_pro = networkUser.hasPro
-        self.creation_timestamp = networkUser.creationTimestamp
-        self.creation_source = networkUser.creationSource
+        id = networkUser.id
+        email = networkUser.email
+        has_pro = networkUser.hasPro
+        creation_timestamp = networkUser.creationTimestamp
+        creation_source = networkUser.creationSource
     }
-    
+
     public init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         id = try values.decode(String.self, forKey: .id)
@@ -38,7 +38,7 @@ public struct User: Encodable, Decodable, Equatable, Sendable {
         creation_timestamp = try values.decode(Int64.self, forKey: .creation_timestamp)
         creation_source = try values.decode(UserCreationSource.self, forKey: .creation_source)
     }
-    
+
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
@@ -47,12 +47,12 @@ public struct User: Encodable, Decodable, Equatable, Sendable {
         try container.encode(creation_timestamp, forKey: .creation_timestamp)
         try container.encode(creation_source, forKey: .creation_source)
     }
-    
+
     public static func == (lhs: User, rhs: User) -> Bool {
         return lhs.id == rhs.id &&
-               lhs.email == rhs.email &&
-               lhs.has_pro == rhs.has_pro &&
-               lhs.creation_timestamp == rhs.creation_timestamp &&
-               lhs.creation_source == rhs.creation_source
+            lhs.email == rhs.email &&
+            lhs.has_pro == rhs.has_pro &&
+            lhs.creation_timestamp == rhs.creation_timestamp &&
+            lhs.creation_source == rhs.creation_source
     }
 }

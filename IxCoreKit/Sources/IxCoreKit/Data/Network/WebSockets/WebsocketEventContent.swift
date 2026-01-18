@@ -16,16 +16,16 @@ enum WebsocketEventContent: Decodable {
     case listDelete(ListDeleteEventContent)
     case taskCreateOrUpdate(TaskCreateOrUpdateEventContent)
     case taskDelete(TaskDeleteEventContent)
-    
+
     private enum CodingKeys: String, CodingKey {
         case type
     }
-    
+
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let contentContainer = try decoder.container(keyedBy: CodingKeys.self)
         let type = try contentContainer.decode(String.self, forKey: .type)
-        
+
         switch type {
         case "EMPTY":
             self = .empty
@@ -64,40 +64,40 @@ enum WebsocketEventContent: Decodable {
             )
         }
     }
-    
+
     // Event content types
     struct UserUpdateEventContent: Codable {
         let user: NetworkUser
     }
-    
+
     struct CategoryCreateOrUpdateEventContent: Codable {
         let category: NetworkListCategory
     }
-    
+
     struct CategoryDeleteEventContent: Codable {
         let categoryId: String
     }
-    
+
     struct ItemCreateOrUpdateEventContent: Codable {
         let item: NetworkListItem
     }
-    
+
     struct ItemDeleteEventContent: Codable {
         let itemId: String
     }
-    
+
     struct ListCreateOrUpdateEventContent: Codable {
         let list: NetworkList
     }
-    
+
     struct ListDeleteEventContent: Codable {
         let listId: String
     }
-    
+
     struct TaskCreateOrUpdateEventContent: Codable {
         let task: NetworkTask
     }
-    
+
     struct TaskDeleteEventContent: Codable {
         let taskId: String
     }

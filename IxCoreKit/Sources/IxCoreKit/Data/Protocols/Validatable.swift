@@ -13,7 +13,7 @@ public protocol Validatable {
 
 public struct ValidationError: Error {
     public let message: LocalizedStringResource
-    
+
     public init(_ message: LocalizedStringResource) {
         self.message = message
     }

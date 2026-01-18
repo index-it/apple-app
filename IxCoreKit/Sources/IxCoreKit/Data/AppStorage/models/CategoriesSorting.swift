@@ -1,5 +1,5 @@
 //
-//  ItemFilter.swift
+//  CategoriesSorting.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 25/12/24.
@@ -11,9 +11,9 @@ public enum CategoriesSorting: String, CaseIterable, Identifiable, Sendable {
     case name
     case creationDate
 //    case manual
-    
+
     public var id: Self { self }
-    
+
     public var label: String {
         switch self {
         case .name:

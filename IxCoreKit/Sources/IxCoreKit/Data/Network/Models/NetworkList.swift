@@ -19,7 +19,7 @@ public struct NetworkList: Codable, Sendable {
     public let editors: [String]
     public let createdAt: Int64
     public let editedAt: Int64?
-    
+
     public enum CodingKeys: String, CodingKey {
         case id
         case userId

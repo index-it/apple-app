@@ -11,7 +11,7 @@ public enum ProFeature: Sendable {
     case public_list
     case unlimited_lists
     case unlimited_task_reminders
-    
+
     public var localizedDescription: String {
         switch self {
         case .public_list:

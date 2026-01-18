@@ -1,5 +1,5 @@
 //
-//  StorageCodable.swift
+//  UserRawRepresentable.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 09/10/24.
@@ -8,7 +8,6 @@
 import Foundation
 
 extension User: RawRepresentable {
-    
     public init?(rawValue: String) {
         guard
             let data = rawValue.data(using: .utf8),

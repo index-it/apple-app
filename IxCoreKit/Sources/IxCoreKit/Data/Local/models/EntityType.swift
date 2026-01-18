@@ -15,7 +15,7 @@ public enum EntityType: Sendable {
     case user
     case selfUser
     case proSubscription
-    
+
     public var localizedDescription: String {
         switch self {
         case .list:

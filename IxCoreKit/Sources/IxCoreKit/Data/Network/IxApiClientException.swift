@@ -12,12 +12,13 @@ public enum IxApiClientError: Error {
     case invalidData
     case networkError
     case tooManyRequests
-    
+
     case notFound(EntityType)
     case missingPermission(IxListPermission)
     case proRequired(ProFeature)
 
     // MARK: Auth
+
     case unauthenticated
     case emailOrPasswordFormatInvalid
     case unusableEmail
@@ -31,7 +32,7 @@ extension IxApiClientError: LocalizedError {
         switch self {
         case .unknown:
             return NSLocalizedString("Oh no something went terribly wrong, please try again later or contact Support.", comment: "generic unknown error")
-            
+
         case .invalidData:
             return NSLocalizedString("You entered some invalid values, please double check!", comment: "Invalid data error")
 
@@ -41,10 +42,10 @@ extension IxApiClientError: LocalizedError {
         case .tooManyRequests:
             return NSLocalizedString("Too many requests. Please wait a moment and try again.", comment: "Rate limit error")
 
-        case .notFound(let entityType):
+        case let .notFound(entityType):
             return String(format: NSLocalizedString("%@ not found.", comment: "Entity not found error"), entityType.localizedDescription)
 
-        case .missingPermission(let permission):
+        case let .missingPermission(permission):
             switch permission {
             case .viewer:
                 return NSLocalizedString("You don't have permissions to view this list.", comment: "Missing list view permission error")
@@ -54,7 +55,7 @@ extension IxApiClientError: LocalizedError {
                 return NSLocalizedString("Only the owner of the list can perform this action.", comment: "Missing list ownership error")
             }
 
-        case .proRequired(let feature):
+        case let .proRequired(feature):
             return String(format: NSLocalizedString("Hey this is a Pro feature: %@.", comment: "Pro feature required error"), feature.localizedDescription)
 
         case .unauthenticated:
@@ -74,7 +75,6 @@ extension IxApiClientError: LocalizedError {
 
         case .tooManyPasswordForgottenEmails:
             return NSLocalizedString("You requested too many password resets, please check the spam folder of your inbox if you can't find the email we sent you previously.", comment: "Rate limit error for password reset emails")
-        
         }
     }
 }

@@ -21,21 +21,21 @@ public final class IxListItem: Validatable, Sanitizable, EmptyInitializable {
     public var createdAt: Int64
     public var editedAt: Int64?
     public var completedAt: Int64?
-    
+
     public init(id: String, user_id: String, list_id: String, category_id: String?, name: String, completed: Bool, link: String?, note: String?, created_at: Int64, edited_at: Int64?, completed_at: Int64?) {
         self.id = id
-        self.userId = user_id
-        self.listId = list_id
-        self.categoryId = category_id
+        userId = user_id
+        listId = list_id
+        categoryId = category_id
         self.name = name
         self.completed = completed
         self.link = link
         self.note = note
-        self.createdAt = created_at
-        self.editedAt = edited_at
-        self.completedAt = completed_at
+        createdAt = created_at
+        editedAt = edited_at
+        completedAt = completed_at
     }
-    
+
     public convenience init(networkListItem: NetworkListItem) {
         self.init(
             id: networkListItem.id,
@@ -51,7 +51,7 @@ public final class IxListItem: Validatable, Sanitizable, EmptyInitializable {
             completed_at: networkListItem.completedAt
         )
     }
-    
+
     public static var empty: IxListItem {
         return IxListItem(
             id: UUID().uuidString,
@@ -67,22 +67,22 @@ public final class IxListItem: Validatable, Sanitizable, EmptyInitializable {
             completed_at: nil
         )
     }
-    
+
     public var validationRes: Result<Void, ValidationError> {
         if name.count >= 100 {
             return .failure(.init("Item name can be 100 characters maximum"))
         }
-        
+
         return .success(())
     }
-    
+
     public var sanitized: IxListItem {
         var copy = self
-        
+
         copy.name = name.sanitized
         copy.link = link?.sanitized
         copy.note = note?.sanitized
-        
+
         return copy
     }
 }

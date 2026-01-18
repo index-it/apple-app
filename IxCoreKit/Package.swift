@@ -11,7 +11,7 @@ let package = Package(
         .macOS(.v10_13),
         .tvOS(.v12),
         .visionOS(.v1),
-        .watchOS(.v4)
+        .watchOS(.v4),
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -26,7 +26,7 @@ let package = Package(
         .target(
             name: "IxCoreKit",
             resources: [
-                .process("Resources/Localizable.xcstrings")
+                .process("Resources/Localizable.xcstrings"),
             ]
         ),
     ]

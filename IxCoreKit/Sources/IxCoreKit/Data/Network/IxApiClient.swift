@@ -8,57 +8,56 @@
 import Foundation
 import os
 
-fileprivate let log = Logger(subsystem: IxSubsystems.CORE_KIT, category: "IxApiClient")
+private let log = Logger(subsystem: IxSubsystems.CORE_KIT, category: "IxApiClient")
 
 public final class IxApiClient: Sendable {
     private static let baseUrl = URL(string: "https://api.index-it.app")!
-    
+
     private let cookieStorage: HTTPCookieStorage
     private let authChangeCallback: @Sendable (AuthStatus) -> Void
-    
+
     // Create a single URLSession instance to reuse
     private let urlSession: URLSession
-    
+
     public init(
         cookieStorage: HTTPCookieStorage = IxCookieStorageProvider.get(),
         authChangeCallback: @Sendable @escaping (AuthStatus) -> Void
     ) {
         self.cookieStorage = cookieStorage
         self.authChangeCallback = authChangeCallback
-        
+
         let configuration = URLSessionConfiguration.default
         configuration.httpCookieStorage = self.cookieStorage
-        self.urlSession = URLSession(configuration: configuration)
-        
+        urlSession = URLSession(configuration: configuration)
+
         initAuth()
     }
-    
+
     static func decoder() -> JSONDecoder {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-        
+
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.timeZone = TimeZone(identifier: "UTC")!
         decoder.dateDecodingStrategy = .formatted(formatter)
-        
+
         return decoder
     }
-    
+
     static func encoder() -> JSONEncoder {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
-        
+
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         encoder.dateEncodingStrategy = .formatted(dateFormatter)
-        
+
         return encoder
     }
-    
 
     // MARK: - Authentication
-    
+
     private func initAuth() {
         Task {
             do {
@@ -66,11 +65,11 @@ public final class IxApiClient: Sendable {
             } catch {}
         }
     }
-    
+
     private func handleAuthenticationStatus(_ authenticationStatus: AuthStatus) {
         authChangeCallback(authenticationStatus)
     }
-    
+
     /// gets the given welcome action for a user email
     ///
     /// - Returns: the `IxWelcomeAction`
@@ -81,11 +80,11 @@ public final class IxApiClient: Sendable {
         let url = Self.baseUrl
             .appendingPathComponent("/welcome-action")
             .appending(queryItems: [URLQueryItem(name: "email", value: email)])
-        
+
         let (data, urlRes) = try await urlSession.data(from: url)
-        
+
         let res = urlRes as! HTTPURLResponse
-        
+
         switch res.statusCode {
         case 200:
             return try Self.decoder().decode(WelcomeActionResponse.self, from: data).action
@@ -94,7 +93,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// register a new user with its email and password
     ///
     /// - Returns: true if the user has been registered and a verification email has been sent, false if user has been registered but the verification email **hasn't** been sent because of some rate limits
@@ -110,11 +109,11 @@ public final class IxApiClient: Sendable {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let body = try Self.encoder().encode(EmailAndPasswordReqBody(email: email, password: password))
         req.httpBody = body
-        
+
         let (_, urlRes) = try await urlSession.data(for: req)
-        
+
         let res = urlRes as! HTTPURLResponse
-        
+
         switch res.statusCode {
         case 200:
             return true
@@ -129,7 +128,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Sends an account verification email to the specified email.
     /// Requires the password to be provided too.
     ///
@@ -144,13 +143,13 @@ public final class IxApiClient: Sendable {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        
+
         let bodyString = "email=\(email)&password=\(password)"
         req.httpBody = bodyString.data(using: .utf8)
-        
+
         let (_, urlRes) = try await urlSession.data(for: req)
         let res = urlRes as! HTTPURLResponse
-        
+
         switch res.statusCode {
         case 200:
             return false
@@ -165,7 +164,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Checks if the user's email has been verified.
     ///
     /// - Returns: `true` if the email is verified, `false` otherwise.
@@ -178,13 +177,13 @@ public final class IxApiClient: Sendable {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        
+
         let bodyString = "email=\(email)&password=\(password)"
         req.httpBody = bodyString.data(using: .utf8)
-        
+
         let (_, urlRes) = try await urlSession.data(for: req)
         let res = urlRes as! HTTPURLResponse
-        
+
         switch res.statusCode {
         case 200:
             return true
@@ -197,7 +196,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Sends an email to reset the password of a user with the specified email.
     ///
     /// ### Throws
@@ -210,14 +209,14 @@ public final class IxApiClient: Sendable {
             .appending(queryItems: [URLQueryItem(name: "email", value: email)])
         var req = URLRequest(url: url)
         req.httpMethod = "GET"
-        
+
         let (_, urlRes) = try await urlSession.data(for: req)
         let res = urlRes as! HTTPURLResponse
-        
-        if (res.statusCode == 200) {
+
+        if res.statusCode == 200 {
             return
         }
-        
+
         switch res.statusCode {
         case 404:
             throw IxApiClientError.notFound(.selfUser)
@@ -228,7 +227,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// logs in the user with its email and password
     ///
     /// ### Throws
@@ -242,14 +241,14 @@ public final class IxApiClient: Sendable {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let body = try Self.encoder().encode(EmailAndPasswordReqBody(email: email, password: password))
         req.httpBody = body
-        
+
         let (data, urlRes) = try await urlSession.data(for: req)
-        
+
         let res = urlRes as! HTTPURLResponse
-        
+
         switch res.statusCode {
         case 200:
-            let user = User(from: try Self.decoder().decode(NetworkUser.self, from: data))
+            let user = try User(from: Self.decoder().decode(NetworkUser.self, from: data))
             handleAuthenticationStatus(.authenticated(user: user))
         case 401:
             handleAuthenticationStatus(.unauthenticated)
@@ -261,7 +260,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// logs in the user via google
     ///
     /// ### Throws
@@ -272,13 +271,13 @@ public final class IxApiClient: Sendable {
         let url = Self.baseUrl.appendingPathComponent("login-with-google")
             .appending(queryItems: [URLQueryItem(name: "token_id", value: idToken)])
         let req = URLRequest(url: url)
-        
+
         let (data, urlRes) = try await urlSession.data(for: req)
         let res = urlRes as! HTTPURLResponse
-        
+
         switch res.statusCode {
         case 200:
-            let user = User(from: try Self.decoder().decode(NetworkUser.self, from: data))
+            let user = try User(from: Self.decoder().decode(NetworkUser.self, from: data))
             handleAuthenticationStatus(.authenticated(user: user))
         case 401:
             handleAuthenticationStatus(.unauthenticated)
@@ -290,7 +289,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// logs in the user via apple
     ///
     /// ### Throws
@@ -301,13 +300,13 @@ public final class IxApiClient: Sendable {
         let url = Self.baseUrl.appendingPathComponent("login-with-apple")
             .appending(queryItems: [URLQueryItem(name: "token_id", value: idToken)])
         let req = URLRequest(url: url)
-        
+
         let (data, urlRes) = try await urlSession.data(for: req)
         let res = urlRes as! HTTPURLResponse
-        
+
         switch res.statusCode {
         case 200:
-            let user = User(from: try Self.decoder().decode(NetworkUser.self, from: data))
+            let user = try User(from: Self.decoder().decode(NetworkUser.self, from: data))
             handleAuthenticationStatus(.authenticated(user: user))
         case 401:
             handleAuthenticationStatus(.unauthenticated)
@@ -319,7 +318,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Changes the password of the currently logged-in user.
     ///
     /// This does not invalidate the current session but invalidates all other active sessions.
@@ -330,17 +329,17 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.Unknown`: For unexpected errors.
     @Sendable public func changePassword(newPassword: String) async throws {
         let url = Self.baseUrl.appendingPathComponent("/me/password")
-        
+
         var request = URLRequest(url: url)
-        
+
         let body = ["password": newPassword]
         request.httpMethod = "PUT"
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             return // Password successfully changed.
@@ -352,7 +351,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Deletes the currently logged-in account.
     ///
     /// **All data will be completely erased from the server.**
@@ -363,10 +362,10 @@ public final class IxApiClient: Sendable {
         let url = Self.baseUrl.appendingPathComponent("/me")
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
-        
+
         let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200, 401:
             // Successful deletion or already unauthenticated; proceed as unauthenticated.
@@ -375,7 +374,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Sends the notification token of Firebase Cloud Messaging to the server.
     ///
     /// ### Throws:
@@ -387,10 +386,10 @@ public final class IxApiClient: Sendable {
         request.httpMethod = "POST"
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             return // Successfully sent the token.
@@ -400,18 +399,18 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// logs out the currently logged in user (if any)
     ///
     /// ### Throws
     /// - `IxApiClientError.Unknown`
     @Sendable public func logout() async throws {
         let url = Self.baseUrl.appendingPathComponent("/logout")
-        
+
         let (_, urlRes) = try await urlSession.data(from: url)
-        
+
         let res = urlRes as! HTTPURLResponse
-        
+
         switch res.statusCode {
         case 200:
             handleAuthenticationStatus(.unauthenticated)
@@ -422,10 +421,9 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
-    
+
     // MARK: - User
-    
+
     /// get the logged in user, uses the auth cookies stored in the device
     ///
     /// - Returns: the logged in `IxUser`
@@ -435,14 +433,14 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.Unauthenticated`
     @Sendable public func me() async throws -> User {
         let url = Self.baseUrl.appendingPathComponent("/me")
-        
+
         let (data, urlRes) = try await urlSession.data(from: url)
-        
+
         let res = urlRes as! HTTPURLResponse
-        
+
         switch res.statusCode {
         case 200:
-            let user = User(from: try Self.decoder().decode(NetworkUser.self, from: data))
+            let user = try User(from: Self.decoder().decode(NetworkUser.self, from: data))
             handleAuthenticationStatus(.authenticated(user: user))
             return user
         case 401:
@@ -453,16 +451,16 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     @Sendable public func restorePurchases() async throws -> User {
         let url = Self.baseUrl.appendingPathComponent("/pro/subscription/restore")
         let (data, urlRes) = try await urlSession.data(from: url)
-        
+
         let res = urlRes as! HTTPURLResponse
-        
+
         switch res.statusCode {
         case 200:
-            let user = User(from: try Self.decoder().decode(NetworkUser.self, from: data))
+            let user = try User(from: Self.decoder().decode(NetworkUser.self, from: data))
             handleAuthenticationStatus(.authenticated(user: user))
             return user
         case 204:
@@ -478,10 +476,9 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
-    
+
     // MARK: - Lists
-    
+
     /// Gets all the user lists
     /// - Returns: an array of `IxList`
     ///
@@ -489,11 +486,11 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.Unknown`
     public func getLists() async throws -> [IxList] {
         let url = Self.baseUrl.appendingPathComponent("/lists")
-        
+
         let (data, urlRes) = try await urlSession.data(from: url)
-        
+
         let res = urlRes as! HTTPURLResponse
-        
+
         switch res.statusCode {
         case 200:
             let lists = try Self.decoder().decode([NetworkList].self, from: data).map { networList in IxList(networkList: networList) }
@@ -506,7 +503,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Creates a new list with the given name, emoji, and color.
     ///
     /// The user needs a Pro subscription to create a public list.
@@ -519,17 +516,17 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.Unknown`
     @Sendable public func createList(name: String, icon: String, color: String, archived: Bool, is_public: Bool) async throws -> IxList {
         let url = Self.baseUrl.appendingPathComponent("/lists")
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let body = ListCreateOrEditReqBody(name: name, icon: icon, color: color, archived: archived, isPublic: is_public)
         request.httpBody = try Self.encoder().encode(body)
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             let networkList = try Self.decoder().decode(NetworkList.self, from: data)
@@ -549,7 +546,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Retrieves a single list by its identifier.
     ///
     /// ### Throws:
@@ -560,7 +557,7 @@ public final class IxApiClient: Sendable {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(id)")
         let (data, response) = try await urlSession.data(from: url)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             let networkList = try Self.decoder().decode(NetworkList.self, from: data)
@@ -573,7 +570,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Edits a list by its identifier with the provided name, emoji, color, and public status.
     ///
     /// The user needs pro to make the list public.
@@ -588,15 +585,15 @@ public final class IxApiClient: Sendable {
     @Sendable public func editList(id: String, name: String, icon: String, color: String, archived: Bool, is_public: Bool) async throws -> IxList {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(id)")
         let requestBody = ListCreateOrEditReqBody(name: name, icon: icon, color: color, archived: archived, isPublic: is_public)
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try Self.encoder().encode(requestBody)
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             let networkList = try Self.decoder().decode(NetworkList.self, from: data)
@@ -615,7 +612,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Deletes a list via its id
     ///
     /// ### Throws:
@@ -625,13 +622,13 @@ public final class IxApiClient: Sendable {
     ///
     @Sendable public func deleteList(id: String) async throws {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(id)")
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
-        
+
         let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             return
@@ -645,10 +642,9 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
-    
+
     // MARK: - List access
-    
+
     /// Gets all the users that have access to the list with the specified id
     ///
     /// ### Throws:
@@ -658,13 +654,13 @@ public final class IxApiClient: Sendable {
     ///
     @Sendable public func getListUsersWithAccess(id: String) async throws -> [IxListSingleUserAccessInfo] {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(id)/access/users")
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             return try Self.decoder().decode([IxListSingleUserAccessInfo].self, from: data)
@@ -678,7 +674,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Leaves a list with the specified id if the logged in user is either a viewer or editor
     ///
     /// ### Throws:
@@ -688,13 +684,13 @@ public final class IxApiClient: Sendable {
     ///
     @Sendable public func leaveList(id: String) async throws {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(id)/access/leave")
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        
+
         let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             return
@@ -708,7 +704,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Gives a user access to a list
     ///
     /// - Returns: `null` if the user was invited, the list if they already accepted a previous invitation and their permissions are changed
@@ -722,18 +718,18 @@ public final class IxApiClient: Sendable {
     @Sendable public func inviteUserToList(listId: String, email: String, editor: Bool) async throws -> IxList? {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access")
         let requestBody = ListGiveUserAccessReqBody(email: email, editor: editor)
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try Self.encoder().encode(requestBody)
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
-            return IxList(networkList: try Self.decoder().decode(NetworkList.self, from: data))
+            return try IxList(networkList: Self.decoder().decode(NetworkList.self, from: data))
         case 201:
             return nil
         case 400:
@@ -748,7 +744,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Removes access to the list from a user
     ///
     /// ### Throws:
@@ -759,18 +755,18 @@ public final class IxApiClient: Sendable {
     @Sendable public func revokeListAccessFromUser(listId: String, userId: String) async throws -> IxList {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access")
         let requestBody = ListRemoveUserAccessReqBody(userId: userId)
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try Self.encoder().encode(requestBody)
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
-            return IxList(networkList: try Self.decoder().decode(NetworkList.self, from: data))
+            return try IxList(networkList: Self.decoder().decode(NetworkList.self, from: data))
         case 401:
             throw IxApiClientError.unauthenticated
         case 403:
@@ -781,10 +777,9 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
-    
+
     // MARK: - List categories
-    
+
     /// Gets all the categories of a list
     ///
     /// ### Throws:
@@ -794,13 +789,13 @@ public final class IxApiClient: Sendable {
     ///
     @Sendable public func getListCategories(listId: String) async throws -> [IxListCategory] {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories")
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             return try Self.decoder().decode([NetworkListCategory].self, from: data).map { IxListCategory(networkListCategory: $0) }
@@ -814,7 +809,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Gets a specific category via the list and category id
     ///
     /// ### Throws:
@@ -824,16 +819,16 @@ public final class IxApiClient: Sendable {
     ///
     @Sendable public func getCategory(listId: String, categoryId: String) async throws -> IxListCategory {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories/\(categoryId)")
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
-            return IxListCategory(networkListCategory: try Self.decoder().decode(NetworkListCategory.self, from: data))
+            return try IxListCategory(networkListCategory: Self.decoder().decode(NetworkListCategory.self, from: data))
         case 401:
             throw IxApiClientError.unauthenticated
         case 403:
@@ -844,22 +839,22 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     @Sendable public func createCategory(listId: String, name: String, color: String?) async throws -> IxListCategory {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories")
         let requestBody = ListCategoryCreateOrEditReqBody(name: name, color: color)
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try Self.encoder().encode(requestBody)
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
-            return IxListCategory(networkListCategory: try Self.decoder().decode(NetworkListCategory.self, from: data))
+            return try IxListCategory(networkListCategory: Self.decoder().decode(NetworkListCategory.self, from: data))
         case 400:
             throw IxApiClientError.invalidData
         case 401:
@@ -872,7 +867,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Edits a list category
     ///
     /// ### Throws:
@@ -884,18 +879,18 @@ public final class IxApiClient: Sendable {
     @Sendable public func updateListCategory(listId: String, categoryId: String, name: String, color: String?) async throws -> IxListCategory {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories/\(categoryId)")
         let requestBody = ListCategoryCreateOrEditReqBody(name: name, color: color)
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try Self.encoder().encode(requestBody)
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
-            return IxListCategory(networkListCategory: try Self.decoder().decode(NetworkListCategory.self, from: data))
+            return try IxListCategory(networkListCategory: Self.decoder().decode(NetworkListCategory.self, from: data))
         case 400:
             throw IxApiClientError.invalidData
         case 401:
@@ -908,7 +903,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Deletes a list category
     ///
     /// ### Throws:
@@ -917,13 +912,13 @@ public final class IxApiClient: Sendable {
     ///
     @Sendable public func deleteListCategory(listId: String, categoryId: String) async throws {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/categories/\(categoryId)")
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
-        
+
         let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             break // Deletion successful, no content to return
@@ -937,10 +932,9 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
-    
+
     // MARK: - List items
-    
+
     /// Gets all the items of a list
     ///
     /// ### Throws:
@@ -950,19 +944,19 @@ public final class IxApiClient: Sendable {
     @Sendable public func getListItems(listId: String, completed: Bool? = nil) async throws -> [IxListItem] {
         var urlComponents = URLComponents(string: "\(Self.baseUrl)/lists/\(listId)/items")!
         var queryItems = [URLQueryItem]()
-        
+
         if let completed = completed {
             queryItems.append(URLQueryItem(name: "completed", value: "\(completed)"))
         }
         urlComponents.queryItems = queryItems
-        
+
         let url = urlComponents.url!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             return try Self.decoder().decode([NetworkListItem].self, from: data).map { IxListItem(networkListItem: $0) }
@@ -974,7 +968,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Gets a single list item via the [itemId]
     ///
     /// ### Throws:
@@ -986,13 +980,13 @@ public final class IxApiClient: Sendable {
         let url = URL(string: "\(Self.baseUrl)/lists/\(listId)/items/\(itemId)")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
-            return IxListItem(networkListItem: try Self.decoder().decode(NetworkListItem.self, from: data))
+            return try IxListItem(networkListItem: Self.decoder().decode(NetworkListItem.self, from: data))
         case 401:
             throw IxApiClientError.unauthenticated
         case 403:
@@ -1003,7 +997,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Creates a new list item
     ///
     /// ### Throws:
@@ -1015,17 +1009,16 @@ public final class IxApiClient: Sendable {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let body = ListItemCreateOrEditReqBody(name: name, categoryId: categoryId, link: link, note: note)
         request.httpBody = try Self.encoder().encode(body)
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
-        
+
         switch httpResponse.statusCode {
         case 200:
-            return IxListItem(networkListItem: try Self.decoder().decode(NetworkListItem.self, from: data))
+            return try IxListItem(networkListItem: Self.decoder().decode(NetworkListItem.self, from: data))
         case 400:
             throw IxApiClientError.invalidData
         case 403:
@@ -1034,7 +1027,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Edits a list item
     ///
     /// ### Throws:
@@ -1047,17 +1040,17 @@ public final class IxApiClient: Sendable {
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         // Setting the body for the request
         let body = ListItemCreateOrEditReqBody(name: name, categoryId: categoryId, link: link, note: note)
         request.httpBody = try Self.encoder().encode(body)
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
-            return IxListItem(networkListItem: try Self.decoder().decode(NetworkListItem.self, from: data))
+            return try IxListItem(networkListItem: Self.decoder().decode(NetworkListItem.self, from: data))
         case 400:
             throw IxApiClientError.invalidData
         case 403:
@@ -1068,7 +1061,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Completes or un-completes an item
     ///
     /// ### Throws:
@@ -1079,16 +1072,16 @@ public final class IxApiClient: Sendable {
     @Sendable public func setListItemCompletion(listId: String, itemId: String, completed: Bool) async throws -> IxListItem {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/items/\(itemId)/completion")
             .appending(queryItems: [URLQueryItem(name: "completed", value: "\(completed)")])
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
-            return IxListItem(networkListItem: try Self.decoder().decode(NetworkListItem.self, from: data))
+            return try IxListItem(networkListItem: Self.decoder().decode(NetworkListItem.self, from: data))
         case 403:
             throw IxApiClientError.missingPermission(.editor)
         case 404:
@@ -1097,19 +1090,19 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     @Sendable public func setListItemsCompletion(listId: String, itemIds: [String], completed: Bool) async throws -> [IxListItem] {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/items/completion")
             .appending(queryItems: [URLQueryItem(name: "completed", value: "\(completed)")])
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try Self.encoder().encode(itemIds)
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             return try Self.decoder().decode([NetworkListItem].self, from: data).map { IxListItem(networkListItem: $0) }
@@ -1121,7 +1114,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Deletes a list item
     ///
     /// ### Throws:
@@ -1131,10 +1124,10 @@ public final class IxApiClient: Sendable {
         let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/items/\(itemId)")
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
-        
+
         let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             break // Item successfully deleted
@@ -1144,9 +1137,9 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     // MARK: - Tasks
-    
+
     /// Gets all the tasks of the user
     ///
     /// ### Throws:
@@ -1155,18 +1148,18 @@ public final class IxApiClient: Sendable {
     @Sendable public func getTasks(completed: Bool? = nil) async throws -> [IxTask] {
         var urlComponents = URLComponents(string: "\(Self.baseUrl)/tasks")!
         var queryItems = [URLQueryItem]()
-        
+
         if let completed = completed {
             queryItems.append(URLQueryItem(name: "completed", value: "\(completed)"))
         }
         urlComponents.queryItems = queryItems
-        
+
         var request = URLRequest(url: urlComponents.url!)
         request.httpMethod = "GET"
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             return try Self.decoder().decode([NetworkTask].self, from: data).map { IxTask(networkTask: $0) }
@@ -1174,7 +1167,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Gets a single task via the [taskId]
     ///
     /// ### Throws:
@@ -1185,20 +1178,20 @@ public final class IxApiClient: Sendable {
         let url = Self.baseUrl.appendingPathComponent("/tasks/\(taskId)")
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
-            return IxTask(networkTask: try Self.decoder().decode(NetworkTask.self, from: data))
+            return try IxTask(networkTask: Self.decoder().decode(NetworkTask.self, from: data))
         case 404:
             throw IxApiClientError.notFound(.task)
         default:
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Creates a new task
     ///
     /// ### Throws:
@@ -1211,26 +1204,26 @@ public final class IxApiClient: Sendable {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let body = TaskCreateOrEditReqBody(
             name: name,
             description: description,
             itemId: itemId,
-            subtasks: subtasks.map({ NetworkSubTask(name: $0.name, completed: $0.completed)}),
+            subtasks: subtasks.map { NetworkSubTask(name: $0.name, completed: $0.completed) },
             dueDate: dueDate,
             rrule: rrule,
             priority: priority,
-            reminders: reminders.map({ NetworkTaskReminder(daysBefore: $0.daysBefore, timeOffset: $0.timeOffset)})
+            reminders: reminders.map { NetworkTaskReminder(daysBefore: $0.daysBefore, timeOffset: $0.timeOffset) }
         )
-        
+
         request.httpBody = try Self.encoder().encode(body)
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
-            return IxTask(networkTask: try Self.decoder().decode(NetworkTask.self, from: data))
+            return try IxTask(networkTask: Self.decoder().decode(NetworkTask.self, from: data))
         case 400:
             throw IxApiClientError.invalidData
         case 402:
@@ -1253,25 +1246,25 @@ public final class IxApiClient: Sendable {
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let body = TaskCreateOrEditReqBody(
             name: name,
             description: description,
             itemId: itemId,
-            subtasks: subtasks.map({ NetworkSubTask(name: $0.name, completed: $0.completed)}),
+            subtasks: subtasks.map { NetworkSubTask(name: $0.name, completed: $0.completed) },
             dueDate: dueDate,
             rrule: rrule,
             priority: priority,
-            reminders: reminders.map({ NetworkTaskReminder(daysBefore: $0.daysBefore, timeOffset: $0.timeOffset)})
+            reminders: reminders.map { NetworkTaskReminder(daysBefore: $0.daysBefore, timeOffset: $0.timeOffset) }
         )
         request.httpBody = try Self.encoder().encode(body)
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
-            return IxTask(networkTask: try Self.decoder().decode(NetworkTask.self, from: data))
+            return try IxTask(networkTask: Self.decoder().decode(NetworkTask.self, from: data))
         case 400:
             throw IxApiClientError.invalidData
         case 404:
@@ -1289,17 +1282,17 @@ public final class IxApiClient: Sendable {
     @Sendable public func setTaskCompletion(taskId: String, completed: Bool) async throws -> IxTask {
         let url = Self.baseUrl.appendingPathComponent("/tasks/\(taskId)/completion")
             .appending(queryItems: [URLQueryItem(name: "completed", value: "\(completed)")])
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
-            return IxTask(networkTask: try Self.decoder().decode(NetworkTask.self, from: data))
+            return try IxTask(networkTask: Self.decoder().decode(NetworkTask.self, from: data))
         case 404:
             throw IxApiClientError.notFound(.task)
         default:
@@ -1314,19 +1307,19 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.Unknown`
     @Sendable public func deleteTask(taskId: String, all: Bool? = nil) async throws {
         var urlComponents = URLComponents(string: "\(Self.baseUrl)/tasks/\(taskId)")!
-        
+
         if let all = all {
             var queryItems = [URLQueryItem]()
             queryItems.append(URLQueryItem(name: "all", value: "\(all)"))
             urlComponents.queryItems = queryItems
         }
-        
+
         var request = URLRequest(url: urlComponents.url!)
         request.httpMethod = "DELETE"
-        
+
         let (_, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        
+
         switch httpResponse.statusCode {
         case 200:
             return

@@ -16,7 +16,7 @@ public extension SortOrder {
             return NSLocalizedString("Newest First", comment: "reverse sort order for creation date")
         }
     }
-    
+
     var labelForPriority: String {
         switch self {
         case .forward:
@@ -25,7 +25,7 @@ public extension SortOrder {
             return NSLocalizedString("Highest First", comment: "reverse sort order for priority")
         }
     }
-    
+
     var labelForName: String {
         switch self {
         case .forward:
@@ -34,7 +34,7 @@ public extension SortOrder {
             return NSLocalizedString("Descending", comment: "reverse sort order for name")
         }
     }
-    
+
     func labelForListsSorting(_ sorting: ListsSorting) -> String {
         switch sorting {
 //        case .manual:
@@ -45,7 +45,7 @@ public extension SortOrder {
             return labelForName
         }
     }
-    
+
     func labelForCategoriesSorting(_ sorting: CategoriesSorting) -> String {
         switch sorting {
 //        case .manual:
@@ -56,7 +56,7 @@ public extension SortOrder {
             return labelForCreationDate
         }
     }
-    
+
     func labelForItemsSorting(_ sorting: ItemsSorting) -> String {
         switch sorting {
 //        case .manual:
@@ -67,7 +67,7 @@ public extension SortOrder {
             return labelForCreationDate
         }
     }
-    
+
     func labelForTasksSorting(_ sorting: TasksSorting) -> String {
         switch sorting {
 //        case .manual:

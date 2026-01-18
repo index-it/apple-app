@@ -1,5 +1,5 @@
 //
-//  Permission.swift
+//  IxListPermission.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 28/02/25.
@@ -11,7 +11,7 @@ public enum IxListPermission: Sendable {
     case viewer
     case editor
     case owner
-    
+
     public var localizedDescription: String {
         switch self {
         case .viewer:

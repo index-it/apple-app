@@ -11,9 +11,9 @@ public enum ItemsSorting: String, CaseIterable, Identifiable, Sendable {
     case name
     case creationDate
 //    case manual
-    
+
     public var id: Self { self }
-    
+
     public var label: String {
         switch self {
         case .name:

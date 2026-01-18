@@ -8,7 +8,7 @@
 import Foundation
 
 public enum AuthStatus: Sendable, Equatable {
-    case loading;
-    case unauthenticated;
-    case authenticated(user: User);
+    case loading
+    case unauthenticated
+    case authenticated(user: User)
 }

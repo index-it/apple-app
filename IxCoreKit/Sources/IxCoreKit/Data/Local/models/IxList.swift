@@ -1,12 +1,12 @@
 //
-//  List.swift
+//  IxList.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 18/11/24.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 @Model
 public class IxList {
@@ -21,12 +21,12 @@ public class IxList {
     public var editors: [String]
     public var createdAt: Int64
     public var editedAt: Int64?
-    
+
     public init(id: String, userId: String, name: String, emoji: String, color: String, archived: Bool, isPublic: Bool, viewers: [String], editors: [String], createdAt: Int64, editedAt: Int64? = nil) {
         self.id = id
         self.userId = userId
         self.name = name
-        self.icon = emoji
+        icon = emoji
         self.color = color
         self.archived = archived
         self.isPublic = isPublic
@@ -35,7 +35,7 @@ public class IxList {
         self.createdAt = createdAt
         self.editedAt = editedAt
     }
-    
+
     public convenience init(networkList: NetworkList) {
         self.init(
             id: networkList.id,
@@ -51,7 +51,7 @@ public class IxList {
             editedAt: networkList.editedAt
         )
     }
-    
+
     /// A Boolean value indicating whether the list is shared with others.
     ///
     /// A list is considered shared if:
@@ -61,9 +61,9 @@ public class IxList {
     ///
     /// - Returns: `true` if the list is public or has any viewers or editors; otherwise, `false`.
     public var isShared: Bool {
-        self.isPublic || !self.viewers.isEmpty || !self.editors.isEmpty
+        isPublic || !viewers.isEmpty || !editors.isEmpty
     }
-    
+
     public func getPermissions(userId: String) -> IxListPermission? {
         if userId == userId {
             return .owner
@@ -75,7 +75,7 @@ public class IxList {
             return nil
         }
     }
-    
+
     public static func mock(
         name: String,
         emoji: String,
@@ -83,7 +83,7 @@ public class IxList {
         archived: Bool = false,
         isPublic: Bool = false,
         id: String = UUID().uuidString,
-        userId: String = UUID().uuidString,
+        userId: String = UUID().uuidString
     ) -> IxList {
         return IxList(
             id: id,
@@ -99,7 +99,7 @@ public class IxList {
             editedAt: nil
         )
     }
-    
+
     public static func loading() -> IxList {
         return IxList(
             id: UUID().uuidString,

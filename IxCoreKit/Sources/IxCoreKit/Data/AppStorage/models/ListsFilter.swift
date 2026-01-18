@@ -11,9 +11,9 @@ public enum ListsFilter: String, CaseIterable, Identifiable, Sendable {
     case all
     case ownedByMe
     case sharedWithMe
-        
+
     public var id: Self { self }
-    
+
     public var label: String {
         switch self {
         case .all:

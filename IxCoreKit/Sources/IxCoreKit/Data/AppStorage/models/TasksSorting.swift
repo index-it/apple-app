@@ -1,5 +1,5 @@
 //
-//  TaskSorting.swift
+//  TasksSorting.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 01/03/25.
@@ -12,9 +12,9 @@ public enum TasksSorting: String, CaseIterable, Identifiable, Sendable {
     case priority
     case creation
 //    case manual
-        
+
     public var id: Self { self }
-    
+
     public var label: String {
         switch self {
         case .name:
