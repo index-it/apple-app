@@ -11,6 +11,7 @@ import SwiftData
 import SwiftUI
 
 struct ListsGridScreen: View {
+    @Environment(\.showPaywall) private var showPaywall
     @Environment(\.modelContext) private var context
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var navigationManager: NavigationManager
@@ -20,8 +21,6 @@ struct ListsGridScreen: View {
 
     @Query private var lists: [IxList]
     private var archived: Bool
-
-    @State private var showPaywall: Bool = false
 
     // MARK: List creation
 
@@ -98,7 +97,7 @@ struct ListsGridScreen: View {
 
             try await saveList(list)
         } catch IxApiClientError.proRequired(_) {
-            showPaywall = true
+            showPaywall()
         } catch {
             errorService.insert(.localizedError(title: "Error creating list", error: error))
         }
@@ -259,7 +258,7 @@ struct ListsGridScreen: View {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             if let user = user, !user.has_pro && lists.count >= 7 {
-                                showPaywall = true
+                                showPaywall()
                             } else {
                                 isAddingList = true
                             }
@@ -328,7 +327,6 @@ struct ListsGridScreen: View {
                     }
                 }
             }
-            .paywallCover(isPresented: $showPaywall)
             .sheet(isPresented: $showShareSheet) { [selectedList] in
                 ListSharingSheet(
                     showSheet: $showShareSheet,

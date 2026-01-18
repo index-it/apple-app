@@ -12,8 +12,7 @@ import SwiftUI
 struct AboutView: View {
     @Environment(\.openURL) var openURL
     @Environment(\.requestReview) var requestReview
-
-    @State private var showPaywall = false
+    @Environment(\.showPaywall) private var showPaywall
 
     @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
 
@@ -75,7 +74,7 @@ struct AboutView: View {
 
                     if user?.has_pro != true {
                         Button {
-                            showPaywall = true
+                            showPaywall()
                         } label: {
                             Label("Get Pro", systemImage: "crown")
                                 .frame(maxWidth: .infinity)
@@ -136,7 +135,6 @@ struct AboutView: View {
             }
             .ignoresSafeArea(edges: .bottom)
             .padding(.horizontal, 32)
-            .paywallCover(isPresented: $showPaywall)
         }
         .toolbarBackground(UIColor.systemGray6.toColor(), for: .navigationBar)
         .toolbarBackgroundVisibility(.visible, for: .navigationBar)

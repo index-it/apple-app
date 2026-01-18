@@ -54,6 +54,8 @@ struct IxApp: App {
     @StateObject private var navigationManager = NavigationManager()
     @StateObject private var authNavigationManager = AuthNavigationManager()
     @StateObject private var errorService = ErrorStateService()
+    @StateObject private var toastService = ToastStateService()
+    @StateObject private var paywallService = PaywallStateService()
 
     private var modelContainer: ModelContainer
     private var ixApiClient: IxApiClient
@@ -173,11 +175,14 @@ struct IxApp: App {
                 .environmentObject(authNavigationManager)
                 .environmentObject(navigationManager)
                 .environmentObject(errorService)
+                .environmentObject(toastService)
+                .environmentObject(paywallService)
                 .environment(\.ixApiClient, ixApiClient)
                 .modelContainer(modelContainer)
                 .defaultAppStorage(UserDefaults(suiteName: IxIdentifiers.APP_GROUP)!)
                 .alertPresentationWindow(service: errorService)
-                .setupToast()
+                .toastPresentationWindow(service: toastService)
+                .paywallCover(service: paywallService)
                 .onOpenURL { url in
                     if GIDSignIn.sharedInstance.handle(url) {
                         return

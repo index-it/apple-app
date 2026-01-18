@@ -9,6 +9,7 @@ import IxCoreKit
 import SwiftUI
 
 struct ListSharingSheet: View {
+    @Environment(\.showPaywall) private var showPaywall
     @State private var navPath: [ListShareSheetNavigationRoute] = []
     @State private var showAddUserDialog = false
     @State private var addUserEmail = ""
@@ -21,7 +22,6 @@ struct ListSharingSheet: View {
     }
 
     @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
-    @State private var showPaywall = false
 
     private var listId: String
     @State private var isPublic: Bool
@@ -88,7 +88,6 @@ struct ListSharingSheet: View {
         } message: {
             Text("An invitation email has been sent to \(addUserEmail). He will need to accept the invitation to \(addUserEditor ? "collaborate in " : "view") this list.")
         }
-        .paywallCover(isPresented: $showPaywall)
     }
 
     var ShareSheet: some View {
@@ -103,7 +102,7 @@ struct ListSharingSheet: View {
                             if hasPro {
                                 isPublic = newValue
                             } else {
-                                showPaywall = true
+                                showPaywall()
                             }
                         }
                     )) {

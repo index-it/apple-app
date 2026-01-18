@@ -8,7 +8,7 @@ import Foundation
 import SwiftData
 
 @Model
-public class IxListCategory {
+public final class IxListCategory: Sanitizable, Validatable, EmptyInitializable {
     @Attribute(.unique) public var id: String
     public var userId: String
     public var listId: String
@@ -54,5 +54,37 @@ public class IxListCategory {
             created_at: Date.now.currentTimeMillis(),
             edited_at: nil
         )
+    }
+
+    public static var empty: IxListCategory {
+        return IxListCategory(
+            id: UUID().uuidString,
+            user_id: UUID().uuidString,
+            list_id: UUID().uuidString,
+            name: "",
+            color: nil,
+            created_at: Date.now.currentTimeMillis(),
+            edited_at: nil
+        )
+    }
+
+    public var validationRes: Result<Void, ValidationError> {
+        if name.isEmpty {
+            return .failure(.init("Category name cannot be empty"))
+        }
+
+        if name.count > 100 {
+            return .failure(.init("Category name can be 100 characters maximum"))
+        }
+
+        return .success(())
+    }
+
+    public var sanitized: IxListCategory {
+        let copy = self
+
+        copy.name = name.sanitized
+
+        return copy
     }
 }

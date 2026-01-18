@@ -8,20 +8,23 @@
 import SwiftUI
 
 struct PaywallModifier: ViewModifier {
-    @Binding var isPresented: Bool
+    @ObservedObject var service: PaywallStateService
 
     func body(content: Content) -> some View {
         content
-            .fullScreenCover(isPresented: $isPresented) {
+            .environment(\.showPaywall, ShowPaywallAction {
+                service.isShown = true
+            })
+            .fullScreenCover(isPresented: $service.isShown) {
                 PaywallView {
-                    isPresented = false
+                    service.isShown = false
                 }
             }
     }
 }
 
 extension View {
-    func paywallCover(isPresented: Binding<Bool>) -> some View {
-        modifier(PaywallModifier(isPresented: isPresented))
+    func paywallCover(service: PaywallStateService) -> some View {
+        modifier(PaywallModifier(service: service))
     }
 }

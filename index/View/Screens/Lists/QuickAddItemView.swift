@@ -13,21 +13,13 @@ import SwiftUI
 private let log = Logger(subsystem: IxSubsystems.APP, category: "QuickAddItemView")
 
 struct QuickAddItemView: View {
-    // MARK: Environment vars
-
+    @Environment(\.showPaywall) private var showPaywall
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @Environment(\.modelContext) private var context
     @EnvironmentObject private var errorService: ErrorStateService
 
-    @State private var showPaywall: Bool = false
-
-    // MARK: Form vars
-
-    @State private var name: String
-    @State private var link: String
-    @State private var note: String = ""
-    @State private var selectedListId: String
-    @State private var selectedCategoryId: String?
+    @Binding private var itemEditorConfig = EditorConfig<IxListItem>()
+    @State private var categoryEditorConfig = EditorConfig<IxListCategory>()
 
     @State private var loadingLinkTitle = false
 
@@ -38,15 +30,6 @@ struct QuickAddItemView: View {
     @State private var isAddingList = false
     @State private var newListColor: Color = ColorHelper.randomIxColor()
     @State private var newListEmoji: String = EmojiHelper.randomEmojiForPickerInitial()
-
-    // MARK: Category creation form vars
-
-    @State private var isAddingCategory = false
-    @State private var newCategoryName = ""
-    @State private var newCategoryNamePlaceholder = "Category name"
-    @State private var newCategoryColor = Color.accentColor
-
-    // MARK: Config vars
 
     private var onCancel: () -> Void
     private var syncThreeshold: Int64
@@ -61,6 +44,7 @@ struct QuickAddItemView: View {
     private var categories: [IxListCategory]
 
     init(
+        itemEditorConfig: 
         name: String? = nil,
         link: String? = nil,
         note: String? = nil,
@@ -69,9 +53,9 @@ struct QuickAddItemView: View {
         onCancel: @escaping () -> Void,
         syncThreeshold: Int64 = 3_600_000
     ) {
-        self.name = name ?? ""
-        self.link = link ?? ""
-        self.note = note ?? ""
+        itemEditorConfig.entity.name = name ?? ""
+        itemEditorConfig.entity.link = link
+        itemEditorConfig.entity.note = note
         self.selectedListId = selectedListId ?? ""
         self.selectedCategoryId = selectedCategoryId
         self.onCancel = onCancel
@@ -92,7 +76,7 @@ struct QuickAddItemView: View {
                         .replacingOccurrences(of: "</title>", with: "")
                         .trimmingCharacters(in: .whitespacesAndNewlines)
 
-                    name = title
+                    itemEditorConfig.entity.name = title
                 }
             }
 
@@ -147,15 +131,19 @@ struct QuickAddItemView: View {
 
             selectedListId = list.id
         } catch IxApiClientError.proRequired(_) {
-            showPaywall = true
+            showPaywall()
         } catch {
             errorService.insert(.localizedError(title: "Error creating list", error: error))
         }
     }
 
-    func createCategory(listId: String, name: String, color: Color?) async {
+    func createCategory() async {
         do {
-            let category = try await ixApiClient.createCategory(listId: listId, name: name, color: color?.hexString)
+            categoryEditorConfig.loading = true
+            defer { categoryEditorConfig.loading = false }
+            
+            let data = try categoryEditorConfig.sanitizeAndValidate()
+            let category = try await ixApiClient.createCategory(listId: selectedListId, name: data.name, color: data.color)
 
             try context.transaction {
                 context.insert(category)
@@ -194,11 +182,11 @@ struct QuickAddItemView: View {
     var body: some View {
         QuickAddView
             .onAppear {
-                if name.isEmpty && link.isEmpty {
+                if itemEditorConfig.entity.name.isEmpty && itemEditorConfig.entity.link?.isEmpty == true {
                     isNameFieldFocused = true
                 }
 
-                if !link.isEmpty, let url = URL(string: link) {
+                if let link = itemEditorConfig.entity.link, !link.isEmpty, let url = URL(string: link) {
                     Task {
                         await loadLinkTitle(url)
                     }
@@ -231,15 +219,15 @@ struct QuickAddItemView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField(loadingLinkTitle ? "Loading website title..." : "Name", text: $name, axis: .vertical)
+                    TextField(loadingLinkTitle ? "Loading website title..." : "Name", text: $itemEditorConfig.entity.name, axis: .vertical)
                         .focused($isNameFieldFocused)
 
-                    TextField("Link", text: $link, axis: .vertical)
+                    TextField("Link", text: $itemEditorConfig.entity.link ?? "", axis: .vertical)
                         .keyboardType(.URL)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
 
-                    TextField("Notes", text: $note, axis: .vertical)
+                    TextField("Notes", text: $itemEditorConfig.entity.note ?? "", axis: .vertical)
                         .lineLimit(3...)
                 } header: {
                     HStack {
@@ -296,7 +284,6 @@ struct QuickAddItemView: View {
             }
             .navigationTitle("Index it")
             .navigationBarTitleDisplayMode(.inline)
-            .paywallCover(isPresented: $showPaywall)
             .sheet(isPresented: $isAddingList) {
                 ListEditor(
                     isPresented: $isAddingList,
@@ -317,10 +304,13 @@ struct QuickAddItemView: View {
                 isPresented: $isAddingCategory,
                 content: {
                     CategoryEditor(
-                        isPresented: $isAddingCategory
-                    ) { name, color in
+                        config: $categoryEditorConfig,
+                        onCancel: {
+                            categoryEditorConfig.isPresented = false
+                        }
+                    ) {
                         Task {
-                            await createCategory(listId: selectedListId, name: name, color: color)
+                            await createCategory()
                         }
                     }
                 }

@@ -11,14 +11,13 @@ import SwiftUI
 import WidgetKit
 
 struct ListScreen: View {
+    @Environment(\.showPaywall) private var showPaywall
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
+    @Environment(\.showError) private var showError
     @Environment(\.showToast) private var showToast
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var navigationManager: NavigationManager
-    @EnvironmentObject private var errorService: ErrorStateService
-
-    @State private var showPaywall = false
 
     private var listId: String
 
@@ -41,14 +40,9 @@ struct ListScreen: View {
     @State private var showItemMovedToNextCategoryToast = false
     @State private var showItemMovedToPreviousCategoryToast = false
 
-    @State private var isEditingCategory = false
+    // MARK: Category editor
 
-    // MARK: Category creation
-
-    @State private var isAddingCategory = false
-    @State private var newCategoryName = ""
-    @State private var newCategoryNamePlaceholder = "Category name"
-    @State private var newCategoryColor = Color.accentColor
+    @State private var categoryEditorConfig = EditorConfig<IxListCategory>()
 
     // MARK: Items
 
@@ -179,7 +173,7 @@ struct ListScreen: View {
             list = try await ixApiClient.getList(id: listId)
             try await saveList(list)
         } catch {
-            errorService.insert(.localizedError(title: "Error loading list", error: error))
+            showError(.localizedError(title: "Error loading list", error: error))
         }
     }
 
@@ -200,7 +194,7 @@ struct ListScreen: View {
                 }
             }
         } catch {
-            errorService.insert(.localizedError(title: "Error loading categories", error: error))
+            showError(.localizedError(title: "Error loading categories", error: error))
         }
     }
 
@@ -221,7 +215,7 @@ struct ListScreen: View {
                 }
             }
         } catch {
-            errorService.insert(.localizedError(title: "Error loading list items", error: error))
+            showError(.localizedError(title: "Error loading list items", error: error))
         }
     }
 
@@ -230,49 +224,39 @@ struct ListScreen: View {
     func createItem() async {
         do {
             editorConfig.loading = true
-            let prepared = editorConfig.sanitizeAndValidate()
+            let createData = try editorConfig.sanitizeAndValidate()
 
-            switch prepared {
-            case let .success(createData):
-                let item = try await ixApiClient.createListItem(
-                    listId: listId,
-                    categoryId: createData.categoryId,
-                    name: createData.name,
-                    link: createData.link,
-                    note: createData.note
-                )
-                try await saveItem(item)
-                if editorConfig.multi {
-                    showToast("Item created", placement: .top)
-                    editorConfig.reset()
-                } else {
-                    editorConfig.isPresented = false
-                }
-            case let .failure(error):
-                errorService.insert(.localizedError(title: "Error creating item", error: error))
-                editorConfig.loading = false
+            let item = try await ixApiClient.createListItem(
+                listId: listId,
+                categoryId: createData.categoryId,
+                name: createData.name,
+                link: createData.link,
+                note: createData.note
+            )
+            try await saveItem(item)
+            if editorConfig.multi {
+                showToast("Item created", placement: .top)
+                editorConfig.reset()
+            } else {
+                editorConfig.isPresented = false
             }
         } catch {
-            errorService.insert(.localizedError(title: "Error creating item", error: error))
+            editorConfig.loading = false
+            showError(.localizedError(title: "Error creating item", error: error))
         }
     }
 
     func editItem() async {
         do {
             editorConfig.loading = true
-            let prepared = editorConfig.sanitizeAndValidate()
+            let editData = try editorConfig.sanitizeAndValidate()
 
-            switch prepared {
-            case let .success(editData):
-                let item = try await ixApiClient.updateListItem(listId: listId, itemId: editData.id, name: editData.name, categoryId: editData.categoryId, link: editData.link, note: editData.note)
-                try await saveItem(item)
-                editorConfig.isPresented = false
-            case let .failure(error):
-                errorService.insert(.localizedError(title: "Error editing item", error: error))
-                editorConfig.loading = false
-            }
+            let item = try await ixApiClient.updateListItem(listId: listId, itemId: editData.id, name: editData.name, categoryId: editData.categoryId, link: editData.link, note: editData.note)
+            try await saveItem(item)
+            editorConfig.isPresented = false
         } catch {
-            errorService.insert(.localizedError(title: "Error editing item", error: error))
+            editorConfig.loading = false
+            showError(.localizedError(title: "Error editing item", error: error))
         }
     }
 
@@ -296,7 +280,7 @@ struct ListScreen: View {
                 selectedCategoryId = category?.id ?? ""
             }
         } catch {
-            errorService.insert(.localizedError(title: "Error editing item", error: error))
+            showError(.localizedError(title: "Error editing item", error: error))
         }
     }
 
@@ -308,7 +292,7 @@ struct ListScreen: View {
 
             try await saveItem(item)
         } catch {
-            errorService.insert(
+            showError(
                 .localizedError(
                     title: "Error \(completed ? "completing" : "un-completing") item", error: error
                 )
@@ -336,7 +320,7 @@ struct ListScreen: View {
 
             showToast("Uncompleted all")
         } catch {
-            errorService.insert(
+            showError(
                 .localizedError(
                     title: "Error \(completed ? "completing" : "un-completing") items", error: error
                 ))
@@ -361,37 +345,46 @@ struct ListScreen: View {
                 }
             } catch {}
         } catch {
-            errorService.insert(.localizedError(title: "Error deleting item", error: error))
+            showError(.localizedError(title: "Error deleting item", error: error))
         }
     }
 
     // MARK: - Category CRUD
 
-    func createCategory(listId: String, name: String, color: Color?) async {
+    func createCategory() async {
         do {
+            categoryEditorConfig.loading = true
+            let createData = try categoryEditorConfig.sanitizeAndValidate()
+
             let category = try await ixApiClient.createCategory(
-                listId: listId, name: name, color: color?.hexString
+                listId: listId,
+                name: createData.name,
+                color: createData.color
             )
-
             try await saveCategory(category)
-
-            withAnimation {
-                selectedCategoryId = category.id
-            }
+            categoryEditorConfig.isPresented = false
         } catch {
-            errorService.insert(.localizedError(title: "Error creating category", error: error))
+            categoryEditorConfig.loading = false
+            showError(.localizedError(title: "Error creating category", error: error))
         }
     }
 
-    func editCategory(listId: String, categoryId: String, name: String, color: Color?) async {
+    func editCategory() async {
         do {
-            let category = try await ixApiClient.updateListCategory(
-                listId: listId, categoryId: categoryId, name: name, color: color?.hexString
-            )
+            categoryEditorConfig.loading = true
+            let editData = try categoryEditorConfig.sanitizeAndValidate()
 
+            let category = try await ixApiClient.updateListCategory(
+                listId: listId,
+                categoryId: editData.id,
+                name: editData.name,
+                color: editData.color
+            )
             try await saveCategory(category)
+            categoryEditorConfig.isPresented = false
         } catch {
-            errorService.insert(.localizedError(title: "Error editing category", error: error))
+            categoryEditorConfig.loading = false
+            showError(.localizedError(title: "Error editing category", error: error))
         }
     }
 
@@ -415,7 +408,7 @@ struct ListScreen: View {
                 }
             } catch {}
         } catch {
-            errorService.insert(.localizedError(title: "Error deleting category", error: error))
+            showError(.localizedError(title: "Error deleting category", error: error))
         }
 
         if selectedCategoryId == categoryId {
@@ -450,9 +443,9 @@ struct ListScreen: View {
             }
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch IxApiClientError.proRequired(_) {
-            showPaywall = true
+            showPaywall()
         } catch {
-            errorService.insert(.localizedError(title: "Error creating task", error: error))
+            showError(.localizedError(title: "Error creating task", error: error))
         }
     }
 
@@ -480,119 +473,130 @@ struct ListScreen: View {
                     }
                 }
             )
-        // .sheet(
-        //     isPresented: $isAddingCategory,
-        //     content: {
-        //         CategoryEditor(
-        //             isPresented: $isAddingCategory
-        //         ) { name, color in
-        //             Task {
-        //                 await createCategory(listId: listId, name: name, color: color)
-        //             }
-        //         }
-        //     }
-        // )
-        // .sheet(
-        //     isPresented: $isEditingCategory,
-        //     content: { [selectedCategory] in
-        //         CategoryEditor(
-        //             isPresented: $isEditingCategory,
-        //             addingNew: false,
-        //             name: selectedCategory?.name ?? "",
-        //             color: selectedCategory?.color?.toColorOrNil()
-        //         ) { name, color in
-        //             Task {
-        //                 if let category = selectedCategory {
-        //                     await editCategory(
-        //                         listId: listId, categoryId: category.id, name: name,
-        //                         color: color)
-        //                 }
-        //             }
-        //         }
-        //     }
-        // )
-        // .sheet(isPresented: $showItemNotePopover) { [selectedItem] in
-        //     NavigationView {
-        //         ScrollView(showsIndicators: false) {
-        //             Text(selectedItem?.note ?? "This item has no notes in it")
-        //         }
-        //         .padding()
-        //         .navigationTitle("\(selectedItem?.name ?? "" ) notes")
-        //         .navigationBarTitleDisplayMode(.inline)
-        //         .toolbar {
-        //             ToolbarItem(placement: .topBarTrailing) {
-        //                 Button("Copy", systemImage: "document.on.document") {
-        //                     UIPasteboard.general.string = selectedItem?.note ?? ""
-        //                 }.labelStyle(.iconOnly)
-        //             }
+            .sheet(
+                isPresented: $categoryEditorConfig.isPresented,
+                content: {
+                    CategoryEditor(
+                        config: $categoryEditorConfig,
+                        onCancel: {
+                            categoryEditorConfig.isPresented = false
+                        }
+                    ) {
+                        if categoryEditorConfig.mode == .create {
+                            Task {
+                                await createCategory()
+                            }
+                        } else {
+                            Task {
+                                await editCategory()
+                            }
+                        }
+                    }
+                }
+            )
+            // .sheet(
+            //     isPresented: $isEditingCategory,
+            //     content: { [selectedCategory] in
+            //         CategoryEditor(
+            //             isPresented: $isEditingCategory,
+            //             addingNew: false,
+            //             name: selectedCategory?.name ?? "",
+            //             color: selectedCategory?.color?.toColorOrNil()
+            //         ) { name, color in
+            //             Task {
+            //                 if let category = selectedCategory {
+            //                     await editCategory(
+            //                         listId: listId, categoryId: category.id, name: name,
+            //                         color: color
+            //                     )
+            //                 }
+            //             }
+            //         }
+            //     }
+            // )
+            // .sheet(isPresented: $showItemNotePopover) { [selectedItem] in
+            //     NavigationView {
+            //         ScrollView(showsIndicators: false) {
+            //             Text(selectedItem?.note ?? "This item has no notes in it")
+            //         }
+            //         .padding()
+            //         .navigationTitle("\(selectedItem?.name ?? "") notes")
+            //         .navigationBarTitleDisplayMode(.inline)
+            //         .toolbar {
+            //             ToolbarItem(placement: .topBarTrailing) {
+            //                 Button("Copy", systemImage: "document.on.document") {
+            //                     UIPasteboard.general.string = selectedItem?.note ?? ""
+            //                 }.labelStyle(.iconOnly)
+            //             }
 
-        //             ToolbarItem(placement: .topBarTrailing) {
-        //                 ShareLink(item: selectedItem?.note ?? "") {
-        //                     Label("Share", systemImage: "square.and.arrow.up")
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     .presentationDetents([.medium, .large])
-        //     .presentationDragIndicator(.hidden)
-        // }
-        // .sheet(
-        //     isPresented: $showTaskCreationSheet,
-        //     content: { [selectedItem] in
-        //         TaskEditor(
-        //             isPresented: $showTaskCreationSheet,
-        //             addingNew: true,
-        //             name: selectedItem?.name ?? "",
-        //             description: selectedItem?.note,
-        //             priority: nil,
-        //             dueDate: nil,
-        //             rrule: nil,
-        //             reminders: [],
-        //             itemId: selectedItem?.id,
-        //             subtasks: []
-        //         ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
-        //             Task {
-        //                 await createTask(
-        //                     name: name, description: description, dueDate: dueDate,
-        //                     rrule: rrule, reminders: reminders, subtasks: subtasks,
-        //                     priority: priority, itemId: itemId)
-        //             }
-        //         }
-        //     }
-        // )
-        // .navigationTitle(list.name)
-        // .paywallCover(isPresented: $showPaywall)
-        // .toolbar {
-        //     // MARK: - Toolbar
-        //     toolbarContent
-        // }
-        // .onAppear {
-        //     Task {
-        //         if await SyncRegister.shared.hasExpired(SyncResource.list(listId)) {
-        //             Task {
-        //                 await fetchList()
-        //             }
-        //         }
-        //         if await SyncRegister.shared.hasExpired(SyncResource.listCategories(listId)) {
-        //             Task {
-        //                 await fetchCategories()
-        //             }
-        //         }
-        //         if await SyncRegister.shared.hasExpired(SyncResource.listItems(listId)) {
-        //             Task {
-        //                 await fetchItems()
-        //             }
-        //         }
-        //     }
-        // }
-        // .onChange(of: lists, initial: true) { _, newLists in
-        //     guard let newList = newLists.first else {
-        //         navigationManager.pop()
-        //         return
-        //     }
+            //             ToolbarItem(placement: .topBarTrailing) {
+            //                 ShareLink(item: selectedItem?.note ?? "") {
+            //                     Label("Share", systemImage: "square.and.arrow.up")
+            //                 }
+            //             }
+            //         }
+            //     }
+            //     .presentationDetents([.medium, .large])
+            //     .presentationDragIndicator(.hidden)
+            // }
+            // .sheet(
+            //     isPresented: $showTaskCreationSheet,
+            //     content: { [selectedItem] in
+            //         TaskEditor(
+            //             isPresented: $showTaskCreationSheet,
+            //             addingNew: true,
+            //             name: selectedItem?.name ?? "",
+            //             description: selectedItem?.note,
+            //             priority: nil,
+            //             dueDate: nil,
+            //             rrule: nil,
+            //             reminders: [],
+            //             itemId: selectedItem?.id,
+            //             subtasks: []
+            //         ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
+            //             Task {
+            //                 await createTask(
+            //                     name: name, description: description, dueDate: dueDate,
+            //                     rrule: rrule, reminders: reminders, subtasks: subtasks,
+            //                     priority: priority, itemId: itemId
+            //                 )
+            //             }
+            //         }
+            //     }
+            // )
+            .navigationTitle(list.name)
+            .toolbar {
+                // MARK: - Toolbar
 
-        //     list = newList
-        // }
+                toolbarContent
+            }
+            .onAppear {
+                Task {
+                    if await SyncRegister.shared.hasExpired(SyncResource.list(listId)) {
+                        Task {
+                            await fetchList()
+                        }
+                    }
+                    if await SyncRegister.shared.hasExpired(SyncResource.listCategories(listId)) {
+                        Task {
+                            await fetchCategories()
+                        }
+                    }
+                    if await SyncRegister.shared.hasExpired(SyncResource.listItems(listId)) {
+                        Task {
+                            await fetchItems()
+                        }
+                    }
+                }
+            }
+            .onChange(of: lists, initial: true) { _, newLists in
+                guard let newList = newLists.first else {
+                    navigationManager.pop()
+                    return
+                }
+
+                list = newList
+            }
     }
 
     var ScreenContent: some View {
@@ -632,13 +636,13 @@ struct ListScreen: View {
                 await categorizeItem(item: item, category: category)
             }
         } onCreateCategory: {
-            isAddingCategory = true
+            categoryEditorConfig.present()
         } onCreateTask: { item in
             selectedItem = item
             showTaskCreationSheet = true
         } onEdit: { item in
             selectedItem = item
-
+            // TODO:
             isEditingItem = true
         } onDelete: { item in
             Task {
@@ -772,10 +776,9 @@ struct ListScreen: View {
                 sortOrder: categoriesSortOrder,
                 hideUncategorized: hideUncategorized
             ) {
-                isAddingCategory = true
+                categoryEditorConfig.present()
             } onEdit: { category in
-                selectedCategoryId = category.id
-                isEditingCategory = true
+                categoryEditorConfig.present(entity: category, mode: .edit)
             } onDelete: { category in
                 Task {
                     await deleteCategory(listId: listId, categoryId: category.id)
@@ -789,14 +792,13 @@ struct ListScreen: View {
 
         ToolbarItem(placement: .bottomBar) {
             Button {
-                editorConfig.resetAndPresent()
+                editorConfig.present()
             } label: {
                 Label("Create item", systemImage: "plus.circle.fill")
                     .fontWeight(.semibold)
-                    .foregroundStyle(contentColor)
             }
-            .onLongPressGesture {
-                editorConfig.resetAndPresent(multi: true)
+            .supportsLongPress {
+                editorConfig.present(multi: true)
             }
         }
     }

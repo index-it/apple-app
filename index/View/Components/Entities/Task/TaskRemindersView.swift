@@ -16,11 +16,11 @@ import IxCoreKit
 import SwiftUI
 
 struct TaskRemindersView: View {
+    @Environment(\.showPaywall) private var showPaywall
     @EnvironmentObject private var errorService: ErrorStateService
     @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
 
     @Binding var reminders: [IxTaskReminder]
-    @State private var showPaywall = false
 
     @State private var showCreateReminderDaysPicker = false
     @State private var showCreateReminderTimePicker = false
@@ -40,7 +40,6 @@ struct TaskRemindersView: View {
             createReminderSection
         }
         .navigationTitle("Reminders")
-        .paywallCover(isPresented: $showPaywall)
     }
 
     // MARK: - Existing Reminders Section
@@ -157,7 +156,7 @@ struct TaskRemindersView: View {
 
     func addReminder() {
         if !reminders.isEmpty, user?.has_pro != true {
-            showPaywall = true
+            showPaywall()
         } else {
             let timeOffset = (Calendar.current.component(.hour, from: createReminderTime) * 60 * 60 * 1000) + (Calendar.current.component(.minute, from: createReminderTime) * 60 * 1000)
 

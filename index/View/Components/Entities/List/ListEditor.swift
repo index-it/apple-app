@@ -10,11 +10,11 @@ import MCEmojiPicker
 import SwiftUI
 
 struct ListEditor: View {
+    @Environment(\.showPaywall) private var showPaywall
     @Binding var isPresented: Bool
     private var addingNew: Bool
 
     @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
-    @State private var showPaywall = false
 
     @State private var showEmojiPicker = false
     @FocusState private var isNameFocused: Bool
@@ -126,7 +126,7 @@ struct ListEditor: View {
                                 if hasPro {
                                     isPublic = newValue
                                 } else {
-                                    showPaywall = true
+                                    showPaywall()
                                 }
                             }
                         ))
@@ -164,7 +164,6 @@ struct ListEditor: View {
                     isNameFocused = true
                 }
             }
-            .paywallCover(isPresented: $showPaywall)
         }
     }
 }

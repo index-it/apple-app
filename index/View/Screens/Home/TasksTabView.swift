@@ -11,13 +11,13 @@ import SwiftUI
 import WidgetKit
 
 struct TasksTabView: View {
+    @Environment(\.showPaywall) private var showPaywall
     @Environment(\.modelContext) private var context
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var errorService: ErrorStateService
 
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
-    @State private var showPaywall = false
 
     // MARK: Date
 
@@ -109,7 +109,7 @@ struct TasksTabView: View {
 
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch IxApiClientError.proRequired(_) {
-            showPaywall = true
+            showPaywall()
         } catch {
             errorService.insert(.localizedError(title: "Error creating task", error: error))
         }
@@ -178,7 +178,6 @@ struct TasksTabView: View {
                 .floatingActionButton("plus") {
                     isAddingTask = true
                 }
-                .paywallCover(isPresented: $showPaywall)
                 .toolbar {
                     ToolbarContentView
                 }

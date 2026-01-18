@@ -35,21 +35,27 @@ private struct AlertPresentationWindowContext: ViewModifier {
     @State private var alertWindow: UIWindow?
 
     func body(content: Content) -> some View {
-        content.onAppear {
-            guard alertWindow == nil else { return }
-            let windowScene = UIApplication.shared.connectedScenes
-                .compactMap { $0 as? UIWindowScene }
-                .first { $0.windows.contains(where: \.isKeyWindow) }
-            guard let windowScene else { return assertionFailure("Could not get a UIWindowScene") }
+        content
+            .environment(\.showError, ShowErrorAction { errorAlert in
+                Task {
+                    await service.insert(errorAlert)
+                }
+            })
+            .onAppear {
+                guard alertWindow == nil else { return }
+                let windowScene = UIApplication.shared.connectedScenes
+                    .compactMap { $0 as? UIWindowScene }
+                    .first { $0.windows.contains(where: \.isKeyWindow) }
+                guard let windowScene else { return assertionFailure("Could not get a UIWindowScene") }
 
-            let alertWindow = PassThroughWindow(windowScene: windowScene)
-            let alertViewController = UIHostingController(rootView: AlertPresentationWindow(service: service))
-            alertViewController.view.backgroundColor = .clear
-            alertWindow.rootViewController = alertViewController
-            alertWindow.isHidden = false
-            alertWindow.windowLevel = .alert
-            self.alertWindow = alertWindow
-        }
+                let alertWindow = PassThroughWindow(windowScene: windowScene)
+                let alertViewController = UIHostingController(rootView: AlertPresentationWindow(service: service))
+                alertViewController.view.backgroundColor = .clear
+                alertWindow.rootViewController = alertViewController
+                alertWindow.isHidden = false
+                alertWindow.windowLevel = .alert
+                self.alertWindow = alertWindow
+            }
     }
 }
 

@@ -1,6 +1,6 @@
 scheme=index
 
 # platform can be device, sim or mac
-platform=sim
+platform=sim; device=iPhone 17 Pro
 
-device=iPhone 17 Pro
+oslogenabled = true

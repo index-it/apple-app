@@ -98,8 +98,14 @@ struct ItemEditor: View {
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", systemImage: "checkmark") {
+                    Button {
                         onSave()
+                    } label: {
+                        if config.loading {
+                            ProgressView()
+                        } else {
+                            Label("Save", systemImage: "checkmark")
+                        }
                     }
                     .disabled(!config.entity.validationRes.isSuccess)
                 }

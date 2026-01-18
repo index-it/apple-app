@@ -69,6 +69,10 @@ public final class IxListItem: Validatable, Sanitizable, EmptyInitializable {
     }
 
     public var validationRes: Result<Void, ValidationError> {
+        if name.isEmpty {
+            return .failure(.init("Item name cannot be empty"))
+        }
+
         if name.count >= 100 {
             return .failure(.init("Item name can be 100 characters maximum"))
         }

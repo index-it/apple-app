@@ -12,6 +12,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
+    @Environment(\.showPaywall) private var showPaywall
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var errorService: ErrorStateService
     @EnvironmentObject private var navigationManager: NavigationManager
@@ -19,7 +20,6 @@ struct SettingsView: View {
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
 
     @State private var showOnboarding = false
-    @State private var showPaywall = false
 
     @State private var manageSubscriptionLoading: Bool = false
 
@@ -46,11 +46,6 @@ struct SettingsView: View {
             .fullScreenCover(isPresented: $showOnboarding) {
                 OnboardingView {
                     showOnboarding = false
-                }
-            }
-            .fullScreenCover(isPresented: $showPaywall) {
-                PaywallView {
-                    showPaywall = false
                 }
             }
     }
@@ -164,7 +159,7 @@ struct SettingsView: View {
 
     var getProView: some View {
         Button {
-            showPaywall = true
+            showPaywall()
         } label: {
             ZStack {
                 HStack {
@@ -188,7 +183,7 @@ struct SettingsView: View {
                     Spacer()
 
                     Button {
-                        showPaywall = true
+                        showPaywall()
                     } label: {
                         Text("Upgrade")
                             .fontWeight(.bold)

@@ -9,78 +9,75 @@ import IxCoreKit
 import SwiftUI
 
 struct CategoryEditor: View {
-    @Binding var isPresented: Bool
-
-    private var addingNew: Bool
     @FocusState private var isNameFocused: Bool
-    @State private var name: String
-    @State private var noColor: Bool
-    @State private var color: Color
+    @Binding var config: EditorConfig<IxListCategory>
 
-    private var isNameInvalid: Bool {
-        name.isEmpty || name.count >= 100
-    }
-
-    private var onSave: (_ name: String, _ color: Color?) -> Void
-
-    init(
-        isPresented: Binding<Bool>,
-        addingNew: Bool = true,
-        name: String = "",
-        color: Color? = nil,
-        onSave: @escaping (_ name: String, _ color: Color?) -> Void
-    ) {
-        _isPresented = isPresented
-        self.addingNew = addingNew
-        self.name = name
-        noColor = color == nil
-        self.color = color ?? ColorHelper.randomIxColor()
-        self.onSave = onSave
-    }
+    let onCancel: () -> Void
+    let onSave: () -> Void
 
     var body: some View {
         NavigationView {
             VStack {
                 Form {
-                    TextField("Name", text: $name)
+                    TextField("Name", text: $config.entity.name)
                         .focused($isNameFocused)
 
                     Section {
-                        Toggle("Use list color", isOn: $noColor)
-                        if !noColor {
-                            ColorSelector(color: $color, colors: ColorHelper.ixColors)
+                        Toggle("Use list color", isOn: Binding(
+                            get: { config.entity.color == nil },
+                            set: { _ in config.entity.color = ColorHelper.randomIxColor().hexString }
+                        ))
+
+                        if config.entity.color != nil {
+                            ColorSelector(
+                                color: Binding(
+                                    get: {
+                                        config.entity.color?.toColor() ?? ColorHelper.randomIxColor()
+                                    },
+                                    set: {
+                                        value in config.entity.color = value.hexString
+                                    }
+                                ),
+                                colors: ColorHelper.ixColors
+                            )
                         }
                     } header: {
                         Text("Color")
                     } footer: {
-                        Text(noColor ?
+                        Text(config.entity.color == nil ?
                             "The color of the category will be the same as the one of the list" :
                             "Scroll horizontally for more colors"
                         )
                     }
                 }
-                .animation(.default, value: noColor)
+                .animation(.default, value: config.entity.color)
             }
             .background(Color.systemGroupedBackground)
-            .navigationTitle(addingNew ? "Add Category" : "Edit Category")
+            .navigationTitle(config.mode == .create ? "Add Category" : "Edit Category")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") {
-                        isPresented = false
+                        onCancel()
                     }
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Save") {
-                        onSave(name, noColor ? nil : color)
-                        isPresented = false
+                    Button {
+                        onSave()
+                    } label: {
+                        if config.loading {
+                            ProgressView()
+                        } else {
+                            Label("Save", systemImage: "checkmark")
+                                .labelStyle(.titleOnly)
+                        }
                     }
-                    .disabled(isNameInvalid)
+                    .disabled(!config.entity.validationRes.isSuccess)
                 }
             }
             .onAppear {
-                if addingNew {
+                if config.mode == .create {
                     isNameFocused = true
                 }
             }
@@ -89,10 +86,12 @@ struct CategoryEditor: View {
 }
 
 #Preview {
-    @Previewable @State var isPresented = true
+    @Previewable @State var config = EditorConfig<IxListCategory>()
 
     CategoryEditor(
-        isPresented: $isPresented
-    ) { _, _ in
+        config: $config,
+        onCancel: {}
+    ) {
+        // action
     }
 }

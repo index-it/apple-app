@@ -106,11 +106,15 @@
 				View/Components/Error/ErrorAlert.swift,
 				View/Components/Error/ErrorStateService.swift,
 				View/Components/Pro/PaywallModifier.swift,
+				View/Components/Pro/PaywallStateService.swift,
 				View/Components/Pro/PaywallView.swift,
+				View/Components/Pro/ShowPaywallAction.swift,
 				View/Modifier/IfModifier.swift,
 				View/Modifier/MeshGradientBackground.swift,
 				View/Modifier/Style/CheckmarkToggleStyle.swift,
 				View/Screens/Lists/QuickAddItemView.swift,
+				View/State/EditorConfig.swift,
+				View/State/EditorMode.swift,
 			);
 			target = 09F48F3A2D7E623D00CA50AC /* indexShareExtension */;
 		};
