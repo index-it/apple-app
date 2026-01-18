@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-public class IxListItem {
+public final class IxListItem: Validatable, Sanitizable, EmptyInitializable {
     @Attribute(.unique) public var id: String
     public var userId: String
     public var listId: String
@@ -50,5 +50,39 @@ public class IxListItem {
             edited_at: networkListItem.editedAt,
             completed_at: networkListItem.completedAt
         )
+    }
+    
+    public static var empty: IxListItem {
+        return IxListItem(
+            id: UUID().uuidString,
+            user_id: UUID().uuidString,
+            list_id: UUID().uuidString,
+            category_id: nil,
+            name: "",
+            completed: false,
+            link: nil,
+            note: nil,
+            created_at: Date().currentTimeMillis(),
+            edited_at: nil,
+            completed_at: nil
+        )
+    }
+    
+    public var validationRes: Result<Void, ValidationError> {
+        if name.count >= 100 {
+            return .failure(.init("Item name can be 100 characters maximum"))
+        }
+        
+        return .success(())
+    }
+    
+    public var sanitized: IxListItem {
+        var copy = self
+        
+        copy.name = name.sanitized
+        copy.link = link?.sanitized
+        copy.note = note?.sanitized
+        
+        return copy
     }
 }

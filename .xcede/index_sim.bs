@@ -1,0 +1,1 @@
+{"builtProductsDir":"\/Users\/j\/Library\/Developer\/Xcode\/DerivedData\/index-dbyurnosywjicsbodvftlqzvocnm\/Build\/Products\/Debug-iphonesimulator","fullProductName":"index.app","executablePath":"index.app\/index"}

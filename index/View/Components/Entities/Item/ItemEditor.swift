@@ -15,59 +15,37 @@ fileprivate enum FocusField: Hashable {
 }
 
 struct ItemEditor: View {
-    @Binding var isPresented: Bool
     @FocusState private var focusField: FocusField?
-
-    private var addingNew: Bool
-    @State private var name: String
-    @State private var categoryId: String?
-    @State private var link: String
-    @State private var note: String
+    
+    @Binding private var config: EditorConfig<IxListItem>
+    private var onCancel: () -> Void
+    private var onSave: () -> Void
     
     private var categories: [IxListCategory]
     
-    private var isNameInvalid: Bool {
-        name.isEmpty || name.count >= 100
+    private var item: IxListItem {
+        return config.entity
     }
     
-    private var onSave: (_ name: String, _ categoryId: String?, _ link: String?, _ note: String?) -> Void
-    
     init(
-        isPresented: Binding<Bool>,
-        addingNew: Bool,
-        name: String,
-        categoryId: String?,
-        link: String?,
-        note: String?,
+        config: Binding<EditorConfig<IxListItem>>,
         categories: [IxListCategory],
-        onSave: @escaping (_ name: String, _ categoryId: String?, _ link: String?, _ note: String?) -> Void
+        onCancel: @escaping () -> Void,
+        onSave: @escaping () -> Void,
     ) {
-        self._isPresented = isPresented
-        self.addingNew = addingNew
-        
-        self.name = name
-        self.categoryId = categoryId
-        self.link = link ?? ""
-        self.note = note ?? ""
-        
+        self._config = config
         self.categories = categories.sorted {
             $0.name < $1.name
         }
+        self.onCancel = onCancel
         self.onSave = onSave
-    }
-    
-    private func onSubmit() {
-        if (!isNameInvalid) {
-            onSave(name, categoryId, link.isEmpty ? nil : link, note.isEmpty ? nil : note)
-            isPresented = false
-        }
     }
     
     var body: some View {
         NavigationView {
             VStack {
                 Form {
-                    TextField("Name", text: $name)
+                    TextField("Name", text: $config.entity.name)
                         .focused($focusField, equals: .name)
                         .submitLabel(.next)
                         .onSubmit {
@@ -75,7 +53,7 @@ struct ItemEditor: View {
                         }
                     
                     Section {
-                        Picker("Category", selection: $categoryId) {
+                        Picker("Category", selection: $config.entity.categoryId) {
                             Text("No category").tag(nil as String?)
                             
                             ForEach(categories, id: \.id) { category in
@@ -84,7 +62,7 @@ struct ItemEditor: View {
                         }
                         .pickerStyle(.menu)
                         
-                        TextField("Link", text: $link, axis: .vertical)
+                        TextField("Link", text: $config.entity.link ?? "", axis: .vertical)
                             .keyboardType(.URL)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
@@ -94,12 +72,12 @@ struct ItemEditor: View {
                                 focusField = .note
                             }
                             
-                        TextField("Notes", text: $note,  axis: .vertical)
+                        TextField("Notes", text: $config.entity.note ?? "",  axis: .vertical)
                             .lineLimit(3...)
                             .focused($focusField, equals: .note)
                             .submitLabel(.done)
                             .onSubmit {
-                                onSubmit()
+                                onSave()
                             }
                     } header: {
                         Text("Properties")
@@ -109,24 +87,25 @@ struct ItemEditor: View {
                 }
             }
             .frame(maxHeight: .infinity, alignment: .top)
-            .navigationTitle(addingNew ? "Add Item" : "Edit Item")
+            .navigationTitle(config.mode == .create ? "Add Item" : "Edit Item")
+            .navigationSubtitle(config.multi ? "Adding multiple items" : "")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", systemImage: "xmark") {
-                        isPresented = false
+                        onCancel()
                     }
                 }
                 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save", systemImage: "checkmark") {
-                        onSubmit()
+                        onSave()
                     }
-                    .disabled(isNameInvalid)
+                    .disabled(!config.entity.validationRes.isSuccess)
                 }
             }
             .onAppear {
-                if addingNew {
+                if config.mode == .create {
                     focusField = .name
                 }
             }
@@ -135,17 +114,17 @@ struct ItemEditor: View {
 }
 
 #Preview {
-    @Previewable @State var isPresented = false
-    
-    ItemEditor(
-        isPresented: $isPresented,
-        addingNew: true,
-        name: "",
-        categoryId: nil,
-        link: nil,
-        note: nil,
-        categories: []
-    ) { name, categoryId, link, note in
-        
-    }
+//    @Previewable @State var isPresented = false
+//    
+//    ItemEditor(
+//        isPresented: $isPresented,
+//        addingNew: true,
+//        name: "",
+//        categoryId: nil,
+//        link: nil,
+//        note: nil,
+//        categories: []
+//    ) { name, categoryId, link, note in
+//        
+//    }
 }

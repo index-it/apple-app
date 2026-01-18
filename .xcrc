@@ -1,0 +1,6 @@
+scheme=index
+
+# platform can be device, sim or mac
+platform=sim
+
+device=iPhone 17 Pro

@@ -91,6 +91,9 @@
     "Item" : {
       "comment" : "Entity type: Item"
     },
+    "Item name can be 100 characters maximum" : {
+
+    },
     "List" : {
       "comment" : "Entity type: List"
     },
