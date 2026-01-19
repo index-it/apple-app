@@ -19,6 +19,7 @@ struct SocialLoginScreen: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var authNavigationManager: AuthNavigationManager
     @EnvironmentObject private var errorService: ErrorStateService
+    @Environment(\.showError) private var showError
 
     @State private var signInWithAppleController = SignInWithAppleController()
 
@@ -38,9 +39,9 @@ struct SocialLoginScreen: View {
                 do {
                     try await ixApiClient.loginWithGoogle(idToken: token.tokenString)
                 } catch IxApiClientError.emailNotVerified {
-                    await errorService.insert(.customMessage(title: "Google email not verified", message: "Your Google email is not verified, please verify the email of your Google account before using it to login."))
+                    await showError(.customMessage(title: "Google email not verified", message: "Your Google email is not verified, please verify the email of your Google account before using it to login."))
                 } catch {
-                    await errorService.insert(.customMessage(title: "Error", message: "Couldn't login via Google, please use another method or try again later"))
+                    await showError(.customMessage(title: "Error", message: "Couldn't login via Google, please use another method or try again later"))
                 }
             }
         }

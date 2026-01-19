@@ -12,7 +12,7 @@ import SwiftUI
 struct PaywallView: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var navigationManager: NavigationManager
-    @EnvironmentObject private var errorService: ErrorStateService
+    @Environment(\.showError) private var showError
 
     private struct ProFeatureShowcase {
         let icon: String
@@ -41,7 +41,7 @@ struct PaywallView: View {
             restorePurchasesLoading = false
         } catch IxApiClientError.notFound {
             restorePurchasesLoading = false
-            errorService.insert(.customMessage(title: "Not subscribed", message: "You are not subscribed to the Pro version."))
+            showError(.customMessage(title: "Not subscribed", message: "You are not subscribed to the Pro version."))
         } catch {
             restorePurchasesLoading = false
         }
@@ -68,7 +68,7 @@ struct PaywallView: View {
             paymentLoading = false
         } catch {
             paymentLoading = false
-            errorService.insert(.localizedError(title: "Failed purchasing", error: error))
+            showError(.localizedError(title: "Failed purchasing", error: error))
         }
     }
 
@@ -77,7 +77,7 @@ struct PaywallView: View {
             .onAppear {
                 Purchases.shared.getOfferings { offerings, error in
                     if let error = error {
-                        errorService.insert(.localizedError(title: "Error fetching offers", error: error))
+                        showError(.localizedError(title: "Error fetching offers", error: error))
                         return
                     }
 

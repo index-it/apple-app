@@ -13,10 +13,11 @@ struct ShowToastAction {
     func callAsFunction(
         _ message: String,
         systemImage: String? = nil,
+        tint: Color? = nil,
         placement: ToastPlacement = .bottom,
         _ tapAction: (() -> Void)? = nil
     ) {
-        action(ToastInfo(message: message, systemImage: systemImage, onTap: tapAction), placement)
+        action(ToastInfo(message: message, systemImage: systemImage, tint: tint, onTap: tapAction), placement)
     }
 }
 

@@ -13,7 +13,7 @@ struct EmailLoginScreen: View {
     @Environment(\.dismiss) private var dismiss
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject var authNavigationManager: AuthNavigationManager
-    @EnvironmentObject private var errorService: ErrorStateService
+    @Environment(\.showError) private var showError
 
     @State private var email: String = ""
     @FocusState private var isEmailFocused: Bool
@@ -37,7 +37,7 @@ struct EmailLoginScreen: View {
             }
         } catch {
             loading = false
-            errorService.insert(.localizedError(title: nil, error: error))
+            showError(.localizedError(title: nil, error: error))
         }
     }
 

@@ -20,6 +20,7 @@
 		096C022D2F09E4FA00425185 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 096C022C2F09E4FA00425185 /* RevenueCat */; };
 		096C022F2F09E4FA00425185 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 096C022E2F09E4FA00425185 /* RevenueCatUI */; };
 		096C02312F09E50A00425185 /* DynamicColor in Frameworks */ = {isa = PBXBuildFile; productRef = 096C02302F09E50A00425185 /* DynamicColor */; };
+		09841BFE2F1EA12C00D3E85E /* WindowOverlay in Frameworks */ = {isa = PBXBuildFile; productRef = 09841BFD2F1EA12C00D3E85E /* WindowOverlay */; };
 		0992A7412D8A44B400EF7B33 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0992A7402D8A44B400EF7B33 /* FirebaseCore */; };
 		0992A7432D8A44BB00EF7B33 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 0992A7422D8A44BB00EF7B33 /* FirebaseMessaging */; };
 		099C0F3B2F09AE47003C546F /* MCEmojiPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 099C0F3A2F09AE47003C546F /* MCEmojiPicker */; };
@@ -105,6 +106,7 @@
 				View/Components/Entities/List/ListEditor.swift,
 				View/Components/Error/ErrorAlert.swift,
 				View/Components/Error/ErrorStateService.swift,
+				View/Components/Error/ShowErrorAction.swift,
 				View/Components/Pro/PaywallModifier.swift,
 				View/Components/Pro/PaywallStateService.swift,
 				View/Components/Pro/PaywallView.swift,
@@ -178,6 +180,7 @@
 				0932EB3B2CEB6BBF00321EEE /* DynamicColor in Frameworks */,
 				092F90AF2D7296A300760176 /* RevenueCat in Frameworks */,
 				099C0F3D2F09AE47003C546F /* MCEmojiPickerJSON in Frameworks */,
+				09841BFE2F1EA12C00D3E85E /* WindowOverlay in Frameworks */,
 				090499B62DC52D9800E9AE3D /* IxCoreKit in Frameworks */,
 				092F90B12D7296A300760176 /* RevenueCatUI in Frameworks */,
 				0915C16B2CB80DA1003CF70B /* GoogleSignInSwift in Frameworks */,
@@ -287,6 +290,7 @@
 				090499B52DC52D9800E9AE3D /* IxCoreKit */,
 				099C0F3A2F09AE47003C546F /* MCEmojiPicker */,
 				099C0F3C2F09AE47003C546F /* MCEmojiPickerJSON */,
+				09841BFD2F1EA12C00D3E85E /* WindowOverlay */,
 			);
 			productName = index;
 			productReference = 093287D92C9C811200A0717E /* index.app */;
@@ -355,6 +359,7 @@
 				092FE7BB2D7F2AF600F38388 /* XCRemoteSwiftPackageReference "Starscream" */,
 				0992A5C72D8A3A3400EF7B33 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				099C0F392F09AE47003C546F /* XCRemoteSwiftPackageReference "MCEmojiPicker" */,
+				09841BFC2F1EA12C00D3E85E /* XCRemoteSwiftPackageReference "swiftui-window-overlay" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 093287DA2C9C811200A0717E /* Products */;
@@ -826,6 +831,14 @@
 				minimumVersion = 5.0.1;
 			};
 		};
+		09841BFC2F1EA12C00D3E85E /* XCRemoteSwiftPackageReference "swiftui-window-overlay" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sunghyun-k/swiftui-window-overlay";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.2;
+			};
+		};
 		0992A5C72D8A3A3400EF7B33 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -893,6 +906,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0932EB392CEB6BBF00321EEE /* XCRemoteSwiftPackageReference "DynamicColor" */;
 			productName = DynamicColor;
+		};
+		09841BFD2F1EA12C00D3E85E /* WindowOverlay */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09841BFC2F1EA12C00D3E85E /* XCRemoteSwiftPackageReference "swiftui-window-overlay" */;
+			productName = WindowOverlay;
 		};
 		0992A7402D8A44B400EF7B33 /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;

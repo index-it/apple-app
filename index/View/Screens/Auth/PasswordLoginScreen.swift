@@ -12,7 +12,7 @@ import SwiftUI
 struct PasswordLoginScreen: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject var authNavigationManager: AuthNavigationManager
-    @EnvironmentObject private var errorService: ErrorStateService
+    @Environment(\.showError) private var showError
 
     var email: String
 
@@ -34,13 +34,13 @@ struct PasswordLoginScreen: View {
             // thanks to the auth status stored in the IxApiClient
         } catch IxApiClientError.unauthenticated {
             loading = false
-            errorService.insert(.customMessage(title: "Invalid credentials", message: "The password is incorrect, try again."))
+            showError(.customMessage(title: "Invalid credentials", message: "The password is incorrect, try again."))
         } catch IxApiClientError.emailNotVerified {
             loading = false
             authNavigationManager.push(.emailVerification(email: email, password: password, verificationEmailSent: false))
         } catch {
             loading = false
-            errorService.insert(.localizedError(title: nil, error: error))
+            showError(.localizedError(title: nil, error: error))
         }
     }
 
@@ -49,11 +49,11 @@ struct PasswordLoginScreen: View {
             try await ixApiClient.passwordForgotten(email: email)
             isPasswordResetSentAlertShown = true
         } catch IxApiClientError.notFound {
-            errorService.insert(.customMessage(message: "User with email \(email) doesn't seem to exist. Are you sure you provided the correct email?"))
+            showError(.customMessage(message: "User with email \(email) doesn't seem to exist. Are you sure you provided the correct email?"))
         } catch IxApiClientError.tooManyPasswordForgottenEmails {
-            errorService.insert(.customMessage(title: "Too many requests", message: ""))
+            showError(.customMessage(title: "Too many requests", message: ""))
         } catch {
-            errorService.insert(.localizedError(title: nil, error: error))
+            showError(.localizedError(title: nil, error: error))
         }
     }
 

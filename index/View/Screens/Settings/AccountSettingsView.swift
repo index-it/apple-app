@@ -10,7 +10,7 @@ import SwiftUI
 
 struct AccountSettingsView: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
-    @EnvironmentObject private var errorService: ErrorStateService
+    @Environment(\.showError) private var showError
     @EnvironmentObject private var navigationManager: NavigationManager
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
@@ -32,7 +32,7 @@ struct AccountSettingsView: View {
         do {
             try await ixApiClient.changePassword(newPassword: newPassword)
         } catch {
-            errorService.insert(.localizedError(title: "Error changing password", error: error))
+            showError(.localizedError(title: "Error changing password", error: error))
         }
     }
 
@@ -40,7 +40,7 @@ struct AccountSettingsView: View {
         do {
             try await ixApiClient.deleteLoggedInUser()
         } catch {
-            errorService.insert(.localizedError(title: "Error deleting account", error: error))
+            showError(.localizedError(title: "Error deleting account", error: error))
         }
     }
 

@@ -10,7 +10,7 @@ import SwiftUI
 
 struct EmailVerificationScreen: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
-    @EnvironmentObject private var errorService: ErrorStateService
+    @Environment(\.showError) private var showError
 
     var email: String
     var password: String
@@ -31,10 +31,10 @@ struct EmailVerificationScreen: View {
             }
         } catch IxApiClientError.unauthenticated {
             verificationLoading = false
-            errorService.insert(.customMessage(message: "Make sure you provided the correct email and password for your account and try again."))
+            showError(.customMessage(message: "Make sure you provided the correct email and password for your account and try again."))
         } catch {
             verificationLoading = false
-            errorService.insert(.localizedError(title: nil, error: error))
+            showError(.localizedError(title: nil, error: error))
         }
     }
 
@@ -50,13 +50,13 @@ struct EmailVerificationScreen: View {
             }
         } catch IxApiClientError.unauthenticated {
             sendLoading = false
-            errorService.insert(.customMessage(message: "Make sure you provided the correct email and password for your account and try again."))
+            showError(.customMessage(message: "Make sure you provided the correct email and password for your account and try again."))
         } catch IxApiClientError.tooManyVerificationEmails {
             sendLoading = false
-            errorService.insert(.localizedError(title: "Too many requests", error: IxApiClientError.tooManyVerificationEmails))
+            showError(.localizedError(title: "Too many requests", error: IxApiClientError.tooManyVerificationEmails))
         } catch {
             sendLoading = false
-            errorService.insert(.localizedError(title: nil, error: error))
+            showError(.localizedError(title: nil, error: error))
         }
     }
 

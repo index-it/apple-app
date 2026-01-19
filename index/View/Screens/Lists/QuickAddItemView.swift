@@ -16,27 +16,21 @@ struct QuickAddItemView: View {
     @Environment(\.showPaywall) private var showPaywall
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @Environment(\.modelContext) private var context
-    @EnvironmentObject private var errorService: ErrorStateService
+    @Environment(\.showError) private var showError
 
-    @Binding private var itemEditorConfig = EditorConfig<IxListItem>()
-    @State private var categoryEditorConfig = EditorConfig<IxListCategory>()
-
-    @State private var loadingLinkTitle = false
-
-    @FocusState private var isNameFieldFocused: Bool
-
-    // MARK: List creation form vars
-
-    @State private var isAddingList = false
-    @State private var newListColor: Color = ColorHelper.randomIxColor()
-    @State private var newListEmoji: String = EmojiHelper.randomEmojiForPickerInitial()
+    @AppStorage(AppStorageKeys.QuickAdd.recentListId) var recentListId: String = ""
 
     private var onCancel: () -> Void
     private var syncThreeshold: Int64
 
-    // MARK: Data vars
+    @State private var itemEditorConfig = EditorConfig<IxListItem>()
+    @State private var categoryEditorConfig = EditorConfig<IxListCategory>()
+    @State private var isAddingList = false
+    @State private var newListColor: Color = ColorHelper.randomIxColor()
+    @State private var newListEmoji: String = EmojiHelper.randomEmojiForPickerInitial()
 
-    @AppStorage(AppStorageKeys.QuickAdd.recentListId) var recentListId: String = ""
+    @State private var loadingLinkTitle = false
+    @FocusState private var isNameFieldFocused: Bool
 
     @Query(sort: [SortDescriptor(\IxList.name)])
     private var lists: [IxList]
@@ -44,7 +38,6 @@ struct QuickAddItemView: View {
     private var categories: [IxListCategory]
 
     init(
-        itemEditorConfig: 
         name: String? = nil,
         link: String? = nil,
         note: String? = nil,
@@ -53,13 +46,14 @@ struct QuickAddItemView: View {
         onCancel: @escaping () -> Void,
         syncThreeshold: Int64 = 3_600_000
     ) {
+        self.onCancel = onCancel
+        self.syncThreeshold = syncThreeshold
+
         itemEditorConfig.entity.name = name ?? ""
         itemEditorConfig.entity.link = link
         itemEditorConfig.entity.note = note
-        self.selectedListId = selectedListId ?? ""
-        self.selectedCategoryId = selectedCategoryId
-        self.onCancel = onCancel
-        self.syncThreeshold = syncThreeshold
+        itemEditorConfig.entity.listId = selectedListId ?? ""
+        itemEditorConfig.entity.categoryId = selectedCategoryId ?? ""
     }
 
     private func loadLinkTitle(_ url: URL) async {
@@ -129,11 +123,11 @@ struct QuickAddItemView: View {
                 context.insert(list)
             }
 
-            selectedListId = list.id
+            itemEditorConfig.entity.listId = list.id
         } catch IxApiClientError.proRequired(_) {
             showPaywall()
         } catch {
-            errorService.insert(.localizedError(title: "Error creating list", error: error))
+            showError(.localizedError(title: "Error creating list", error: error))
         }
     }
 
@@ -141,29 +135,30 @@ struct QuickAddItemView: View {
         do {
             categoryEditorConfig.loading = true
             defer { categoryEditorConfig.loading = false }
-            
+
             let data = try categoryEditorConfig.sanitizeAndValidate()
-            let category = try await ixApiClient.createCategory(listId: selectedListId, name: data.name, color: data.color)
+            let category = try await ixApiClient.createCategory(listId: data.listId, name: data.name, color: data.color)
 
             try context.transaction {
                 context.insert(category)
             }
 
-            selectedCategoryId = category.id
+            itemEditorConfig.entity.categoryId = category.id
         } catch {
-            errorService.insert(.localizedError(title: "Error creating category", error: error))
+            showError(.localizedError(title: "Error creating category", error: error))
         }
     }
 
-    private func save(
-        listId: String,
-        categoryId: String?,
-        name: String,
-        link: String?,
-        note: String?
-    ) async {
+    private func save() async {
         do {
-            let item = try await ixApiClient.createListItem(listId: listId, categoryId: categoryId, name: name, link: link, note: note)
+            let createData = try itemEditorConfig.sanitizeAndValidate()
+            let item = try await ixApiClient.createListItem(
+                listId: createData.listId,
+                categoryId: createData.categoryId,
+                name: createData.name,
+                link: createData.link,
+                note: createData.note
+            )
 
             Task { @MainActor in
                 do {
@@ -199,13 +194,13 @@ struct QuickAddItemView: View {
                 }
             }
             .onChange(of: lists, initial: true) { _, newValue in
-                if selectedListId.isEmpty, let listId = (recentListId.isEmpty ? newValue.first?.id : recentListId) {
-                    selectedListId = listId
+                if itemEditorConfig.entity.listId.isEmpty, let listId = (recentListId.isEmpty ? newValue.first?.id : recentListId) {
+                    itemEditorConfig.entity.listId = listId
                 }
             }
-            .onChange(of: selectedListId) { _, newValue in
+            .onChange(of: itemEditorConfig.entity.listId) { _, newValue in
                 let recentCategoryId = UserDefaults.standard.string(forKey: AppStorageKeys.QuickAdd.recentCategoryId(for: newValue)) ?? ""
-                selectedCategoryId = recentCategoryId.isEmpty ? nil : recentCategoryId
+                itemEditorConfig.entity.categoryId = recentCategoryId.isEmpty ? nil : recentCategoryId
 
                 Task {
                     if await SyncRegister.shared.hasExpired(SyncResource.listCategories(newValue), threshold: syncThreeshold) {
@@ -240,7 +235,7 @@ struct QuickAddItemView: View {
                 }
 
                 Section {
-                    Picker(selection: $selectedListId) {
+                    Picker(selection: $itemEditorConfig.entity.listId) {
                         ForEach(lists.sorted { $0.name < $1.name }, id: \.id) { list in
                             Text("\(list.icon)  \(list.name)")
                                 .tag(list.id)
@@ -250,10 +245,10 @@ struct QuickAddItemView: View {
                     }
                     .pickerStyle(.menu)
 
-                    Picker(selection: $selectedCategoryId) {
+                    Picker(selection: $itemEditorConfig.entity.categoryId) {
                         Text("No category").tag(nil as String?)
 
-                        ForEach(categories.filter { cat in cat.listId == selectedListId }.sorted { $0.name < $1.name }, id: \.id) { category in
+                        ForEach(categories.filter { cat in cat.listId == itemEditorConfig.entity.listId }.sorted { $0.name < $1.name }, id: \.id) { category in
                             Text(category.name).tag(category.id)
                         }
                     } label: {
@@ -272,9 +267,9 @@ struct QuickAddItemView: View {
                             }
 
                             Button("Create Category", systemImage: "plus") {
-                                isAddingCategory = true
+                                categoryEditorConfig.present()
                             }
-                            .disabled(selectedListId.isEmpty)
+                            .disabled(itemEditorConfig.entity.listId.isEmpty)
                         } label: {
                             Label("Create list or category", systemImage: "plus.circle")
                                 .labelStyle(.iconOnly)
@@ -301,7 +296,7 @@ struct QuickAddItemView: View {
                 .presentationDetents([.large])
             }
             .sheet(
-                isPresented: $isAddingCategory,
+                isPresented: $categoryEditorConfig.isPresented,
                 content: {
                     CategoryEditor(
                         config: $categoryEditorConfig,
@@ -334,20 +329,16 @@ struct QuickAddItemView: View {
         ToolbarItem(placement: .confirmationAction) {
             Button("Save") {
                 // update recents
-                recentListId = selectedListId
-                UserDefaults.standard.set(selectedCategoryId ?? "", forKey: AppStorageKeys.QuickAdd.recentCategoryId(for: selectedListId))
-
-                // validate values
-                let link = link.isEmpty ? nil : link.trimmingCharacters(in: .whitespacesAndNewlines)
-                let note = note.isEmpty ? nil : note
+                recentListId = itemEditorConfig.entity.listId
+                UserDefaults.standard.set(itemEditorConfig.entity.categoryId ?? "", forKey: AppStorageKeys.QuickAdd.recentCategoryId(for: itemEditorConfig.entity.listId))
 
                 // perform save
                 Task {
-                    await save(listId: selectedListId, categoryId: selectedCategoryId, name: name, link: link, note: note)
+                    await save()
                 }
             }
             .buttonStyle(.glassProminent)
-            .disabled(name.isEmpty)
+            .disabled(!itemEditorConfig.sanitizeAndValidateRes().isSuccess)
         }
     }
 }

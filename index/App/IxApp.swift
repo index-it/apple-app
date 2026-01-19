@@ -180,8 +180,8 @@ struct IxApp: App {
                 .environment(\.ixApiClient, ixApiClient)
                 .modelContainer(modelContainer)
                 .defaultAppStorage(UserDefaults(suiteName: IxIdentifiers.APP_GROUP)!)
-                .alertPresentationWindow(service: errorService)
-                .toastPresentationWindow(service: toastService)
+                // .alertPresentationWindow(service: errorService)
+                .installToast(service: toastService)
                 .paywallCover(service: paywallService)
                 .onOpenURL { url in
                     if GIDSignIn.sharedInstance.handle(url) {

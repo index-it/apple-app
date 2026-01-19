@@ -235,7 +235,7 @@ struct ListScreen: View {
             )
             try await saveItem(item)
             if editorConfig.multi {
-                showToast("Item created", placement: .top)
+                showToast("Item created", systemImage: "checkmark.circle", tint: .green, placement: .top)
                 editorConfig.reset()
             } else {
                 editorConfig.isPresented = false
@@ -494,80 +494,58 @@ struct ListScreen: View {
                     }
                 }
             )
-            // .sheet(
-            //     isPresented: $isEditingCategory,
-            //     content: { [selectedCategory] in
-            //         CategoryEditor(
-            //             isPresented: $isEditingCategory,
-            //             addingNew: false,
-            //             name: selectedCategory?.name ?? "",
-            //             color: selectedCategory?.color?.toColorOrNil()
-            //         ) { name, color in
-            //             Task {
-            //                 if let category = selectedCategory {
-            //                     await editCategory(
-            //                         listId: listId, categoryId: category.id, name: name,
-            //                         color: color
-            //                     )
-            //                 }
-            //             }
-            //         }
-            //     }
-            // )
-            // .sheet(isPresented: $showItemNotePopover) { [selectedItem] in
-            //     NavigationView {
-            //         ScrollView(showsIndicators: false) {
-            //             Text(selectedItem?.note ?? "This item has no notes in it")
-            //         }
-            //         .padding()
-            //         .navigationTitle("\(selectedItem?.name ?? "") notes")
-            //         .navigationBarTitleDisplayMode(.inline)
-            //         .toolbar {
-            //             ToolbarItem(placement: .topBarTrailing) {
-            //                 Button("Copy", systemImage: "document.on.document") {
-            //                     UIPasteboard.general.string = selectedItem?.note ?? ""
-            //                 }.labelStyle(.iconOnly)
-            //             }
+            .sheet(isPresented: $showItemNotePopover) { [selectedItem] in
+                NavigationView {
+                    ScrollView(showsIndicators: false) {
+                        Text(selectedItem?.note ?? "This item has no notes in it")
+                    }
+                    .padding()
+                    .navigationTitle("\(selectedItem?.name ?? "") notes")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Copy", systemImage: "document.on.document") {
+                                UIPasteboard.general.string = selectedItem?.note ?? ""
+                            }.labelStyle(.iconOnly)
+                        }
 
-            //             ToolbarItem(placement: .topBarTrailing) {
-            //                 ShareLink(item: selectedItem?.note ?? "") {
-            //                     Label("Share", systemImage: "square.and.arrow.up")
-            //                 }
-            //             }
-            //         }
-            //     }
-            //     .presentationDetents([.medium, .large])
-            //     .presentationDragIndicator(.hidden)
-            // }
-            // .sheet(
-            //     isPresented: $showTaskCreationSheet,
-            //     content: { [selectedItem] in
-            //         TaskEditor(
-            //             isPresented: $showTaskCreationSheet,
-            //             addingNew: true,
-            //             name: selectedItem?.name ?? "",
-            //             description: selectedItem?.note,
-            //             priority: nil,
-            //             dueDate: nil,
-            //             rrule: nil,
-            //             reminders: [],
-            //             itemId: selectedItem?.id,
-            //             subtasks: []
-            //         ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
-            //             Task {
-            //                 await createTask(
-            //                     name: name, description: description, dueDate: dueDate,
-            //                     rrule: rrule, reminders: reminders, subtasks: subtasks,
-            //                     priority: priority, itemId: itemId
-            //                 )
-            //             }
-            //         }
-            //     }
-            // )
+                        ToolbarItem(placement: .topBarTrailing) {
+                            ShareLink(item: selectedItem?.note ?? "") {
+                                Label("Share", systemImage: "square.and.arrow.up")
+                            }
+                        }
+                    }
+                }
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.hidden)
+            }
+            .sheet(
+                isPresented: $showTaskCreationSheet,
+                content: { [selectedItem] in
+                    TaskEditor(
+                        isPresented: $showTaskCreationSheet,
+                        addingNew: true,
+                        name: selectedItem?.name ?? "",
+                        description: selectedItem?.note,
+                        priority: nil,
+                        dueDate: nil,
+                        rrule: nil,
+                        reminders: [],
+                        itemId: selectedItem?.id,
+                        subtasks: []
+                    ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
+                        Task {
+                            await createTask(
+                                name: name, description: description, dueDate: dueDate,
+                                rrule: rrule, reminders: reminders, subtasks: subtasks,
+                                priority: priority, itemId: itemId
+                            )
+                        }
+                    }
+                }
+            )
             .navigationTitle(list.name)
             .toolbar {
-                // MARK: - Toolbar
-
                 toolbarContent
             }
             .onAppear {

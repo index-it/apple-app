@@ -15,7 +15,7 @@ struct ListsGridScreen: View {
     @Environment(\.modelContext) private var context
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var navigationManager: NavigationManager
-    @EnvironmentObject private var errorService: ErrorStateService
+    @Environment(\.showError) private var showError
 
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
 
@@ -87,7 +87,7 @@ struct ListsGridScreen: View {
                 }
             }
         } catch {
-            errorService.insert(.localizedError(title: "Error loading lists", error: error))
+            showError(.localizedError(title: "Error loading lists", error: error))
         }
     }
 
@@ -99,7 +99,7 @@ struct ListsGridScreen: View {
         } catch IxApiClientError.proRequired(_) {
             showPaywall()
         } catch {
-            errorService.insert(.localizedError(title: "Error creating list", error: error))
+            showError(.localizedError(title: "Error creating list", error: error))
         }
     }
 
@@ -109,7 +109,7 @@ struct ListsGridScreen: View {
 
             try await saveList(list)
         } catch {
-            errorService.insert(.localizedError(title: "Error editing list", error: error))
+            showError(.localizedError(title: "Error editing list", error: error))
         }
     }
 
@@ -126,7 +126,7 @@ struct ListsGridScreen: View {
                 }
             } catch {}
         } catch {
-            errorService.insert(.localizedError(title: "Error deleting list", error: error))
+            showError(.localizedError(title: "Error deleting list", error: error))
         }
     }
 
@@ -145,7 +145,7 @@ struct ListsGridScreen: View {
                 }
             } catch {}
         } catch {
-            errorService.insert(.localizedError(title: "Error leaving list", error: error))
+            showError(.localizedError(title: "Error leaving list", error: error))
         }
     }
 
@@ -161,7 +161,7 @@ struct ListsGridScreen: View {
             } catch {
                 loadingSelectedListPublic = false
 
-                errorService.insert(.localizedError(title: "Error updating list", error: error))
+                showError(.localizedError(title: "Error updating list", error: error))
             }
         }
     }
@@ -173,7 +173,7 @@ struct ListsGridScreen: View {
             loadingSelectedListUsers = false
         } catch {
             loadingSelectedListUsers = false
-            errorService.insert(.localizedError(title: "Error fetching users", error: error))
+            showError(.localizedError(title: "Error fetching users", error: error))
         }
     }
 
@@ -190,7 +190,7 @@ struct ListsGridScreen: View {
                 loadingSelectedListUserInvite = false
             } catch {
                 loadingSelectedListUserInvite = false
-                errorService.insert(.localizedError(title: "Error inviting user", error: error))
+                showError(.localizedError(title: "Error inviting user", error: error))
             }
         }
     }
@@ -213,7 +213,7 @@ struct ListsGridScreen: View {
                 await fetchListUsersWthAccess(listId: selectedList.id)
             } catch {
                 loadingSelectedListUserEditOrRevokePermissions = nil
-                errorService.insert(.localizedError(title: "Error changing user permissions", error: error))
+                showError(.localizedError(title: "Error changing user permissions", error: error))
             }
         }
     }
@@ -231,7 +231,7 @@ struct ListsGridScreen: View {
                 await fetchListUsersWthAccess(listId: selectedList.id)
             } catch {
                 loadingSelectedListUserEditOrRevokePermissions = nil
-                errorService.insert(.localizedError(title: "Error revoking user access", error: error))
+                showError(.localizedError(title: "Error revoking user access", error: error))
             }
         }
     }

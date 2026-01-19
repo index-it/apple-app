@@ -14,7 +14,7 @@ struct SettingsView: View {
     @Environment(\.openURL) var openURL
     @Environment(\.showPaywall) private var showPaywall
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
-    @EnvironmentObject private var errorService: ErrorStateService
+    @Environment(\.showError) private var showError
     @EnvironmentObject private var navigationManager: NavigationManager
 
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
@@ -29,7 +29,7 @@ struct SettingsView: View {
         Purchases.shared.getCustomerInfo { customer, error in
             manageSubscriptionLoading = false
             if let error = error {
-                errorService.insert(.localizedError(title: "Couldn't open subscriptions page", error: error))
+                showError(.localizedError(title: "Couldn't open subscriptions page", error: error))
                 return
             }
 

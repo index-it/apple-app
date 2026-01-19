@@ -11,7 +11,7 @@ import SwiftData
 import SwiftUI
 
 struct TaskEditor: View {
-    @EnvironmentObject private var errorService: ErrorStateService
+    @Environment(\.showError) private var showError
 
     // MARK: View props
 

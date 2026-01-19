@@ -15,7 +15,7 @@ struct TasksTabView: View {
     @Environment(\.modelContext) private var context
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @EnvironmentObject private var navigationManager: NavigationManager
-    @EnvironmentObject private var errorService: ErrorStateService
+    @Environment(\.showError) private var showError
 
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
 
@@ -88,7 +88,7 @@ struct TasksTabView: View {
 
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch {
-            errorService.insert(.localizedError(title: "Error loading tasks", error: error))
+            showError(.localizedError(title: "Error loading tasks", error: error))
         }
     }
 
@@ -111,7 +111,7 @@ struct TasksTabView: View {
         } catch IxApiClientError.proRequired(_) {
             showPaywall()
         } catch {
-            errorService.insert(.localizedError(title: "Error creating task", error: error))
+            showError(.localizedError(title: "Error creating task", error: error))
         }
     }
 
@@ -133,7 +133,7 @@ struct TasksTabView: View {
 
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch {
-            errorService.insert(.localizedError(title: "Error editing task", error: error))
+            showError(.localizedError(title: "Error editing task", error: error))
         }
     }
 
@@ -148,7 +148,7 @@ struct TasksTabView: View {
 
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch {
-            errorService.insert(.localizedError(title: "Error \(completed ? "completing" : "uncompleting") task", error: error))
+            showError(.localizedError(title: "Error \(completed ? "completing" : "uncompleting") task", error: error))
         }
     }
 
@@ -167,7 +167,7 @@ struct TasksTabView: View {
                 }
             } catch {}
         } catch {
-            errorService.insert(.localizedError(title: "Error deleting task", error: error))
+            showError(.localizedError(title: "Error deleting task", error: error))
         }
     }
 

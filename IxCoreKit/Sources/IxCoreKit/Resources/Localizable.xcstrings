@@ -40,6 +40,12 @@
         }
       }
     },
+    "Category name can be 100 characters maximum" : {
+
+    },
+    "Category name cannot be empty" : {
+
+    },
     "Complete Task" : {
       "localizations" : {
         "it" : {
@@ -92,6 +98,9 @@
       "comment" : "Entity type: Item"
     },
     "Item name can be 100 characters maximum" : {
+
+    },
+    "Item name cannot be empty" : {
 
     },
     "List" : {

@@ -37,9 +37,7 @@ private struct AlertPresentationWindowContext: ViewModifier {
     func body(content: Content) -> some View {
         content
             .environment(\.showError, ShowErrorAction { errorAlert in
-                Task {
-                    await service.insert(errorAlert)
-                }
+                service.insert(errorAlert)
             })
             .onAppear {
                 guard alertWindow == nil else { return }
@@ -48,7 +46,7 @@ private struct AlertPresentationWindowContext: ViewModifier {
                     .first { $0.windows.contains(where: \.isKeyWindow) }
                 guard let windowScene else { return assertionFailure("Could not get a UIWindowScene") }
 
-                let alertWindow = PassThroughWindow(windowScene: windowScene)
+                let alertWindow = AlertPassThroughWindow(windowScene: windowScene)
                 let alertViewController = UIHostingController(rootView: AlertPresentationWindow(service: service))
                 alertViewController.view.backgroundColor = .clear
                 alertWindow.rootViewController = alertViewController
@@ -59,7 +57,9 @@ private struct AlertPresentationWindowContext: ViewModifier {
     }
 }
 
-private final class PassThroughWindow: UIWindow {
+// this works for alerts somehow
+// it doesn't work for other stuff, I have a PassThroughWindow for that
+private final class AlertPassThroughWindow: UIWindow {
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         guard let hitView = super.hitTest(point, with: event) else { return nil }
         // If the returned view is the `UIHostingController`'s view, ignore.

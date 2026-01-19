@@ -1,4 +1,5 @@
 import SwiftUI
+import WindowOverlay
 
 private struct ToastPresentationWindow: View {
     @ObservedObject var service: ToastStateService
@@ -10,23 +11,22 @@ private struct ToastPresentationWindow: View {
             if let info = service.info {
                 ToastView(
                     message: info.message,
-                    systemImage: info.systemImage
+                    systemImage: info.systemImage,
+                    tint: info.tint
                 ) {
                     service.dismiss()
                     info.onTap?()
                 }
-                .transition(
-                    .move(edge: .top).combined(with: .opacity)
-                )
+                .transition(.move(edge: service.placement == .top ? .top : .bottom).combined(with: .opacity))
                 .padding(.top, 24)
+                .padding(.bottom, 64)
                 .contentShape(Rectangle())
             }
 
             if service.placement == .top { Spacer() }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .animation(.easeInOut, value: service.info)
-        .allowsHitTesting(true)
+        .animation(.snappy, value: service.info)
     }
 }
 
@@ -43,44 +43,24 @@ private struct ToastPresentationWindowContext: ViewModifier {
                 }
             })
             .onAppear {
-                guard toastWindow == nil else { return }
-                let windowScene = UIApplication.shared.connectedScenes
-                    .compactMap { $0 as? UIWindowScene }
-                    .first { $0.windows.contains(where: \.isKeyWindow) }
-                guard let windowScene else {
-                    assertionFailure("Could not get UIWindowScene")
-                    return
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene, toastWindow == nil {
+                    let window = PassThroughWindow(windowScene: windowScene)
+                    let rootController = UIHostingController(rootView: ToastPresentationWindow(service: service))
+                    rootController.view.frame = windowScene.keyWindow?.frame ?? .zero
+                    rootController.view.backgroundColor = .clear
+                    window.rootViewController = rootController
+                    window.backgroundColor = .clear
+                    window.isHidden = false
+                    window.isUserInteractionEnabled = true
+
+                    toastWindow = window
                 }
-
-                let window = PassThroughWindow(windowScene: windowScene)
-                let controller = UIHostingController(rootView: ToastPresentationWindow(service: service))
-
-                controller.view.backgroundColor = .clear
-                window.rootViewController = controller
-                window.windowLevel = .alert
-                window.isHidden = false
-
-                toastWindow = window
             }
     }
 }
 
-private final class PassThroughWindow: UIWindow {
-    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        let hitView = super.hitTest(point, with: event)
-
-        // If we hit something that's not the root view, allow it
-        if hitView != rootViewController?.view {
-            return hitView
-        }
-
-        // Otherwise pass through
-        return nil
-    }
-}
-
 extension View {
-    func toastPresentationWindow(service: ToastStateService) -> some View {
+    func installToast(service: ToastStateService) -> some View {
         modifier(ToastPresentationWindowContext(service: service))
     }
 }

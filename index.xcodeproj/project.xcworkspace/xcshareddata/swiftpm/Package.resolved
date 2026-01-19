@@ -1,5 +1,5 @@
 {
-  "originHash" : "7f434dad734c5f8712ad5063727cb4b82a1e3afc25170c43611d93f8ef101b75",
+  "originHash" : "de907f7d1a219f037e2737fac047fe20548808691fde47b19e3a3b7e9c8fb884",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -179,6 +179,15 @@
       "state" : {
         "revision" : "d72aed98f8253ec1aa9ea1141e28150f408cf17f",
         "version" : "1.29.0"
+      }
+    },
+    {
+      "identity" : "swiftui-window-overlay",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sunghyun-k/swiftui-window-overlay",
+      "state" : {
+        "revision" : "46739300713772a62a3bf31d77f8f23ba9cf61f7",
+        "version" : "1.0.2"
       }
     }
   ],

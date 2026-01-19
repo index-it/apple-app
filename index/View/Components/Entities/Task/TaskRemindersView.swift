@@ -17,7 +17,7 @@ import SwiftUI
 
 struct TaskRemindersView: View {
     @Environment(\.showPaywall) private var showPaywall
-    @EnvironmentObject private var errorService: ErrorStateService
+    @Environment(\.showError) private var showError
     @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
 
     @Binding var reminders: [IxTaskReminder]
@@ -142,7 +142,7 @@ struct TaskRemindersView: View {
                     if accepted {
                         addReminder()
                     } else {
-                        errorService.insert(.customMessage(title: "Enable notifications", message: "Go into Settings > Apps > Index and enable notifications to use task reminders."))
+                        showError(.customMessage(title: "Enable notifications", message: "Go into Settings > Apps > Index and enable notifications to use task reminders."))
                     }
                 } else {
                     addReminder()

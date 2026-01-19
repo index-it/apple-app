@@ -9,7 +9,7 @@ import RevenueCat
 import SwiftUI
 
 struct ProSettingsView: View {
-    @EnvironmentObject private var errorService: ErrorStateService
+    @Environment(\.showError) private var showError
     @Environment(\.openURL) var openURL
 
     @State private var manageSubscriptionLoading: Bool = false
@@ -20,7 +20,7 @@ struct ProSettingsView: View {
         Purchases.shared.getCustomerInfo { customer, error in
             manageSubscriptionLoading = false
             if let error = error {
-                errorService.insert(.localizedError(title: "Couldn't open subscriptions page", error: error))
+                showError(.localizedError(title: "Couldn't open subscriptions page", error: error))
                 return
             }
 
