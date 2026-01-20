@@ -56,11 +56,11 @@ public final class IxListCategory: Sanitizable, Validatable, EmptyInitializable 
         )
     }
 
-    public static var empty: IxListCategory {
+    public static func empty() -> IxListCategory {
         return IxListCategory(
-            id: UUID().uuidString,
-            user_id: UUID().uuidString,
-            list_id: UUID().uuidString,
+            id: "",
+            user_id: "",
+            list_id: "",
             name: "",
             color: nil,
             created_at: Date.now.currentTimeMillis(),
@@ -73,8 +73,8 @@ public final class IxListCategory: Sanitizable, Validatable, EmptyInitializable 
             return .failure(.init("Category name cannot be empty"))
         }
 
-        if name.count > 100 {
-            return .failure(.init("Category name can be 100 characters maximum"))
+        if name.count > IxValidations.Category.maxNameLength {
+            return .failure(.init("Category name can be \(IxValidations.Category.maxNameLength) characters maximum"))
         }
 
         return .success(())

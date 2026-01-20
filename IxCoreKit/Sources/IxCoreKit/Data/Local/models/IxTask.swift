@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-public class IxTask {
+public final class IxTask: Sanitizable, Validatable, EmptyInitializable {
     @Attribute(.unique) public var id: String
     public var userId: String
     public var itemId: String?
@@ -70,6 +70,58 @@ public class IxTask {
             guard let dueDate = dueDate else { return "" }
             return DateHelper.Formatters.taskRowDate.string(from: dueDate.toLocalDate())
         }
+    }
+
+    public static func empty() -> IxTask {
+        return IxTask(
+            id: "",
+            userId: "",
+            itemId: nil,
+            name: "",
+            description: nil,
+            subtasks: [],
+            dueDate: nil,
+            rrule: nil,
+            completed: false,
+            priority: nil,
+            reminders: [],
+            createdAt: Date().currentTimeMillis(),
+            editedAt: nil,
+            completedAt: nil
+        )
+    }
+
+    public var validationRes: Result<Void, ValidationError> {
+        if name.isEmpty {
+            return .failure(.init("Task name cannot be empty"))
+        }
+
+        if name.count > IxValidations.Task.maxNameLength {
+            return .failure(.init("Task name can be \(IxValidations.Task.maxNameLength) characters maximum"))
+        }
+
+        if taskDescription?.count ?? 0 > IxValidations.Task.maxDescriptionLength {
+            return .failure(.init("Task description can be \(IxValidations.Task.maxDescriptionLength) characters maximum"))
+        }
+
+        if subtasks.count > IxValidations.Task.maxSubtaskCount {
+            return .failure(.init("Task can have maximum \(IxValidations.Task.maxSubtaskCount) subtasks"))
+        }
+
+        if reminders.count > IxValidations.Task.maxRemindersCount {
+            return .failure(.init("Task can have maximum \(IxValidations.Task.maxRemindersCount) reminders"))
+        }
+
+        return .success(())
+    }
+
+    public var sanitized: IxTask {
+        let copy = self
+
+        copy.name = name.sanitized
+        copy.taskDescription = taskDescription?.sanitized
+
+        return copy
     }
 }
 

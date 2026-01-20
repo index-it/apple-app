@@ -52,11 +52,11 @@ public final class IxListItem: Validatable, Sanitizable, EmptyInitializable {
         )
     }
 
-    public static var empty: IxListItem {
+    public static func empty() -> IxListItem {
         return IxListItem(
-            id: UUID().uuidString,
-            user_id: UUID().uuidString,
-            list_id: UUID().uuidString,
+            id: "",
+            user_id: "",
+            list_id: "",
             category_id: nil,
             name: "",
             completed: false,
@@ -73,15 +73,23 @@ public final class IxListItem: Validatable, Sanitizable, EmptyInitializable {
             return .failure(.init("Item name cannot be empty"))
         }
 
-        if name.count >= 100 {
-            return .failure(.init("Item name can be 100 characters maximum"))
+        if name.count >= IxValidations.Item.maxNameLength {
+            return .failure(.init("Item name can be \(IxValidations.Item.maxNameLength) characters maximum"))
+        }
+
+        if link?.count ?? 0 >= IxValidations.Item.maxLinkLength {
+            return .failure(.init("Item link can be \(IxValidations.Item.maxLinkLength) characters maximum"))
+        }
+
+        if note?.count ?? 0 >= IxValidations.Item.maxNoteLength {
+            return .failure(.init("Item note can be \(IxValidations.Item.maxNoteLength) characters maximum"))
         }
 
         return .success(())
     }
 
     public var sanitized: IxListItem {
-        var copy = self
+        let copy = self
 
         copy.name = name.sanitized
         copy.link = link?.sanitized

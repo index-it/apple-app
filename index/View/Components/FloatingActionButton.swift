@@ -10,6 +10,7 @@ import SwiftUI
 struct FloatingActionButton: ViewModifier {
     let imageName: String
     let action: () -> Void
+    let longPressAction: () -> Void
 
     func body(content: Content) -> some View {
         ZStack(alignment: .bottomTrailing) {
@@ -18,26 +19,26 @@ struct FloatingActionButton: ViewModifier {
             Button(action: action) {
                 Image(systemName: "plus")
                     .font(.title.weight(.semibold))
-                    .padding(.vertical, 6)
-//                    .background(Color.accentColor)
-//                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
                     .clipShape(Circle())
-//                    .shadow(radius: 4, x: 0, y: 4)
+                    .shadow(radius: 4, x: 0, y: 4)
             }
-            .buttonStyle(.glassProminent)
+            .supportsLongPress(longPressAction: longPressAction)
             .padding()
         }
     }
 }
 
 extension View {
-    func floatingActionButton(_ imageName: String, action: @escaping () -> Void) -> some View {
-        modifier(FloatingActionButton(imageName: imageName, action: action))
+    func floatingActionButton(_ imageName: String, action: @escaping () -> Void, longPressAction: @escaping () -> Void) -> some View {
+        modifier(FloatingActionButton(imageName: imageName, action: action, longPressAction: longPressAction))
     }
 }
 
 #Preview {
     VStack {
         Text("Hi")
-    }.frame(maxWidth: .infinity, maxHeight: .infinity).floatingActionButton("plus") {}
+    }.frame(maxWidth: .infinity, maxHeight: .infinity).floatingActionButton("plus", action: {}, longPressAction: {})
 }

@@ -63,7 +63,7 @@ struct ListScreen: View {
 
     // MARK: Task
 
-    @State private var showTaskCreationSheet = false
+    @State private var taskEditorConfig = EditorConfig<IxTask>()
 
     // MARK: Item filters and sorting
 
@@ -224,6 +224,7 @@ struct ListScreen: View {
     func createItem() async {
         do {
             editorConfig.loading = true
+            defer { editorConfig.loading = false }
             let createData = try editorConfig.sanitizeAndValidate()
 
             let item = try await ixApiClient.createListItem(
@@ -241,7 +242,6 @@ struct ListScreen: View {
                 editorConfig.isPresented = false
             }
         } catch {
-            editorConfig.loading = false
             showError(.localizedError(title: "Error creating item", error: error))
         }
     }
@@ -249,13 +249,13 @@ struct ListScreen: View {
     func editItem() async {
         do {
             editorConfig.loading = true
+            defer { editorConfig.loading = false }
             let editData = try editorConfig.sanitizeAndValidate()
 
             let item = try await ixApiClient.updateListItem(listId: listId, itemId: editData.id, name: editData.name, categoryId: editData.categoryId, link: editData.link, note: editData.note)
             try await saveItem(item)
             editorConfig.isPresented = false
         } catch {
-            editorConfig.loading = false
             showError(.localizedError(title: "Error editing item", error: error))
         }
     }
@@ -354,6 +354,7 @@ struct ListScreen: View {
     func createCategory() async {
         do {
             categoryEditorConfig.loading = true
+            defer { categoryEditorConfig.loading = false }
             let createData = try categoryEditorConfig.sanitizeAndValidate()
 
             let category = try await ixApiClient.createCategory(
@@ -364,7 +365,6 @@ struct ListScreen: View {
             try await saveCategory(category)
             categoryEditorConfig.isPresented = false
         } catch {
-            categoryEditorConfig.loading = false
             showError(.localizedError(title: "Error creating category", error: error))
         }
     }
@@ -372,6 +372,7 @@ struct ListScreen: View {
     func editCategory() async {
         do {
             categoryEditorConfig.loading = true
+            defer { categoryEditorConfig.loading = false }
             let editData = try categoryEditorConfig.sanitizeAndValidate()
 
             let category = try await ixApiClient.updateListCategory(
@@ -383,7 +384,6 @@ struct ListScreen: View {
             try await saveCategory(category)
             categoryEditorConfig.isPresented = false
         } catch {
-            categoryEditorConfig.loading = false
             showError(.localizedError(title: "Error editing category", error: error))
         }
     }
@@ -418,30 +418,33 @@ struct ListScreen: View {
 
     // MARK: Task
 
-    func createTask(
-        name: String,
-        description: String?,
-        dueDate: Date?,
-        rrule: String?,
-        reminders: [IxTaskReminder],
-        subtasks: [IxSubTask],
-        priority: Int?,
-        itemId: String?
-    ) async {
+    func createTask() async {
         do {
+            taskEditorConfig.loading = true
+            defer { taskEditorConfig.loading = false }
+
+            let createData = try taskEditorConfig.sanitizeAndValidate()
             let task = try await ixApiClient.createTask(
-                name: name, description: description, dueDate: dueDate, rrule: rrule,
-                reminders: reminders, subtasks: subtasks, priority: priority, itemId: itemId
+                name: createData.name,
+                description: createData.taskDescription,
+                dueDate: createData.dueDate,
+                rrule: createData.rrule,
+                reminders: createData.reminders,
+                subtasks: createData.subtasks,
+                priority: createData.priority,
+                itemId: createData.itemId
             )
 
             try context.transaction {
                 context.insert(task)
             }
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
 
-            showToast("Task created") {
+            editorConfig.isPresented = false
+
+            showToast("Task created", systemImage: "checkmark.circle", tint: .green, placement: .top) {
                 navigationManager.navigateToTab(.tasks)
             }
-            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch IxApiClientError.proRequired(_) {
             showPaywall()
         } catch {
@@ -520,26 +523,13 @@ struct ListScreen: View {
                 .presentationDragIndicator(.hidden)
             }
             .sheet(
-                isPresented: $showTaskCreationSheet,
-                content: { [selectedItem] in
+                isPresented: $taskEditorConfig.isPresented,
+                content: {
                     TaskEditor(
-                        isPresented: $showTaskCreationSheet,
-                        addingNew: true,
-                        name: selectedItem?.name ?? "",
-                        description: selectedItem?.note,
-                        priority: nil,
-                        dueDate: nil,
-                        rrule: nil,
-                        reminders: [],
-                        itemId: selectedItem?.id,
-                        subtasks: []
-                    ) { name, description, priority, dueDate, rrule, reminders, itemId, subtasks in
+                        config: $taskEditorConfig
+                    ) {
                         Task {
-                            await createTask(
-                                name: name, description: description, dueDate: dueDate,
-                                rrule: rrule, reminders: reminders, subtasks: subtasks,
-                                priority: priority, itemId: itemId
-                            )
+                            await createTask()
                         }
                     }
                 }
@@ -589,7 +579,7 @@ struct ListScreen: View {
         ) {
             showCompletedItems = false
         } onCreateItem: {
-            editorConfig.isPresented = true
+            editorConfig.present()
         } onOpenNotes: { item in
             selectedItem = item
             showItemNotePopover = true
@@ -616,12 +606,14 @@ struct ListScreen: View {
         } onCreateCategory: {
             categoryEditorConfig.present()
         } onCreateTask: { item in
-            selectedItem = item
-            showTaskCreationSheet = true
+            let task = IxTask.empty()
+            task.itemId = item.id
+            task.name = item.name
+            task.taskDescription = item.note
+
+            taskEditorConfig.present(entity: task)
         } onEdit: { item in
-            selectedItem = item
-            // TODO:
-            isEditingItem = true
+            editorConfig.present(entity: item)
         } onDelete: { item in
             Task {
                 await deleteItem(listId: listId, itemId: item.id)

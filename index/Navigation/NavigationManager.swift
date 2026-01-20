@@ -10,7 +10,10 @@ import Foundation
 class NavigationManager: ObservableObject {
     @Published var path: [NavigationRoute] = []
     @Published var selectedHomeTab: HomeTab = .lists
+
+    @Published var quickAddTaskViewMulti: Bool = false
     @Published var quickAddTaskViewPresented: Bool = false
+    @Published var quickAddItemViewMulti: Bool = false
     @Published var quickAddItemViewPresented: Bool = false
 
     func push(_ navigationRoute: NavigationRoute) {
@@ -33,15 +36,17 @@ class NavigationManager: ObservableObject {
         clear()
     }
 
-    func showQuickAddTaskView() {
+    func showQuickAddTaskView(multi: Bool = false) {
         selectedHomeTab = .tasks
         clear()
+        quickAddTaskViewMulti = multi
         quickAddTaskViewPresented = true
     }
 
-    func showQuickAddItemView() {
+    func showQuickAddItemView(multi: Bool = false) {
         selectedHomeTab = .lists
         clear()
+        quickAddItemViewMulti = multi
         quickAddItemViewPresented = true
     }
 }

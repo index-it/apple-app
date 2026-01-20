@@ -43,17 +43,22 @@ struct QuickAddItemView: View {
         note: String? = nil,
         selectedListId: String? = nil,
         selectedCategoryId: String? = nil,
+        multi: Bool = false,
         onCancel: @escaping () -> Void,
         syncThreeshold: Int64 = 3_600_000
     ) {
         self.onCancel = onCancel
         self.syncThreeshold = syncThreeshold
-
-        itemEditorConfig.entity.name = name ?? ""
-        itemEditorConfig.entity.link = link
-        itemEditorConfig.entity.note = note
-        itemEditorConfig.entity.listId = selectedListId ?? ""
-        itemEditorConfig.entity.categoryId = selectedCategoryId ?? ""
+        
+        let item = IxListItem.empty()
+        item.name = name ?? ""
+        item.link = link
+        item.note = note
+        item.listId = selectedListId ?? ""
+        item.categoryId = selectedCategoryId ?? ""
+        
+        // NOTE: this in teory is bad practice
+        _itemEditorConfig = State(initialValue: EditorConfig<IxListItem>(entity: item, multi: multi))
     }
 
     private func loadLinkTitle(_ url: URL) async {
@@ -151,6 +156,9 @@ struct QuickAddItemView: View {
 
     private func save() async {
         do {
+            itemEditorConfig.loading = true
+            defer { itemEditorConfig.loading = false }
+
             let createData = try itemEditorConfig.sanitizeAndValidate()
             let item = try await ixApiClient.createListItem(
                 listId: createData.listId,
@@ -177,7 +185,7 @@ struct QuickAddItemView: View {
     var body: some View {
         QuickAddView
             .onAppear {
-                if itemEditorConfig.entity.name.isEmpty && itemEditorConfig.entity.link?.isEmpty == true {
+                if itemEditorConfig.entity.name.isEmpty && itemEditorConfig.entity.link?.isEmpty != false {
                     isNameFieldFocused = true
                 }
 
@@ -310,7 +318,6 @@ struct QuickAddItemView: View {
                     }
                 }
             )
-
             .toolbar {
                 ToolbarViewContent
             }
@@ -327,7 +334,7 @@ struct QuickAddItemView: View {
         }
 
         ToolbarItem(placement: .confirmationAction) {
-            Button("Save") {
+            Button {
                 // update recents
                 recentListId = itemEditorConfig.entity.listId
                 UserDefaults.standard.set(itemEditorConfig.entity.categoryId ?? "", forKey: AppStorageKeys.QuickAdd.recentCategoryId(for: itemEditorConfig.entity.listId))
@@ -336,9 +343,15 @@ struct QuickAddItemView: View {
                 Task {
                     await save()
                 }
+            } label: {
+                if itemEditorConfig.loading {
+                    ProgressView()
+                } else {
+                    Label("Save", systemImage: "checkmark")
+                }
             }
             .buttonStyle(.glassProminent)
-            .disabled(!itemEditorConfig.sanitizeAndValidateRes().isSuccess)
+            .disabled(!itemEditorConfig.entity.validationRes.isSuccess)
         }
     }
 }

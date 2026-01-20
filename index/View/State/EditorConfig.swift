@@ -8,7 +8,7 @@
 import IxCoreKit
 
 struct EditorConfig<Entity: Validatable & Sanitizable & EmptyInitializable> {
-    var entity: Entity = .empty
+    var entity: Entity = .empty()
 
     var mode: EditorMode = .create
     var multi: Bool = false
@@ -28,13 +28,13 @@ struct EditorConfig<Entity: Validatable & Sanitizable & EmptyInitializable> {
 
     /// Reset the entity to empty and loading to false
     mutating func reset() {
-        entity = Entity.empty
+        entity = Entity.empty()
         loading = false
     }
 
     /// Present the editor resetting the loading state and using the provided entity and multi flag
     mutating func present(
-        entity: Entity = .empty,
+        entity: Entity = .empty(),
         mode: EditorMode = .create,
         multi: Bool = false
     ) {

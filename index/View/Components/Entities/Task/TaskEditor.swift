@@ -13,27 +13,10 @@ import SwiftUI
 struct TaskEditor: View {
     @Environment(\.showError) private var showError
 
-    // MARK: View props
-
-    @Binding var isPresented: Bool
-    private var addingNew: Bool
+    @Binding var config: EditorConfig<IxTask>
+    private var onSave: () -> Void
 
     @FocusState private var isNameFocused: Bool
-
-    @State private var name: String
-    @State private var description: String?
-    @State private var priority: Int?
-    @State private var dueDate: Date?
-    @State private var rrule: String?
-    @State private var reminders: [IxTaskReminder]
-    @State private var itemId: String?
-    @State private var subtasks: [IxSubTask]
-
-    private var isNameInvalid: Bool {
-        name.isEmpty || name.count >= 100
-    }
-
-    private var onSave: (_ name: String, _ description: String?, _ priority: Int?, _ dueDate: Date?, _ rrule: String?, _ reminders: [IxTaskReminder], _ itemId: String?, _ subtasks: [IxSubTask]) -> Void
 
     @FocusState private var subtaskFocusField: Int?
     @State private var isSubtasksDisclosureGroupExpanded = true
@@ -44,36 +27,15 @@ struct TaskEditor: View {
     @Query private var items: [IxListItem]
 
     init(
-        isPresented: Binding<Bool>,
-        addingNew: Bool = true,
-        name: String,
-        description: String?,
-        priority: Int?,
-        dueDate: Date?,
-        rrule: String?,
-        reminders: [IxTaskReminder],
-        itemId: String?,
-        subtasks: [IxSubTask],
-        onSave: @escaping (_ name: String, _ description: String?, _ priority: Int?, _ dueDate: Date?, _ rrule: String?, _ reminders: [IxTaskReminder], _ itemId: String?, _ subtasks: [IxSubTask]) -> Void
+        config: Binding<EditorConfig<IxTask>>,
+        onSave: @escaping () -> Void
     ) {
-        _isPresented = isPresented
-        self.addingNew = addingNew
-
-        self.name = name
-        self.description = description
-        self.priority = priority
-        self.dueDate = dueDate
-        self.rrule = rrule
-        self.reminders = reminders
-        self.itemId = itemId
-        self.subtasks = subtasks
-
+        _config = config
         self.onSave = onSave
-
-        // MARK: item query
 
         var itemDescription: FetchDescriptor<IxListItem>
 
+        let itemId = config.entity.itemId.wrappedValue
         if let itemId = itemId {
             itemDescription = FetchDescriptor<IxListItem>(
                 predicate: #Predicate { item in
@@ -91,10 +53,9 @@ struct TaskEditor: View {
     }
 
     private func onSaveSubmit() {
-        rrule = recurrenceState.generateRRule()
+        config.entity.rrule = recurrenceState.generateRRule()
 
-        onSave(name, description, priority, dueDate, rrule, reminders, itemId, subtasks)
-        isPresented = false
+        onSave()
     }
 
     var body: some View {
@@ -107,41 +68,48 @@ struct TaskEditor: View {
                 subtasksSection
 
                 TaskDateSection(
-                    dueDate: $dueDate,
-                    reminders: $reminders,
+                    config: $config,
                     isTaskNameFocused: _isNameFocused,
                     recurrenceState: recurrenceState
                 )
 
-                if itemId != nil {
+                if config.entity.itemId != nil {
                     connectedItemSection
                 }
             }
-            .navigationTitle(addingNew ? "Add Task" : "Edit Task")
+            .navigationTitle(config.mode == .create ? "Add Task" : "Edit Task")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationSubtitle(config.multi ? "Adding multiple tasks" : "")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", systemImage: "xmark") {
-                        isPresented = false
+                        config.isPresented = false
                     }
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button {
                         onSaveSubmit()
+                    } label: {
+                        if config.loading {
+                            ProgressView()
+                        } else {
+                            Label("Save", systemImage: "checkmark")
+                                .labelStyle(.titleOnly)
+                        }
                     }
                     .buttonStyle(.glassProminent)
-                    .disabled(isNameInvalid)
+                    .disabled(!config.entity.validationRes.isSuccess)
                 }
             }
         }
         .onAppear {
-            if name.isEmpty {
+            if config.entity.name.isEmpty {
                 isNameFocused = true
             }
 
             DispatchQueue.global(qos: .userInitiated).async {
-                recurrenceState.parseRRule(rrule)
+                recurrenceState.parseRRule(config.entity.rrule)
             }
         }
     }
@@ -150,17 +118,17 @@ struct TaskEditor: View {
 
     var nameAndDescriptionSection: some View {
         Section {
-            TextField("Name", text: $name)
+            TextField("Name", text: $config.entity.name)
                 .focused($isNameFocused)
 
-            TextField("Description", text: $description ?? "", axis: .vertical)
+            TextField("Description", text: $config.entity.taskDescription ?? "", axis: .vertical)
         }
     }
 
     // MARK: - Priority Section
 
     var prioritySection: some View {
-        Picker("Priority", systemImage: "flag.fill", selection: $priority) {
+        Picker("Priority", systemImage: "flag.fill", selection: $config.entity.priority) {
             Section {
                 Text("None")
                     .tag(nil as Int?)
@@ -203,17 +171,17 @@ struct TaskEditor: View {
     // MARK: - Subtasks List
 
     var subtasksList: some View {
-        ForEach(Array(subtasks.enumerated()), id: \.offset) { index, subtask in
+        ForEach(Array(config.entity.subtasks.enumerated()), id: \.offset) { index, subtask in
             HStack {
                 Button {
-                    subtasks[index].completed = !subtask.completed
+                    config.entity.subtasks[index].completed = !subtask.completed
                 } label: {
                     Image(systemName: subtask.completed ? "inset.filled.circle" : "circle")
                 }
 
                 TextField(
                     "Insert name",
-                    text: $subtasks[index].name
+                    text: $config.entity.subtasks[index].name
                 )
                 .focused($subtaskFocusField, equals: index)
                 .onAppear {
@@ -224,15 +192,15 @@ struct TaskEditor: View {
                 }
                 .submitLabel(.next)
                 .onSubmit {
-                    if subtasks.last == nil || !subtasks.last!.name.isEmpty {
-                        subtasks.append(IxSubTask(name: "", completed: false))
+                    if config.entity.subtasks.last == nil || !config.entity.subtasks.last!.name.isEmpty {
+                        config.entity.subtasks.append(IxSubTask(name: "", completed: false))
                         subtaskCreated = true
                     }
                 }
             }
             .swipeActions {
                 Button("Delete", systemImage: "trash.fill", role: .destructive) {
-                    subtasks.remove(at: index)
+                    config.entity.subtasks.remove(at: index)
                 }
             }
         }
@@ -242,8 +210,8 @@ struct TaskEditor: View {
 
     var addSubtaskButton: some View {
         Button("Add subtask") {
-            if subtasks.last == nil || !subtasks.last!.name.isEmpty {
-                subtasks.append(IxSubTask(name: "", completed: false))
+            if config.entity.subtasks.last == nil || !config.entity.subtasks.last!.name.isEmpty {
+                config.entity.subtasks.append(IxSubTask(name: "", completed: false))
                 subtaskCreated = true
             }
         }
@@ -255,7 +223,7 @@ struct TaskEditor: View {
         Section {
             TaskConnectedItemSectionView(item: items.first) {
                 withAnimation {
-                    itemId = nil
+                    config.entity.itemId = nil
                 }
             }
         } footer: {
@@ -265,19 +233,10 @@ struct TaskEditor: View {
 }
 
 #Preview {
+    @Previewable @State var config = EditorConfig<IxTask>()
     TaskEditor(
-        isPresented: .constant(true),
-        name: "",
-        description: nil,
-        priority: nil,
-        dueDate: nil,
-        rrule: nil,
-        reminders: [],
-        itemId: nil,
-        subtasks: [],
-        onSave: { name, _, _, _, _, _, _, _ in
-            // Handle saving the task here
-            print("Task saved: \(name)")
-        }
-    )
+        config: $config
+    ) {
+        // on save
+    }
 }

@@ -40,7 +40,7 @@
         }
       }
     },
-    "Category name can be 100 characters maximum" : {
+    "Category name can be %lld characters maximum" : {
 
     },
     "Category name cannot be empty" : {
@@ -97,10 +97,16 @@
     "Item" : {
       "comment" : "Entity type: Item"
     },
-    "Item name can be 100 characters maximum" : {
+    "Item link can be %lld characters maximum" : {
+
+    },
+    "Item name can be %lld characters maximum" : {
 
     },
     "Item name cannot be empty" : {
+
+    },
+    "Item note can be %lld characters maximum" : {
 
     },
     "List" : {
@@ -157,7 +163,22 @@
     "Task" : {
       "comment" : "Entity type: Task"
     },
+    "Task can have maximum %lld reminders" : {
+
+    },
+    "Task can have maximum %lld subtasks" : {
+
+    },
+    "Task description can be %lld characters maximum" : {
+
+    },
     "Task id" : {
+
+    },
+    "Task name can be %lld characters maximum" : {
+
+    },
+    "Task name cannot be empty" : {
 
     },
     "The email or password format is invalid." : {

@@ -37,7 +37,10 @@ private struct AlertPresentationWindowContext: ViewModifier {
     func body(content: Content) -> some View {
         content
             .environment(\.showError, ShowErrorAction { errorAlert in
-                service.insert(errorAlert)
+                Task { @MainActor in
+                    print("SHOWING")
+                    service.insert(errorAlert)
+                }
             })
             .onAppear {
                 guard alertWindow == nil else { return }

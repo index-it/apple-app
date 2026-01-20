@@ -9,8 +9,7 @@ import IxCoreKit
 import SwiftUI
 
 struct TaskDateSection: View {
-    @Binding var dueDate: Date?
-    @Binding var reminders: [IxTaskReminder]
+    @Binding var config: EditorConfig<IxTask>
     @FocusState var isTaskNameFocused: Bool
     @Bindable var recurrenceState: RecurrenceState
 
@@ -18,7 +17,7 @@ struct TaskDateSection: View {
         Section {
             dueDateToggle
 
-            if dueDate != nil {
+            if config.entity.dueDate != nil {
                 dueDatePicker
             }
 
@@ -38,11 +37,11 @@ struct TaskDateSection: View {
         Toggle(
             isOn: Binding(
                 get: {
-                    dueDate != nil
+                    config.entity.dueDate != nil
                 },
                 set: { newValue in
                     withAnimation {
-                        dueDate = newValue ? Date.now : nil
+                        config.entity.dueDate = newValue ? Date.now : nil
                     }
 
                     if newValue {
@@ -54,7 +53,7 @@ struct TaskDateSection: View {
             Label {
                 Text("Date")
 
-                if let dueDate = dueDate {
+                if let dueDate = config.entity.dueDate {
                     Text(DateHelper.Formatters.taskDueDatePicker.string(from: dueDate))
                 }
             } icon: {
@@ -66,7 +65,7 @@ struct TaskDateSection: View {
     // MARK: - Due Date Picker
 
     var dueDatePicker: some View {
-        DatePicker(selection: $dueDate ?? Date.now, in: Date.now..., displayedComponents: .date) {
+        DatePicker(selection: $config.entity.dueDate ?? Date.now, in: Date.now..., displayedComponents: .date) {
             Text("Select a date")
         }.datePickerStyle(.graphical)
     }
@@ -75,7 +74,7 @@ struct TaskDateSection: View {
 
     var remindersNavLink: some View {
         NavigationLink {
-            TaskRemindersView(reminders: $reminders)
+            TaskRemindersView(reminders: $config.entity.reminders)
         } label: {
             HStack {
                 Label("Reminders", systemImage: "bell.fill")
@@ -83,11 +82,11 @@ struct TaskDateSection: View {
 
                 Spacer()
 
-                Text("\(reminders.count > 0 ? "\(reminders.count)" : "")")
+                Text("\(config.entity.reminders.count > 0 ? "\(config.entity.reminders.count)" : "")")
                     .foregroundStyle(.secondary)
             }
         }
-        .disabled(dueDate == nil)
+        .disabled(config.entity.dueDate == nil)
     }
 
     // MARK: - Recurrence Navigation Link
@@ -106,7 +105,7 @@ struct TaskDateSection: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .disabled(dueDate == nil)
+        .disabled(config.entity.dueDate == nil)
     }
 
     // MARK: - End Recurrence Navigation Link
@@ -124,6 +123,6 @@ struct TaskDateSection: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .disabled(dueDate == nil)
+        .disabled(config.entity.dueDate == nil)
     }
 }

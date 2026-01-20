@@ -180,7 +180,7 @@ struct IxApp: App {
                 .environment(\.ixApiClient, ixApiClient)
                 .modelContainer(modelContainer)
                 .defaultAppStorage(UserDefaults(suiteName: IxIdentifiers.APP_GROUP)!)
-                // .alertPresentationWindow(service: errorService)
+                .alertPresentationWindow(service: errorService)
                 .installToast(service: toastService)
                 .paywallCover(service: paywallService)
                 .onOpenURL { url in

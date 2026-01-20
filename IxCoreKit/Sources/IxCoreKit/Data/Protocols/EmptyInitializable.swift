@@ -6,5 +6,5 @@
 //
 
 public protocol EmptyInitializable {
-    static var empty: Self { get }
+    static func empty() -> Self
 }

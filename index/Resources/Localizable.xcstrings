@@ -60,6 +60,7 @@
       }
     },
     "%lld unplanned tasks" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -120,6 +121,9 @@
     "Adding multiple items" : {
 
     },
+    "Adding multiple tasks" : {
+
+    },
     "After" : {
 
     },
@@ -141,9 +145,6 @@
           }
         }
       }
-    },
-    "Anyday" : {
-
     },
     "Archive" : {
 
@@ -453,9 +454,6 @@
     "Keep" : {
 
     },
-    "Later" : {
-
-    },
     "Leave" : {
 
     },
@@ -748,9 +746,6 @@
 
     },
     "Today's Tasks" : {
-
-    },
-    "Tomorrow" : {
 
     },
     "Type 'GOODBYE'" : {

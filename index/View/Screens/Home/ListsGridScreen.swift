@@ -241,9 +241,15 @@ struct ListsGridScreen: View {
             .navigationTitle(archived ? "Archived lists" : "Your lists")
             .navigationBarTitleDisplayMode(archived ? .inline : .large)
             .if(!lists.isEmpty, transform: { view in
-                view.floatingActionButton("plus") {
-                    navigationManager.quickAddItemViewPresented = true
-                }
+                view.floatingActionButton(
+                    "plus",
+                    action: {
+                        navigationManager.showQuickAddItemView()
+                    },
+                    longPressAction: {
+                        navigationManager.showQuickAddItemView(multi: true)
+                    }
+                )
             })
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -390,9 +396,12 @@ struct ListsGridScreen: View {
                 }.presentationDetents([.large])
             }
             .sheet(isPresented: $navigationManager.quickAddItemViewPresented) {
-                QuickAddItemView(onCancel: {
-                    navigationManager.quickAddItemViewPresented = false
-                })
+                QuickAddItemView(
+                    multi: false,
+                    onCancel: {
+                        navigationManager.quickAddItemViewPresented = false
+                    }
+                )
             }
             .alert(
                 Text("Confirm deletion"),

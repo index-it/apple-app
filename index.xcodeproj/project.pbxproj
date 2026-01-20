@@ -27,6 +27,7 @@
 		099C0F3D2F09AE47003C546F /* MCEmojiPickerJSON in Frameworks */ = {isa = PBXBuildFile; productRef = 099C0F3C2F09AE47003C546F /* MCEmojiPickerJSON */; };
 		09D9117F2DCB63730087D915 /* IxCoreKit in Frameworks */ = {isa = PBXBuildFile; productRef = 09D9117E2DCB63730087D915 /* IxCoreKit */; };
 		09D911812DCB63770087D915 /* IxCoreKit in Frameworks */ = {isa = PBXBuildFile; productRef = 09D911802DCB63770087D915 /* IxCoreKit */; };
+		09DC44A72F1EE3D7003A7185 /* MCEmojiPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 09DC44A62F1EE3D7003A7185 /* MCEmojiPicker */; };
 		09F48F452D7E623D00CA50AC /* indexShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 09F48F3B2D7E623D00CA50AC /* indexShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -193,6 +194,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				096C02312F09E50A00425185 /* DynamicColor in Frameworks */,
+				09DC44A72F1EE3D7003A7185 /* MCEmojiPicker in Frameworks */,
 				096C022D2F09E4FA00425185 /* RevenueCat in Frameworks */,
 				09D9117F2DCB63730087D915 /* IxCoreKit in Frameworks */,
 				096C022F2F09E4FA00425185 /* RevenueCatUI in Frameworks */,
@@ -317,6 +319,7 @@
 				096C022C2F09E4FA00425185 /* RevenueCat */,
 				096C022E2F09E4FA00425185 /* RevenueCatUI */,
 				096C02302F09E50A00425185 /* DynamicColor */,
+				09DC44A62F1EE3D7003A7185 /* MCEmojiPicker */,
 			);
 			productName = indexShareExtension;
 			productReference = 09F48F3B2D7E623D00CA50AC /* indexShareExtension.appex */;
@@ -939,6 +942,11 @@
 		09D911802DCB63770087D915 /* IxCoreKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = IxCoreKit;
+		};
+		09DC44A62F1EE3D7003A7185 /* MCEmojiPicker */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 099C0F392F09AE47003C546F /* XCRemoteSwiftPackageReference "MCEmojiPicker" */;
+			productName = MCEmojiPicker;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

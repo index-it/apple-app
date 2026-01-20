@@ -25,7 +25,7 @@ struct CategoryEditor: View {
                     Section {
                         Toggle("Use list color", isOn: Binding(
                             get: { config.entity.color == nil },
-                            set: { _ in config.entity.color = ColorHelper.randomIxColor().hexString }
+                            set: { noColor in config.entity.color = (noColor ? nil : ColorHelper.randomIxColor().hexString) }
                         ))
 
                         if config.entity.color != nil {
