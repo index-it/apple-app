@@ -716,7 +716,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.Unknown` Unknown error
     ///
     @Sendable public func inviteUserToList(listId: String, email: String, editor: Bool) async throws -> IxList? {
-        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access")
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access/users")
         let requestBody = ListGiveUserAccessReqBody(email: email, editor: editor)
 
         var request = URLRequest(url: url)
@@ -753,7 +753,7 @@ public final class IxApiClient: Sendable {
     /// - `IxApiClientError.Unknown` Unknown error
     ///
     @Sendable public func revokeListAccessFromUser(listId: String, userId: String) async throws -> IxList {
-        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access")
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access/users")
         let requestBody = ListRemoveUserAccessReqBody(userId: userId)
 
         var request = URLRequest(url: url)
@@ -773,6 +773,114 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.missingPermission(.owner)
         case 404:
             throw IxApiClientError.notFound(.list)
+        default:
+            throw IxApiClientError.unknown
+        }
+    }
+
+    /// Gets all the active user-agnostic invites for a list
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermission` Owner required
+    /// - `IxApiClientError.NotFound` List not found
+    /// - `IxApiClientError.Unknown` Unknown error
+    ///
+    @Sendable public func getListInvites(listId: String) async throws -> [IxListInvite] {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access/invites")
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        let (data, response) = try await urlSession.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+
+        switch httpResponse.statusCode {
+        case 200:
+            return try Self.decoder().decode([NetworkListInvite].self, from: data).map { IxListInvite(networkListInvite: $0) }
+        case 401:
+            throw IxApiClientError.unauthenticated
+        case 403:
+            throw IxApiClientError.missingPermission(.owner)
+        case 404:
+            throw IxApiClientError.notFound(.list)
+        default:
+            throw IxApiClientError.unknown
+        }
+    }
+
+    /// Create a list invite
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermission` Owner required
+    /// - `IxApiClientError.NotFound` List not found
+    /// - `IxApiClientError.Unknown` Unknown error
+    @Sendable public func createListInvite(
+        listId: String,
+        editor: Bool,
+        maxUsages: Int?,
+        expiresAt: Date?,
+        description: String?
+    ) async throws -> IxListInvite {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access/invites")
+        let requestBody = ListInviteCreateReqBody(
+            editor: editor,
+            maxUsages: maxUsages,
+            expiresAt: expiresAt,
+            description: description
+        )
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try Self.encoder().encode(requestBody)
+
+        let (data, response) = try await urlSession.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+
+        switch httpResponse.statusCode {
+        case 200:
+            return try IxListInvite(networkListInvite: Self.decoder().decode(NetworkListInvite.self, from: data))
+        case 400:
+            throw IxApiClientError.invalidData
+        case 401:
+            throw IxApiClientError.unauthenticated
+        case 403:
+            throw IxApiClientError.missingPermission(.editor)
+        case 404:
+            throw IxApiClientError.notFound(.list)
+        default:
+            throw IxApiClientError.unknown
+        }
+    }
+
+    /// Deletes a list invite, effectively making it inactive
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermission` Owner required
+    /// - `IxApiClientError.Unknown` Unknown error
+    @Sendable public func deleteListInvite(
+        listId: String,
+        inviteId: String
+    ) async throws {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/access/invites/\(inviteId)")
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+
+        let (_, response) = try await urlSession.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+
+        switch httpResponse.statusCode {
+        case 200:
+            break
+        case 400:
+            throw IxApiClientError.invalidData
+        case 401:
+            throw IxApiClientError.unauthenticated
+        case 403:
+            throw IxApiClientError.missingPermission(.editor)
+        case 404:
+            break
         default:
             throw IxApiClientError.unknown
         }

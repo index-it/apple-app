@@ -130,6 +130,16 @@
     "Manual" : {
       "comment" : "Sort categories manually\nSort items manually\nSort lists manually\nSort tasks manually"
     },
+    "Max usages must be between %lld and %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Max usages must be between %1$lld and %2$lld"
+          }
+        }
+      }
+    },
     "Name" : {
       "comment" : "Sort categories by name\nSort items by name\nSort lists by name\nSort tasks by name"
     },

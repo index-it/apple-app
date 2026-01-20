@@ -265,6 +265,9 @@
     "Create Category" : {
 
     },
+    "Create invite link" : {
+
+    },
     "Create item" : {
 
     },
@@ -469,9 +472,6 @@
     "List name" : {
 
     },
-    "Loading users..." : {
-
-    },
     "Loading website title..." : {
 
     },
@@ -487,13 +487,10 @@
     "Low" : {
 
     },
-    "Make editor" : {
-
-    },
     "Manage subscription" : {
 
     },
-    "Manage user access" : {
+    "Max usages: %lld" : {
 
     },
     "Medium" : {
@@ -559,6 +556,9 @@
     "Open note" : {
 
     },
+    "Optional description to better identiy the invite" : {
+
+    },
     "Options" : {
 
     },
@@ -622,13 +622,10 @@
     "Restore purchases" : {
 
     },
+    "Restrict usage" : {
+
+    },
     "Review App" : {
-
-    },
-    "Revoke access completely" : {
-
-    },
-    "Revoke edit permissions" : {
 
     },
     "Save" : {
@@ -649,6 +646,9 @@
     "Select a date" : {
 
     },
+    "Select expiry date" : {
+
+    },
     "Send" : {
 
     },
@@ -658,6 +658,12 @@
     "Send me an email" : {
 
     },
+    "Set expiration date" : {
+
+    },
+    "Set max usage count" : {
+
+    },
     "Settings" : {
 
     },
@@ -665,6 +671,9 @@
 
     },
     "Share App" : {
+
+    },
+    "Share public link" : {
 
     },
     "Sharing" : {

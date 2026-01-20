@@ -50,6 +50,8 @@ struct ListsGridScreen: View {
     @State private var loadingSelectedListUserInvite: Bool = false
     @State private var loadingSelectedListUserEditOrRevokePermissions: String? = nil
     @State private var showLeaveListConfirmation = false
+    @State private var inviteEditorConfig = EditorConfig<IxListInvite>()
+    @State private var inviteUrl: URL? = nil
 
     // MARK: Quick add sheet
 
@@ -165,7 +167,7 @@ struct ListsGridScreen: View {
             }
         }
     }
-
+    
     private func fetchListUsersWthAccess(listId: String) async {
         do {
             loadingSelectedListUsers = true
@@ -232,6 +234,33 @@ struct ListsGridScreen: View {
             } catch {
                 loadingSelectedListUserEditOrRevokePermissions = nil
                 showError(.localizedError(title: "Error revoking user access", error: error))
+            }
+        }
+    }
+    
+    private func createInvite() async {
+        if let selectedList {
+            do {
+                inviteEditorConfig.loading = true
+                defer { inviteEditorConfig.loading = false }
+                let createData = try inviteEditorConfig.sanitizeAndValidate()
+                
+                let invite = try await ixApiClient.createListInvite(
+                    listId: selectedList.id,
+                    editor: createData.editor,
+                    maxUsages: createData.maxUsages,
+                    expiresAt: createData.expiresAt,
+                    description: createData.description
+                )
+                
+                inviteEditorConfig.isPresented = false
+                if let token = invite.token, let url = URL(string: IxUniversalLinks.listInvite(token)) {
+                    inviteUrl = url
+                } else {
+                    showError(.customMessage(title: "Error creating invite", message: "This should not happend, the developer is investingating this!"))
+                }
+            } catch {
+                showError(.localizedError(title: "Error creating invite", error: error))
             }
         }
     }
@@ -341,12 +370,18 @@ struct ListsGridScreen: View {
                     loadingUsers: $loadingSelectedListUsers,
                     loadingUserInvite: $loadingSelectedListUserInvite,
                     loadingUserEditOrDelete: $loadingSelectedListUserEditOrRevokePermissions,
+                    inviteEditorConfig: $inviteEditorConfig,
+                    inviteUrl: $inviteUrl,
                     listId: selectedList?.id ?? "",
                     isPublic: selectedList?.isPublic ?? false,
                     usersWithAccess: $selectedListUsersWithAccess
                 ) { isPublic in
                     Task {
                         await editListPublic(isPublic: isPublic)
+                    }
+                } onCreateInvite: {
+                    Task {
+                        await createInvite()
                     }
                 } onUserInvite: { email, editor in
                     Task {

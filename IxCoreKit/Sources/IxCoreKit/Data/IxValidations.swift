@@ -1,34 +1,42 @@
-enum IxValidations {
-    enum List {
-        static let minNameLength = 1
-        static let maxNameLength = 100
+public enum IxValidations {
+    public enum List {
+        public static let minNameLength = 1
+        public static let maxNameLength = 100
+    }
+    
+    public enum ListInvite {
+        public static let minDescriptionLength = 1
+        public static let maxDescriptionLength = 100
+        
+        public static let minMaxUsages = 1
+        public static let maxMaxUsages = 10000
     }
 
-    enum Category {
-        static let minNameLength = 1
-        static let maxNameLength = 100
+    public enum Category {
+        public static let minNameLength = 1
+        public static let maxNameLength = 100
     }
 
-    enum Item {
-        static let minNameLength = 1
-        static let maxNameLength = 200
+    public enum Item {
+        public static let minNameLength = 1
+        public static let maxNameLength = 200
 
-        static let maxLinkLength = 500
-        static let maxNoteLength = 3000
+        public static let maxLinkLength = 500
+        public static let maxNoteLength = 3000
     }
 
-    enum Task {
-        static let minNameLength = 1
-        static let maxNameLength = 200
+    public enum Task {
+        public static let minNameLength = 1
+        public static let maxNameLength = 200
 
-        static let minDescriptionLength = 1
-        static let maxDescriptionLength = 500
+        public static let minDescriptionLength = 1
+        public static let maxDescriptionLength = 500
 
-        static let maxSubtaskCount = 50
-        static let maxSubtaskNameLength = 200
-        static let maxRemindersCount = 10
+        public static let maxSubtaskCount = 50
+        public static let maxSubtaskNameLength = 200
+        public static let maxRemindersCount = 10
 
-        static let minimumPriority = 0
-        static let maximumPriority = 4
+        public static let minimumPriority = 0
+        public static let maximumPriority = 4
     }
 }

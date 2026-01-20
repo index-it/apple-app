@@ -10,6 +10,7 @@ public enum IxUniversalLinks {
 
     public enum Sections {
         public static let lists = "lists"
+        public static let invites = "invites"
         public static let categories = "categories"
         public static let items = "items"
 
@@ -30,6 +31,10 @@ public enum IxUniversalLinks {
 
     public static func list(_ listId: String) -> String {
         "https://\(host)/\(Sections.lists)/\(listId)"
+    }
+    
+    public static func listInvite(_ token: String) -> String {
+        "https://\(host)/\(Sections.invites)/list?token=\(token)"
     }
 
     public static func categories(listId: String) -> String {
