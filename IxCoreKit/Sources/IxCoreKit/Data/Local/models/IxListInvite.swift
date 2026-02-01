@@ -1,6 +1,6 @@
 import Foundation
 
-public struct IxListInvite: Encodable, Decodable, Equatable, Sendable, Sanitizable, Validatable, EmptyInitializable {
+public struct IxListInvite: Encodable, Decodable, Equatable, Sendable, Sanitizable, Validatable, EmptyInitializable, Identifiable {
     public var id: String
     public var token: String?
     public var listId: String

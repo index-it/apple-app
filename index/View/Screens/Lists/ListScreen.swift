@@ -440,7 +440,7 @@ struct ListScreen: View {
             }
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
 
-            editorConfig.isPresented = false
+            taskEditorConfig.isPresented = false
 
             showToast("Task created", systemImage: "checkmark.circle", tint: .green, placement: .top) {
                 navigationManager.navigateToTab(.tasks)
@@ -762,7 +762,12 @@ struct ListScreen: View {
 
         ToolbarItem(placement: .bottomBar) {
             Button {
-                editorConfig.present()
+                let item = IxListItem.empty()
+                item.categoryId = selectedCategoryId
+                
+                editorConfig.present(
+                    entity: item
+                )
             } label: {
                 Label("Create item", systemImage: "plus.circle.fill")
                     .fontWeight(.semibold)

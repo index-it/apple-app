@@ -38,7 +38,6 @@ private struct AlertPresentationWindowContext: ViewModifier {
         content
             .environment(\.showError, ShowErrorAction { errorAlert in
                 Task { @MainActor in
-                    print("SHOWING")
                     service.insert(errorAlert)
                 }
             })

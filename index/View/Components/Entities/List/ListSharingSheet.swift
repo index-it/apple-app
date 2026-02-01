@@ -12,7 +12,6 @@ struct ListSharingSheet: View {
     @Environment(\.showPaywall) private var showPaywall
     @Environment(\.showToast) private var showToast
     @State private var navPath: [ListShareSheetNavigationRoute] = []
-    @State private var showAddUserDialog = false
     @State private var addUserEmail = ""
     @State private var addUserEditor = false
     @State private var selectedUser: IxListSingleUserAccessInfo? = nil
@@ -36,9 +35,11 @@ struct ListSharingSheet: View {
     @Binding private var loadingUserInvite: Bool
     @Binding private var loadingUserEditOrDelete: String?
     @Binding private var usersWithAccess: [IxListSingleUserAccessInfo]
+    @Binding private var activeInvites: [IxListInvite]
 
     private var onPublicChange: (Bool) -> Void
     private var onCreateInvite: () -> Void
+    private var onDeleteInvite: (String) -> Void
     private var onUserInvite: (String, Bool) -> Void
     private var onEditUserPermissions: (String, Bool) -> Void
     private var onUserRevoke: (String) -> Void
@@ -57,8 +58,10 @@ struct ListSharingSheet: View {
         listId: String,
         isPublic: Bool,
         usersWithAccess: Binding<[IxListSingleUserAccessInfo]>,
+        activeInvites: Binding<[IxListInvite]>,
         onPublicChange: @escaping (Bool) -> Void,
         onCreateInvite: @escaping () -> Void,
+        onDeleteInvite: @escaping (String) -> Void,
         onUserInvite: @escaping (String, Bool) -> Void,
         onUserEditEditorPermission: @escaping (String, Bool) -> Void,
         onUserRevokeAccess: @escaping (String) -> Void
@@ -74,8 +77,10 @@ struct ListSharingSheet: View {
         self.listId = listId
         self.isPublic = isPublic
         _usersWithAccess = usersWithAccess
+        _activeInvites = activeInvites
         self.onPublicChange = onPublicChange
         self.onCreateInvite = onCreateInvite
+        self.onDeleteInvite = onDeleteInvite
         self.onUserInvite = onUserInvite
         onEditUserPermissions = onUserEditEditorPermission
         onUserRevoke = onUserRevokeAccess
@@ -86,6 +91,10 @@ struct ListSharingSheet: View {
             ShareSheet
                 .navigationDestination(for: ListShareSheetNavigationRoute.self) { route in
                     switch route {
+                    case .viewActiveInvites:
+                        ActiveInvitesSheet
+                    case .createInvite:
+                        InviteFormSheet
                     case .inviteUser:
                         InviteUserSheet
                     case .editUser:
@@ -116,9 +125,9 @@ struct ListSharingSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Menu {
                         Button("Create invite link", systemImage: "link.badge.plus") {
-                            inviteEditorConfig.present()
+                            inviteEditorConfig.reset()
+                            navPath.append(.createInvite)
                         }
-                        
                         
                         Button("Share public link", systemImage: "globe") {
                             let hasPro = user?.has_pro == true
@@ -137,9 +146,16 @@ struct ListSharingSheet: View {
                         Label("Share", systemImage: "square.and.arrow.up")
                     }
                 }
-            }
-            .sheet(isPresented: $inviteEditorConfig.isPresented) {
-                InviteFormSheet
+                
+                if !activeInvites.isEmpty {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button {
+                            navPath.append(.viewActiveInvites)
+                        } label: {
+                            Label("View active invites", systemImage: "tray.full")
+                        }
+                    }
+                }
             }
             .alert(
                 "Invite created",
@@ -166,9 +182,6 @@ struct ListSharingSheet: View {
                     Text("The invite link for this list has been created, you can copy it or share it!\nOnce you close this you will not be able to copy the link anymore!")
                 }
             )
-            .onChange(of: isPublic) { _, new in
-                onPublicChange(new)
-            }
             .alert("Manage user access", isPresented: $showUserActions) {
                 Button(selectedUser?.editor ?? false ? "Revoke edit permissions" : "Make editor") {
                     if let selectedUser {
@@ -180,6 +193,14 @@ struct ListSharingSheet: View {
                     if let selectedUser {
                         onUserRevoke(selectedUser.userId)
                     }
+                }
+            }
+            .onChange(of: isPublic) { _, new in
+                onPublicChange(new)
+            }
+            .onChange(of: activeInvites) { _, new in
+                if new.isEmpty && navPath.last == .viewActiveInvites {
+                    navPath.removeLast()
                 }
             }
     }
@@ -276,7 +297,7 @@ struct ListSharingSheet: View {
     }
     
     var InviteFormSheet: some View {
-        NavigationView {
+        VStack {
             Form {
                 Section {
                     Toggle("Editor", isOn: $inviteEditorConfig.entity.editor)
@@ -318,26 +339,76 @@ struct ListSharingSheet: View {
                 Section {
                     TextField("Description", text: $inviteEditorConfig.entity.description ?? "")
                 } footer: {
-                    Text("Optional description to better identiy the invite")
+                    Text("Optional description to remember the purpose of this invite")
                 }
+            }.frame(maxHeight: 420)
+            
+            Button {
+                onCreateInvite()
+                navPath.removeLast()
+            } label: {
+                HStack {
+                    if inviteEditorConfig.loading {
+                        ProgressView()
+                    }
+                    Label("Create invite", systemImage: "link.badge.plus")
+                }.frame(maxWidth: .infinity)
+
             }
-            .navigationTitle("Create invite link")
-            .navigationBarTitleDisplayMode(.inline)
-            .presentationDetents([.medium, .large])
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button {
-                        onCreateInvite()
-                    } label: {
-                        if inviteEditorConfig.loading {
-                            ProgressView()
-                        } else {
-                            Label("Create", systemImage: "link.badge.plus")
+            .buttonStyle(.glassProminent)
+            .controlSize(.large)
+            .padding()
+            .disabled(inviteEditorConfig.loading)
+        }
+        .frame(maxHeight: .infinity, alignment: .top)
+        .background(Color(UIColor.systemGroupedBackground))
+        .navigationTitle("Create invite link")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    var ActiveInvitesSheet: some View {
+        List {
+            Section {
+                ForEach(activeInvites) { invite in
+                    HStack(alignment: .center) {
+                        VStack(alignment: .leading) {
+                            Text(invite.description ?? "No description provided")
+                            
+                            Text(
+                                invite.expiresAt.map {
+                                    "Expires at \(DateHelper.Formatters.dateTime.string(from: $0.toLocalDate()))"
+                                } ?? "Never expires"
+                            )
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        }
+                        
+                        Spacer()
+                        Text(
+                            invite.maxUsages.map {
+                                "\($0) usages left"
+                            } ?? "Unlimited usages"
+                        )
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button(role: .destructive) {
+                            onDeleteInvite(invite.id)
+                        } label: {
+                            Label("Delete", systemImage: "trash.fill")
+                                .labelStyle(.iconOnly)
                         }
                     }
                 }
+            } footer: {
+                Text("Those are all the active invite links of this list, you can delete them by swiping left.\n\nUser specific invites are not shown here and are not deletable.")
             }
         }
+        .frame(maxHeight: .infinity, alignment: .top)
+        .background(Color(UIColor.systemGroupedBackground))
+        .navigationTitle("Active invites")
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     var InviteUserSheet: some View {
@@ -358,7 +429,7 @@ struct ListSharingSheet: View {
                 } footer: {
                     Text("Editors are allowed to modify the content of the list, choose editors with care!")
                 }
-            }.frame(maxHeight: 250)
+            }.frame(maxHeight: 270)
 
             Button {
                 onUserInvite(addUserEmail, addUserEditor)
@@ -367,11 +438,12 @@ struct ListSharingSheet: View {
                 HStack {
                     Label("Send invite", systemImage: "paperplane")
                 }.frame(maxWidth: .infinity)
-
-            }.buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .padding()
-                .disabled(loadingUserInvite || !isInviteEmailValid)
+                
+            }
+            .buttonStyle(.glassProminent)
+            .controlSize(.large)
+            .padding()
+            .disabled(loadingUserInvite || !isInviteEmailValid)
         }
         .frame(maxHeight: .infinity, alignment: .top)
         .background(Color(UIColor.systemGroupedBackground))
@@ -399,11 +471,17 @@ struct ListSharingSheet: View {
         inviteUrl: $inviteUrl,
         listId: "",
         isPublic: false,
-        usersWithAccess: .constant([])
+        usersWithAccess: .constant([]),
+        activeInvites: .constant([
+            IxListInvite(id: "1", token: nil, listId: "1", editor: true, maxUsages: 2, description: "Some description", expiresAt: .now, createdAt: 0),
+            IxListInvite(id: "2", token: nil, listId: "1", editor: false, maxUsages: 5, description: nil, expiresAt: .now, createdAt: 0),
+            IxListInvite(id: "3", token: nil, listId: "1", editor: false, maxUsages: nil, description: "A really really really long description yay", expiresAt: nil, createdAt: 0)
+        ])
     ) { _ in
     } onCreateInvite: {
         inviteUrl = URL(string: "https://google.com")!
-    }  onUserInvite: { _, _ in
+    } onDeleteInvite: { _ in
+    } onUserInvite: { _, _ in
     } onUserEditEditorPermission: { _, _ in
     } onUserRevokeAccess: { _ in
     }

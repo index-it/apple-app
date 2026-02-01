@@ -82,6 +82,9 @@
         }
       }
     },
+    "%lld usages left" : {
+
+    },
     "A verification email has been sent to **%@**.\nPlease follow the instructions in the email to verify your account, consider checking your spam folder if you don't see the email!" : {
 
     },
@@ -95,6 +98,9 @@
 
     },
     "Account" : {
+
+    },
+    "Active invites" : {
 
     },
     "Active reminders" : {
@@ -265,6 +271,9 @@
     "Create Category" : {
 
     },
+    "Create invite" : {
+
+    },
     "Create invite link" : {
 
     },
@@ -373,6 +382,9 @@
     "Every" : {
 
     },
+    "Expires at %@" : {
+
+    },
     "Features you will unlock:" : {
 
     },
@@ -448,6 +460,9 @@
     "Invite" : {
 
     },
+    "Invite created" : {
+
+    },
     "Invite user" : {
 
     },
@@ -472,6 +487,9 @@
     "List name" : {
 
     },
+    "Loading users..." : {
+
+    },
     "Loading website title..." : {
 
     },
@@ -487,7 +505,13 @@
     "Low" : {
 
     },
+    "Make editor" : {
+
+    },
     "Manage subscription" : {
+
+    },
+    "Manage user access" : {
 
     },
     "Max usages: %lld" : {
@@ -503,6 +527,9 @@
 
     },
     "Never" : {
+
+    },
+    "Never expires" : {
 
     },
     "No category" : {
@@ -556,7 +583,7 @@
     "Open note" : {
 
     },
-    "Optional description to better identiy the invite" : {
+    "Optional description to remember the purpose of this invite" : {
 
     },
     "Options" : {
@@ -628,6 +655,12 @@
     "Review App" : {
 
     },
+    "Revoke access completely" : {
+
+    },
+    "Revoke edit permissions" : {
+
+    },
     "Save" : {
 
     },
@@ -646,7 +679,7 @@
     "Select a date" : {
 
     },
-    "Select expiry date" : {
+    "Select date" : {
 
     },
     "Send" : {
@@ -730,6 +763,9 @@
     "The color of the category will be the same as the one of the list" : {
 
     },
+    "The invite link for this list has been created, you can copy it or share it!\nOnce you close this you will not be able to copy the link anymore!" : {
+
+    },
     "The list %@ was shared with you! Do you want to leave the list and lose access to it?" : {
 
     },
@@ -749,6 +785,9 @@
 
     },
     "This indicates that the task is connected to an item of a list, when completing this task that item will also get completed" : {
+
+    },
+    "Those are all the active invite links of this list, you can delete them by swiping left.\n\nUser specific invites are not shown here and are not deletable." : {
 
     },
     "Today" : {
@@ -772,6 +811,9 @@
     "Uncomplete all" : {
 
     },
+    "Unlimited usages" : {
+
+    },
     "Unlock all features" : {
 
     },
@@ -791,6 +833,9 @@
 
     },
     "Very low" : {
+
+    },
+    "View active invites" : {
 
     },
     "Viewers" : {

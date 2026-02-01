@@ -30,6 +30,8 @@ public enum DateHelper {
         public static let taskDueDatePicker = makeFormatter(format: "EEEE, d MMMM YYYY")
         public static let taskSectionHeading = makeFormatter(format: "EEEE")
         public static let taskSectionSubheading = makeFormatter(format: "d MMMM")
+        
+        public static let dateTime = makeFormatter(format: "EEE d MMM at HH:mm")
     }
 
     public static func reminderOffsetToUtc(_ offset: Int64) -> Int64 {

@@ -95,12 +95,62 @@ struct TasksTabView: View {
             showError(.localizedError(title: "Error loading tasks", error: error))
         }
     }
+    
+    func fetchTaskConnectedItems() async {
+        do {
+            let (items, categories, lists) = try await ixApiClient.getTasksConnectedItemsData()
+            let itemIds = items.map { $0.id }
+            let categoryIds = categories.map { $0.id }
+            let listIds = lists.map { $0.id }
+
+            try context.transaction {
+                try context.delete(
+                    model: IxListItem.self,
+                    where: #Predicate { item in
+                        itemIds.contains(item.id)
+                    }
+                )
+
+                for item in items {
+                    context.insert(item)
+                }
+            }
+            
+            try context.transaction {
+                try context.delete(
+                    model: IxListCategory.self,
+                    where: #Predicate { category in
+                        categoryIds.contains(category.id)
+                    }
+                )
+
+                for category in categories {
+                    context.insert(category)
+                }
+            }
+            
+            try context.transaction {
+                try context.delete(
+                    model: IxList.self,
+                    where: #Predicate { list in
+                        listIds.contains(list.id)
+                    }
+                )
+
+                for list in lists {
+                    context.insert(list)
+                }
+            }
+        } catch {
+            showError(.localizedError(title: "Error loading task connected items", error: error))
+        }
+    }
 
     func createTask() async {
         do {
             editorConfig.loading = true
             defer { editorConfig.loading = false }
-            
+
             let createData = try editorConfig.sanitizeAndValidate()
             let task = try await ixApiClient.createTask(
                 name: createData.name,
@@ -321,6 +371,14 @@ struct TasksTabView: View {
                     await fetchTasks(completion: false)
                 }
             }
+            
+            Task {
+                let shouldSync = await SyncRegister.shared.hasExpired(SyncResource.tasksConnectedItems)
+                
+                if shouldSync {
+                    await fetchTaskConnectedItems()
+                }
+            }
         }
         .onChange(of: navigationManager.quickAddTaskViewPresented, initial: true) { _, newValue in
             if newValue {
@@ -342,7 +400,8 @@ struct TasksTabView: View {
                     dateFilter: nil,
                     noDateFilter: true,
                     earlierThan: false,
-                    laterThan: false
+                    laterThan: false,
+                    isExpanded: $isUnplannedTasksSectionExpanded
                 ) {
                     editorConfig.present()
                 }

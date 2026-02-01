@@ -8,6 +8,7 @@
 public enum SyncResource {
     public static let lists = "lists"
     public static let tasks = "tasks"
+    public static let tasksConnectedItems = "tasks-connected-items"
     public static let completedTasks = "completed-tasks"
 
     public static func list(_ listId: String) -> String {

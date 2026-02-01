@@ -43,6 +43,7 @@ struct ListsGridScreen: View {
     // MARK: Share sheet
 
     @State private var selectedListUsersWithAccess: [IxListSingleUserAccessInfo] = []
+    @State private var selectedListActiveInvites: [IxListInvite] = []
     @State private var showShareSheet = false
     @State private var showUserInvitationSuccessAlert = false
     @State private var loadingSelectedListPublic: Bool = false
@@ -178,6 +179,14 @@ struct ListsGridScreen: View {
             showError(.localizedError(title: "Error fetching users", error: error))
         }
     }
+    
+    private func fetchListActiveInvites(listId: String) async {
+        do {
+            selectedListActiveInvites = try await ixApiClient.getListInvites(listId: listId)
+        } catch {
+            showError(.localizedError(title: "Error fetching active invites", error: error))
+        }
+    }
 
     private func inviteUser(email: String, editor: Bool) async {
         if let selectedList {
@@ -261,6 +270,17 @@ struct ListsGridScreen: View {
                 }
             } catch {
                 showError(.localizedError(title: "Error creating invite", error: error))
+            }
+        }
+    }
+    
+    private func deleteInvite(_ inviteId: String) async {
+        if let selectedList {
+            do {
+                try await ixApiClient.deleteListInvite(listId: selectedList.id, inviteId: inviteId)
+                await fetchListActiveInvites(listId: selectedList.id)
+            } catch {
+                showError(.localizedError(title: "Error deleting invite", error: error))
             }
         }
     }
@@ -374,7 +394,8 @@ struct ListsGridScreen: View {
                     inviteUrl: $inviteUrl,
                     listId: selectedList?.id ?? "",
                     isPublic: selectedList?.isPublic ?? false,
-                    usersWithAccess: $selectedListUsersWithAccess
+                    usersWithAccess: $selectedListUsersWithAccess,
+                    activeInvites: $selectedListActiveInvites,
                 ) { isPublic in
                     Task {
                         await editListPublic(isPublic: isPublic)
@@ -382,6 +403,10 @@ struct ListsGridScreen: View {
                 } onCreateInvite: {
                     Task {
                         await createInvite()
+                    }
+                } onDeleteInvite: { inviteId in
+                    Task {
+                        await deleteInvite(inviteId)
                     }
                 } onUserInvite: { email, editor in
                     Task {
@@ -516,6 +541,9 @@ struct ListsGridScreen: View {
                 if list.userId == user?.id {
                     Task {
                         await fetchListUsersWthAccess(listId: list.id)
+                    }
+                    Task {
+                        await fetchListActiveInvites(listId: list.id)
                     }
                     showShareSheet = true
                 } else {

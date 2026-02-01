@@ -836,6 +836,8 @@ public final class IxApiClient: Sendable {
 
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
+        print(httpResponse.statusCode)
+        print(data)
 
         switch httpResponse.statusCode {
         case 200:
@@ -1295,6 +1297,34 @@ public final class IxApiClient: Sendable {
             return try IxTask(networkTask: Self.decoder().decode(NetworkTask.self, from: data))
         case 404:
             throw IxApiClientError.notFound(.task)
+        default:
+            throw IxApiClientError.unknown
+        }
+    }
+    
+    @Sendable public func getTasksConnectedItemsData(completed: Bool? = false) async throws -> (items: [IxListItem], categories: [IxListCategory], lists: [IxList]) {
+        var urlComponents = URLComponents(string: "\(Self.baseUrl)/tasks/connected-items")!
+        var queryItems = [URLQueryItem]()
+
+        if let completed = completed {
+            queryItems.append(URLQueryItem(name: "completed", value: "\(completed)"))
+        }
+        urlComponents.queryItems = queryItems
+
+        var request = URLRequest(url: urlComponents.url!)
+        request.httpMethod = "GET"
+
+        let (data, response) = try await urlSession.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+
+        switch httpResponse.statusCode {
+        case 200:
+            let itemsData = try Self.decoder().decode(NetworkTaskConnectedItems.self, from: data)
+            return (
+                itemsData.items.map { IxListItem(networkListItem: $0) },
+                itemsData.categories.map { IxListCategory(networkListCategory: $0)},
+                itemsData.lists.map { IxList(networkList: $0)}
+            )
         default:
             throw IxApiClientError.unknown
         }

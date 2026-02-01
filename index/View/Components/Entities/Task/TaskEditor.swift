@@ -200,7 +200,7 @@ struct TaskEditor: View {
             }
             .swipeActions {
                 Button("Delete", systemImage: "trash.fill", role: .destructive) {
-                    config.entity.subtasks.remove(at: index)
+                    // with destructive role, swiftui automatically removes the item from the array
                 }
             }
         }
