@@ -149,19 +149,28 @@ struct ListScreen: View {
     // MARK: - Local storage savers
 
     func saveList(_ list: IxList) async throws {
+        let id = list.id
+        
         try context.transaction {
+            try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
             context.insert(list)
         }
     }
 
     func saveItem(_ item: IxListItem) async throws {
+        let id = item.id
+        
         try context.transaction {
+            try context.delete(model: IxListItem.self, where: #Predicate { $0.id == id })
             context.insert(item)
         }
     }
 
     func saveCategory(_ category: IxListCategory) async throws {
+        let id = category.id
+        
         try context.transaction {
+            try context.delete(model: IxListCategory.self, where: #Predicate { $0.id == id })
             context.insert(category)
         }
     }
@@ -764,7 +773,7 @@ struct ListScreen: View {
             Button {
                 let item = IxListItem.empty()
                 item.categoryId = selectedCategoryId
-                
+
                 editorConfig.present(
                     entity: item
                 )

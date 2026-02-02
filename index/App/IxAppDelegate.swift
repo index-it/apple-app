@@ -17,12 +17,7 @@ private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Ix
 
 /// Responsible for initializing third party services
 class IxAppDelegate: NSObject, UIApplicationDelegate {
-    let ixApiClient: IxApiClient
-
-    init(ixApiClient: IxApiClient) {
-        self.ixApiClient = ixApiClient
-        super.init()
-    }
+    private let ixApiClient = IxApiClient(authChangeCallback: { _ in })
 
     // Application initialization
     func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {

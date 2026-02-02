@@ -71,7 +71,9 @@ struct ListsGridScreen: View {
     }
 
     private func saveList(_ list: IxList) async throws {
+        let listId = list.id
         try context.transaction {
+            try context.delete(model: IxList.self, where: #Predicate { $0.id == listId })
             context.insert(list)
         }
     }
@@ -168,7 +170,7 @@ struct ListsGridScreen: View {
             }
         }
     }
-    
+
     private func fetchListUsersWthAccess(listId: String) async {
         do {
             loadingSelectedListUsers = true
@@ -179,7 +181,7 @@ struct ListsGridScreen: View {
             showError(.localizedError(title: "Error fetching users", error: error))
         }
     }
-    
+
     private func fetchListActiveInvites(listId: String) async {
         do {
             selectedListActiveInvites = try await ixApiClient.getListInvites(listId: listId)
@@ -246,14 +248,14 @@ struct ListsGridScreen: View {
             }
         }
     }
-    
+
     private func createInvite() async {
         if let selectedList {
             do {
                 inviteEditorConfig.loading = true
                 defer { inviteEditorConfig.loading = false }
                 let createData = try inviteEditorConfig.sanitizeAndValidate()
-                
+
                 let invite = try await ixApiClient.createListInvite(
                     listId: selectedList.id,
                     editor: createData.editor,
@@ -261,7 +263,7 @@ struct ListsGridScreen: View {
                     expiresAt: createData.expiresAt,
                     description: createData.description
                 )
-                
+
                 inviteEditorConfig.isPresented = false
                 if let token = invite.token, let url = URL(string: IxUniversalLinks.listInvite(token)) {
                     inviteUrl = url
@@ -273,7 +275,7 @@ struct ListsGridScreen: View {
             }
         }
     }
-    
+
     private func deleteInvite(_ inviteId: String) async {
         if let selectedList {
             do {
@@ -395,7 +397,7 @@ struct ListsGridScreen: View {
                     listId: selectedList?.id ?? "",
                     isPublic: selectedList?.isPublic ?? false,
                     usersWithAccess: $selectedListUsersWithAccess,
-                    activeInvites: $selectedListActiveInvites,
+                    activeInvites: $selectedListActiveInvites
                 ) { isPublic in
                     Task {
                         await editListPublic(isPublic: isPublic)
