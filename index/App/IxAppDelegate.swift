@@ -1,0 +1,242 @@
+//
+//  IxAppDelegate.swift
+//  index
+//
+//  Created by Giulio Pimenoff Verdolin on 19/03/25.
+//
+
+import FirebaseCore
+import FirebaseMessaging
+import IxCoreKit
+import os
+import RevenueCat
+import SwiftData
+import SwiftUI
+
+private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "IxAppDelegate")
+
+/// Responsible for initializing third party services
+class IxAppDelegate: NSObject, UIApplicationDelegate {
+    let ixApiClient: IxApiClient
+
+    init(ixApiClient: IxApiClient) {
+        self.ixApiClient = ixApiClient
+        super.init()
+    }
+
+    // Application initialization
+    func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        FirebaseApp.configure()
+        RevenueCatHelper.configure()
+
+        Messaging.messaging().delegate = self
+        UNUserNotificationCenter.current().delegate = self
+
+        setupNotificationCategoriesAndActions()
+
+        return true
+    }
+}
+
+extension IxAppDelegate: MessagingDelegate {
+    // Since we use SwiftUI we need to manually update the apns token for Firebase messaging
+    func application(_: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        Messaging.messaging().apnsToken = deviceToken
+    }
+
+    // Send new firebase token to Index backend
+    func messaging(_: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        guard let token = fcmToken else { return }
+
+        Task {
+            do {
+                _ = try await self.ixApiClient.sendNotificationRegistrationToken(token: token)
+            } catch {
+                log.error("Failed sending firebase messaging token to the server: \(error)")
+            }
+        }
+    }
+}
+
+extension IxAppDelegate: UNUserNotificationCenterDelegate {
+    private func getTask(taskId: String) async throws -> IxTask {
+        var taskFetchDescriptor = FetchDescriptor<IxTask>(
+            predicate: #Predicate { task in
+                task.id == taskId
+            }
+        )
+        taskFetchDescriptor.fetchLimit = 1
+
+        if let localTask = try ModelContainerProvider.shared.mainContext.fetch(taskFetchDescriptor).first {
+            return localTask
+        }
+
+        return try await ixApiClient.getTask(taskId: taskId)
+    }
+
+    // called when user taps on notification or one of its actions
+    func userNotificationCenter(
+        _: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let userInfo = response.notification.request.content.userInfo
+
+        if response.notification.request.content.categoryIdentifier == IxNotificationIdentifiers.taskReminderCategory,
+           let taskId = userInfo["task-id"] as? String
+        {
+            var utcCalendar = Calendar.current
+            utcCalendar.timeZone = TimeZone(identifier: "UTC")!
+            let now = Date.now
+
+            let modelContainer = ModelContainerProvider.shared
+            var taskFetchDescriptor = FetchDescriptor<IxTask>(
+                predicate: #Predicate { task in
+                    task.id == taskId
+                }
+            )
+            taskFetchDescriptor.fetchLimit = 1
+
+            switch response.actionIdentifier {
+            case IxNotificationIdentifiers.taskCompleteAction:
+                Task {
+                    do {
+                        let updatedTask = try await self.ixApiClient.setTaskCompletion(taskId: taskId, completed: true)
+                        try modelContainer.mainContext.transaction {
+                            modelContainer.mainContext.insert(updatedTask)
+                        }
+                    } catch {
+                        log.error("Failed updating task: \(error)")
+                    }
+                }
+            case IxNotificationIdentifiers.taskRemindInAnHourAction:
+                Task {
+                    do {
+                        let task = try await getTask(taskId: taskId)
+
+                        guard let dueDate = task.dueDate else { return }
+
+                        let currentDaysBefore = utcCalendar.dateComponents([.day], from: Date.now, to: dueDate).day ?? 0
+                        let startOfDay = utcCalendar.startOfDay(for: now)
+                        let newTimeOffset = Int64(now.timeIntervalSince(startOfDay) * 1000) + 60 * 60 * 1000 // add 1 hour
+
+                        task.reminders.append(IxTaskReminder(daysBefore: Int64(currentDaysBefore), timeOffset: Int64(newTimeOffset)))
+
+                        let updatedTask = try await self.ixApiClient.editTask(
+                            taskId: taskId,
+                            name: task.name,
+                            description: task.taskDescription,
+                            dueDate: task.dueDate,
+                            rrule: task.rrule,
+                            reminders: task.reminders,
+                            subtasks: task.subtasks,
+                            priority: task.priority,
+                            itemId: task.itemId
+                        )
+
+                        try modelContainer.mainContext.transaction {
+                            modelContainer.mainContext.insert(updatedTask)
+                        }
+                    } catch {
+                        log.error("Failed updating task: \(error)")
+                    }
+                }
+            case IxNotificationIdentifiers.taskRemindTomorrowAction:
+                Task {
+                    do {
+                        let task = try await getTask(taskId: taskId)
+
+                        guard let dueDate = task.dueDate else { return }
+
+                        let newReminderDaysBefore = (utcCalendar.dateComponents([.day], from: now, to: dueDate).day ?? -1) + 1
+                        if newReminderDaysBefore > 0 {
+                            return
+                        }
+
+                        guard let eightAMLocal = Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: now) else { return }
+                        let utcMidnight = utcCalendar.startOfDay(for: now)
+                        let newReminderTimeOffset = Int64(eightAMLocal.timeIntervalSince(utcMidnight) * 1000)
+
+                        task.reminders.append(IxTaskReminder(daysBefore: Int64(newReminderDaysBefore), timeOffset: newReminderTimeOffset))
+
+                        let updatedTask = try await self.ixApiClient.editTask(
+                            taskId: taskId,
+                            name: task.name,
+                            description: task.taskDescription,
+                            dueDate: task.dueDate,
+                            rrule: task.rrule,
+                            reminders: task.reminders,
+                            subtasks: task.subtasks,
+                            priority: task.priority,
+                            itemId: task.itemId
+                        )
+
+                        try modelContainer.mainContext.transaction {
+                            modelContainer.mainContext.insert(updatedTask)
+                        }
+                    } catch {
+                        log.error("Failed updating task: \(error)")
+                    }
+                }
+            case UNNotificationDefaultActionIdentifier:
+                NotificationCenter.default.post(
+                    name: .navigateToTasks,
+                    object: nil,
+                    userInfo: [:]
+                )
+            default:
+                break
+            }
+        } else {
+            // do nothing
+        }
+
+        completionHandler()
+    }
+
+    // decide what to show when a notification is received and app is in FOREGROUND
+    func userNotificationCenter(
+        _: UNUserNotificationCenter,
+        willPresent _: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.sound, .badge, .banner])
+    }
+}
+
+extension IxAppDelegate {
+    private func setupNotificationCategoriesAndActions() {
+        let completeTaskAction = UNNotificationAction(
+            identifier: IxNotificationIdentifiers.taskCompleteAction,
+            title: "Mark as completed",
+            options: [],
+            icon: UNNotificationActionIcon(systemImageName: "checkmark.circle.fill")
+        )
+        let remindInAnHourTaskAction = UNNotificationAction(
+            identifier: IxNotificationIdentifiers.taskRemindInAnHourAction,
+            title: "Remind me in an hour",
+            options: [],
+            icon: UNNotificationActionIcon(systemImageName: "clock")
+        )
+        let remindTomorrowTaskAction = UNNotificationAction(
+            identifier: IxNotificationIdentifiers.taskRemindTomorrowAction,
+            title: "Remind me tomorrow",
+            options: [],
+            icon: UNNotificationActionIcon(systemImageName: "calendar")
+        )
+
+        let taskReminderCategory = UNNotificationCategory(
+            identifier: IxNotificationIdentifiers.taskReminderCategory,
+            actions: [completeTaskAction, remindInAnHourTaskAction, remindTomorrowTaskAction],
+            intentIdentifiers: [], // TODO: to integrate with intents
+            hiddenPreviewsBodyPlaceholder: "Task reminder",
+            options: .allowInCarPlay
+        )
+
+        UNUserNotificationCenter.current().setNotificationCategories([taskReminderCategory])
+    }
+}
+
+extension Notification.Name {
+    static let navigateToTasks = Notification.Name("navigateToTasks")
+}

@@ -46,7 +46,7 @@ private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Ap
 /// Easier way to do this was simply having two navigation stacks, so we do not need to restore state back and forth after authenticating, which could be quite an hassle expecially since we would need to wire up the navigation and authentication managers.
 @main
 struct IxApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @UIApplicationDelegateAdaptor(IxAppDelegate.self) var appDelegate
 
     @StateObject private var authenticationHelper: AuthenticationHelper
     @AppStorage(AppStorageKeys.loggedInUser, store: UserDefaults(suiteName: IxIdentifiers.APP_GROUP)!) private var user: User?
