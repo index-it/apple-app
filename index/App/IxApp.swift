@@ -53,6 +53,7 @@ struct IxApp: App {
 
     @StateObject private var navigationManager = NavigationManager()
     @StateObject private var authNavigationManager = AuthNavigationManager()
+    @StateObject var notificationManager = NotificationManager()
     @StateObject private var errorService = ErrorStateService()
     @StateObject private var toastService = ToastStateService()
     @StateObject private var paywallService = PaywallStateService()
@@ -80,7 +81,7 @@ struct IxApp: App {
         let websocketClient = IxWebsocketClient(ixWebsocketEventHandler: websocketEventHandler)
         ixWebsocketClient = websocketClient
     }
-
+    
     func onBackendAuthStatusChange(_ authStatus: AuthStatus) {
         switch authStatus {
         case .loading:
@@ -159,6 +160,9 @@ struct IxApp: App {
     var body: some Scene {
         WindowGroup {
             MainView(authStatus: authenticationHelper.localAuthStatus)
+                .task {
+                    await notificationManager.checkForPermissions()
+                }
                 .onChange(of: authenticationHelper.backendAuthStatus, initial: true) { _, newBackendAuthStatus in
                     onBackendAuthStatusChange(newBackendAuthStatus)
                 }
@@ -174,6 +178,7 @@ struct IxApp: App {
                 }
                 .environmentObject(authNavigationManager)
                 .environmentObject(navigationManager)
+                .environmentObject(notificationManager)
                 .environmentObject(errorService)
                 .environmentObject(toastService)
                 .environmentObject(paywallService)

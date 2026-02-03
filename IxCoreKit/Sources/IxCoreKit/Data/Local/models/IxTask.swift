@@ -65,10 +65,10 @@ public final class IxTask: Sanitizable, Validatable, EmptyInitializable {
     public var taskRowDate: String {
         if let completedAt = completedAt {
             let completionDate = Date(timeIntervalSince1970: Double(completedAt / 1000))
-            return "COMPLETED \(DateHelper.Formatters.taskRowDate.string(from: completionDate.toLocalDate()))"
+            return "COMPLETED \(DateHelper.Formatters.taskRowDate.string(from: completionDate))"
         } else {
             guard let dueDate = dueDate else { return "" }
-            return DateHelper.Formatters.taskRowDate.string(from: dueDate.toLocalDate())
+            return DateHelper.Formatters.taskRowDate.string(from: dueDate)
         }
     }
 
@@ -151,24 +151,19 @@ public struct IxTaskReminder: Codable, Hashable {
 
     public init(daysBefore: Int64, localTimezoneOffset: Int64) {
         self.daysBefore = daysBefore
-        timeOffset = localTimezoneOffset - Int64(TimeZone.current.secondsFromGMT() * 1000)
-    }
-
-    /// Returns the time offset adjusted to the local timezone in milliseconds from midnight.
-    public var localTimezoneOffset: Int64 {
-        return timeOffset + Int64(TimeZone.current.secondsFromGMT() * 1000)
+        timeOffset = DateHelper.startOfDayOffsetFromLocalToUtc(offset: localTimezoneOffset)
     }
 
     /// Returns a formatted string representing the reminder time (e.g., "8:00 AM") in the user's locale.
     /// - Returns: A short time string based on the local time of the reminder.
     public func hourAndMinuteString() -> String {
-        let startOfDay = Calendar.current.startOfDay(for: Date.now)
         // Convert milliseconds to seconds and add to start of the day
-        let targetDate = startOfDay.addingTimeInterval(Double(localTimezoneOffset) / 1000)
+        let targetDate = DateHelper.startOfDay().addingTimeInterval(Double(timeOffset) / 1000)
 
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         formatter.locale = .current
+        formatter.timeZone = .current
 
         return formatter.string(from: targetDate)
     }

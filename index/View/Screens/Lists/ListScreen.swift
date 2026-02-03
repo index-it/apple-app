@@ -35,11 +35,6 @@ struct ListScreen: View {
         return categories.first { $0.id == selectedCategoryId }
     }
 
-    @State private var nextCategory: IxListCategory? = nil
-    @State private var previousCategory: IxListCategory? = nil
-    @State private var showItemMovedToNextCategoryToast = false
-    @State private var showItemMovedToPreviousCategoryToast = false
-
     // MARK: Category editor
 
     @State private var categoryEditorConfig = EditorConfig<IxListCategory>()
@@ -85,12 +80,13 @@ struct ListScreen: View {
         return selectedCategoryColor.toColor()
     }
 
-    init(listId: String) {
+    init(listId: String, categoryId: String?) {
         self.listId = listId
 
         _selectedCategoryId = AppStorage(
-            wrappedValue: "", AppStorageKeys.Categories.selectedCategory(listId)
+            wrappedValue: categoryId ?? "", AppStorageKeys.Categories.selectedCategory(listId)
         )
+        
 
         // MARK: AppStorage init
 

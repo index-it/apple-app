@@ -108,14 +108,9 @@ struct TasksList: View {
         )
     }
 
-    private var calendar: Calendar {
-        var cal = Calendar.current
-        cal.timeZone = TimeZone(identifier: "UTC")!
-        return cal
-    }
-
     var body: some View {
         let subtasksMaxWidth = UIScreen.main.bounds.width / 3
+        let calendar = DateHelper.utcCalendar()
 
         ForEach(tasks.filter {
             (dateFilter != nil && $0.dueDate != nil && calendar.isDate($0.dueDate!, inSameDayAs: dateFilter!)) ||

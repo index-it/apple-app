@@ -10,26 +10,22 @@ import SwiftUI
 
 @MainActor
 class NotificationManager: ObservableObject {
-    static let shared = NotificationManager()
+    private(set) var permitted = false
 
-    private var permitted = false
-
-    private init() {
-        Task {
-            await checkForPermissions()
-        }
-    }
-
-    func request() async -> Bool {
+    func requestPermissions() async -> Bool {
         let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
 
         do {
-            try await UNUserNotificationCenter.current().requestAuthorization(options: authOptions)
-            let appDelegate = UIApplication.shared
-            appDelegate.registerForRemoteNotifications()
-
-            permitted = true
-            return true
+            let authorized = try await UNUserNotificationCenter.current().requestAuthorization(options: authOptions)
+            if authorized {
+                UIApplication.shared.registerForRemoteNotifications()
+                
+                permitted = true
+                return true
+            } else {
+                permitted = false
+                return false
+            }
         } catch {
             print("Notification permission error: \(error.localizedDescription)")
             permitted = false
@@ -39,27 +35,12 @@ class NotificationManager: ObservableObject {
 
     func checkForPermissions() async {
         let status = await UNUserNotificationCenter.current().notificationSettings()
-
+        
         switch status.authorizationStatus {
         case .authorized:
             permitted = true
         default:
             permitted = false
         }
-    }
-
-    func hasPermissions() -> Bool {
-        return permitted
-    }
-
-    func setupNotificationCategories() {
-        let taskCategory = UNNotificationCategory(
-            identifier: "TASK_REMINDER",
-            actions: [],
-            intentIdentifiers: [],
-            options: []
-        )
-
-        UNUserNotificationCenter.current().setNotificationCategories([taskCategory])
     }
 }

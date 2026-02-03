@@ -536,7 +536,7 @@ struct ListsGridScreen: View {
                 isAddingList = true
             },
             onListCardTap: { list in
-                navigationManager.push(.listRoute(listId: list.id))
+                navigationManager.push(.listRoute(listId: list.id, categoryId: nil))
             },
             onShare: { list in
                 selectedList = list

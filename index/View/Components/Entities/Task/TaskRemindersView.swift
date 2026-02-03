@@ -18,6 +18,7 @@ import SwiftUI
 struct TaskRemindersView: View {
     @Environment(\.showPaywall) private var showPaywall
     @Environment(\.showError) private var showError
+    @EnvironmentObject var notificationManager: NotificationManager
     @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
 
     @Binding var reminders: [IxTaskReminder]
@@ -137,12 +138,23 @@ struct TaskRemindersView: View {
     var addReminderButton: some View {
         Button {
             Task {
-                if !NotificationManager.shared.hasPermissions() {
-                    let accepted = await NotificationManager.shared.request()
+                if !notificationManager.permitted {
+                    let accepted = await notificationManager.requestPermissions()
                     if accepted {
                         addReminder()
                     } else {
-                        showError(.customMessage(title: "Enable notifications", message: "Go into Settings > Apps > Index and enable notifications to use task reminders."))
+                        showError(
+                            .customMessage(
+                                title: "Enable notifications",
+                                message: "Go into Settings > Apps > Index and enable notifications to use task reminders.",
+                                buttons: [.init(title: "Open settings", isDestructive: false, action: {
+                                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                                    if UIApplication.shared.canOpenURL(url) {
+                                        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                                    }
+                                })]
+                            )
+                        )
                     }
                 } else {
                     addReminder()
@@ -158,12 +170,12 @@ struct TaskRemindersView: View {
         if !reminders.isEmpty, user?.has_pro != true {
             showPaywall()
         } else {
-            let timeOffset = (Calendar.current.component(.hour, from: createReminderTime) * 60 * 60 * 1000) + (Calendar.current.component(.minute, from: createReminderTime) * 60 * 1000)
+            let localTimeOffset = (Calendar.current.component(.hour, from: createReminderTime) * 60 * 60 * 1000) + (Calendar.current.component(.minute, from: createReminderTime) * 60 * 1000)
 
             reminders.append(
                 IxTaskReminder(
                     daysBefore: Int64(createReminderDays),
-                    timeOffset: Int64(DateHelper.reminderOffsetToUtc(Int64(timeOffset)))
+                    timeOffset: Int64(DateHelper.startOfDayOffsetFromLocalToUtc(offset: Int64(localTimeOffset)))
                 )
             )
         }

@@ -22,7 +22,7 @@ struct TasksTabView: View {
 
     // MARK: Date
 
-    @State private var todayDate: Date = Date.now.toLocalDate()
+    @State private var todayDate: Date = Date.now
 
     // MARK: Task creation
 
@@ -50,12 +50,6 @@ struct TasksTabView: View {
     @AppStorage(AppStorageKeys.Tasks.sorting) private var sorting = AppStorageKeys.Defaults.tasksSorting
     @AppStorage(AppStorageKeys.Tasks.sortOrder) private var sortOrder = AppStorageKeys.Defaults.tasksSortOrder
 
-    private var calendar: Calendar {
-        var cal = Calendar.current
-        cal.timeZone = TimeZone(identifier: "UTC")!
-        return cal
-    }
-
     private let offsets: [TimeInterval] = [
         DateHelper.oneDaySeconds,
         DateHelper.twoDaySeconds,
@@ -66,7 +60,10 @@ struct TasksTabView: View {
     ]
 
     private func saveTask(_ task: IxTask) async throws {
+        let id = task.id
+        
         try context.transaction {
+            try context.delete(model: IxTask.self, where: #Predicate { $0.id == id })
             context.insert(task)
         }
     }
@@ -207,7 +204,7 @@ struct TasksTabView: View {
     func rescheduleToNextDay(task: IxTask) async {
         do {
             let nextDueDate = task.dueDate
-                .flatMap { calendar.date(byAdding: .day, value: 1, to: $0) }
+                .flatMap { DateHelper.utcCalendar().date(byAdding: .day, value: 1, to: $0) }
                 ?? Date()
 
             let task = try await ixApiClient.editTask(
@@ -387,7 +384,7 @@ struct TasksTabView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name.NSCalendarDayChanged).receive(on: DispatchQueue.main)) { _ in
-            todayDate = Date.now.toLocalDate()
+            todayDate = Date.now
         }
     }
 

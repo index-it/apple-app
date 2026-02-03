@@ -55,7 +55,6 @@ public struct ModelContainerProvider {
 
     private static func deleteSwiftDataStore() {
         let storeURL = getSwiftDataStoreURL()
-        print(storeURL.absoluteString)
 
         try? FileManager.default.removeItem(at: storeURL)
 

@@ -9,7 +9,7 @@ import Foundation
 
 enum NavigationRoute: Hashable {
     case archivedLists
-    case listRoute(listId: String)
+    case listRoute(listId: String, categoryId: String?)
     case settings
     case accountSettings
     case proSettings

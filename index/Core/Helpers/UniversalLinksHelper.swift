@@ -27,7 +27,13 @@ enum UniversalLinksHelper {
         switch section {
         case IxUniversalLinks.Sections.lists:
             if let listId = pathComponents[safe: 1] {
-                navigationManager.push(.listRoute(listId: listId))
+                if let categoriesSection = pathComponents[safe: 2],
+                   categoriesSection == IxUniversalLinks.Sections.categories,
+                   let categoryId = pathComponents[safe: 3] {
+                    navigationManager.push(.listRoute(listId: listId, categoryId: categoryId))
+                } else {
+                    navigationManager.push(.listRoute(listId: listId, categoryId: nil))
+                }
             } else {
                 navigationManager.navigateToTab(.lists)
             }

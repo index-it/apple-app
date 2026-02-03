@@ -836,8 +836,6 @@ public final class IxApiClient: Sendable {
 
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-        print(httpResponse.statusCode)
-        print(data)
 
         switch httpResponse.statusCode {
         case 200:

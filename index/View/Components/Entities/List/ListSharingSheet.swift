@@ -369,14 +369,14 @@ struct ListSharingSheet: View {
     var ActiveInvitesSheet: some View {
         List {
             Section {
-                ForEach(activeInvites) { invite in
+                ForEach($activeInvites, id: \.id) { $invite in
                     HStack(alignment: .center) {
                         VStack(alignment: .leading) {
                             Text(invite.description ?? "No description provided")
                             
                             Text(
                                 invite.expiresAt.map {
-                                    "Expires at \(DateHelper.Formatters.dateTime.string(from: $0.toLocalDate()))"
+                                    "Expires at \(DateHelper.Formatters.dateTime.string(from: $0))"
                                 } ?? "Never expires"
                             )
                             .font(.caption)

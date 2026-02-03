@@ -23,7 +23,7 @@ class IxAppDelegate: NSObject, UIApplicationDelegate {
     func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         FirebaseApp.configure()
         RevenueCatHelper.configure()
-
+        
         Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
 
@@ -46,6 +46,7 @@ extension IxAppDelegate: MessagingDelegate {
         Task {
             do {
                 _ = try await self.ixApiClient.sendNotificationRegistrationToken(token: token)
+                log.debug("Sent firebase messaging token to the server: \(token)")
             } catch {
                 log.error("Failed sending firebase messaging token to the server: \(error)")
             }
@@ -75,15 +76,12 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
+        log.debug("Received notification")
         let userInfo = response.notification.request.content.userInfo
 
         if response.notification.request.content.categoryIdentifier == IxNotificationIdentifiers.taskReminderCategory,
            let taskId = userInfo["task-id"] as? String
         {
-            var utcCalendar = Calendar.current
-            utcCalendar.timeZone = TimeZone(identifier: "UTC")!
-            let now = Date.now
-
             let modelContainer = ModelContainerProvider.shared
             var taskFetchDescriptor = FetchDescriptor<IxTask>(
                 predicate: #Predicate { task in
@@ -108,14 +106,12 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
                 Task {
                     do {
                         let task = try await getTask(taskId: taskId)
-
                         guard let dueDate = task.dueDate else { return }
 
-                        let currentDaysBefore = utcCalendar.dateComponents([.day], from: Date.now, to: dueDate).day ?? 0
-                        let startOfDay = utcCalendar.startOfDay(for: now)
-                        let newTimeOffset = Int64(now.timeIntervalSince(startOfDay) * 1000) + 60 * 60 * 1000 // add 1 hour
+                        let newReminderDaysBefore = DateHelper.daysDifference(Date.now, dueDate)
+                        let newReminderTimeOffset = DateHelper.millisFromStartOfDay() + 60 * 60 * 1000
 
-                        task.reminders.append(IxTaskReminder(daysBefore: Int64(currentDaysBefore), timeOffset: Int64(newTimeOffset)))
+                        task.reminders.append(IxTaskReminder(daysBefore: Int64(newReminderDaysBefore), timeOffset: newReminderTimeOffset))
 
                         let updatedTask = try await self.ixApiClient.editTask(
                             taskId: taskId,
@@ -140,17 +136,13 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
                 Task {
                     do {
                         let task = try await getTask(taskId: taskId)
-
                         guard let dueDate = task.dueDate else { return }
 
-                        let newReminderDaysBefore = (utcCalendar.dateComponents([.day], from: now, to: dueDate).day ?? -1) + 1
+                        let newReminderDaysBefore = DateHelper.daysDifference(Date.now, dueDate) - 1
                         if newReminderDaysBefore > 0 {
                             return
                         }
-
-                        guard let eightAMLocal = Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: now) else { return }
-                        let utcMidnight = utcCalendar.startOfDay(for: now)
-                        let newReminderTimeOffset = Int64(eightAMLocal.timeIntervalSince(utcMidnight) * 1000)
+                        let newReminderTimeOffset = DateHelper.startOfDayOffsetFromUtcToLocal(offset: 8 * 60 * 60 * 1000)
 
                         task.reminders.append(IxTaskReminder(daysBefore: Int64(newReminderDaysBefore), timeOffset: newReminderTimeOffset))
 

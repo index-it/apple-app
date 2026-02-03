@@ -18,7 +18,7 @@ public enum DateHelper {
     public static let eightDaySeconds = oneDaySeconds * 8
 
     public enum Formatters {
-        private static func makeFormatter(format: String, timeZone: TimeZone = .gmt) -> DateFormatter {
+        private static func makeFormatter(format: String, timeZone: TimeZone = .current) -> DateFormatter {
             let formatter = DateFormatter()
             formatter.dateFormat = format
             formatter.timeZone = timeZone
@@ -30,11 +30,41 @@ public enum DateHelper {
         public static let taskDueDatePicker = makeFormatter(format: "EEEE, d MMMM YYYY")
         public static let taskSectionHeading = makeFormatter(format: "EEEE")
         public static let taskSectionSubheading = makeFormatter(format: "d MMMM")
-        
+
         public static let dateTime = makeFormatter(format: "EEE d MMM at HH:mm")
     }
 
-    public static func reminderOffsetToUtc(_ offset: Int64) -> Int64 {
+    /// Returns a calendar instance that uses the local timezone
+    public static func calendar() -> Calendar {
+        return Calendar.current
+    }
+
+    /// Returns a calendar instance that uses the UTC timezone
+    public static func utcCalendar() -> Calendar {
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        return calendar
+    }
+
+    public static func startOfDay() -> Date {
+        return utcCalendar().startOfDay(for: Date.now)
+    }
+    
+    public static func millisFromStartOfDay() -> Int64 {
+        return Int64(Date.now.timeIntervalSince(startOfDay()) * 1000)
+    }
+
+    /// Returns the time offset adjusted to the local timezone in milliseconds from midnight.
+    public static func startOfDayOffsetFromUtcToLocal(offset: Int64) -> Int64 {
+        return offset + Int64(TimeZone.current.secondsFromGMT() * 1000)
+    }
+
+    /// Returns the time offset adjusted in UTC timezone in milliseconds from midnight.
+    public static func startOfDayOffsetFromLocalToUtc(offset: Int64) -> Int64 {
         return offset - Int64(TimeZone.current.secondsFromGMT() * 1000)
+    }
+    
+    public static func daysDifference(_ from: Date, _ to: Date) -> Int {
+        return utcCalendar().dateComponents([.day], from: from, to: to).day ?? 0
     }
 }

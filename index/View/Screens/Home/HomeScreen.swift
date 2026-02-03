@@ -10,6 +10,7 @@ import SwiftUI
 
 struct HomeScreen: View {
     @EnvironmentObject var navigationManager: NavigationManager
+    @EnvironmentObject var notificationManager: NotificationManager
     @AppStorage(AppStorageKeys.onboardingShowed) private var onboardingShowed: Bool = false
 
     var body: some View {
@@ -33,7 +34,7 @@ struct HomeScreen: View {
                     onboardingShowed = true
 
                     Task {
-                        await NotificationManager.shared.request()
+                        await notificationManager.requestPermissions()
                     }
                 }
             )
@@ -42,7 +43,7 @@ struct HomeScreen: View {
                 onboardingShowed = true
 
                 Task {
-                    await NotificationManager.shared.request()
+                    await notificationManager.requestPermissions()
                 }
             }
         }

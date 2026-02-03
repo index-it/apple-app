@@ -155,6 +155,18 @@
     "Only the owner of the list can perform this action." : {
       "comment" : "Missing list ownership error"
     },
+    "Open item creation" : {
+
+    },
+    "Open task creation" : {
+
+    },
+    "Open the app and navigate to the item creation screen" : {
+
+    },
+    "Open the app and navigate to the task creation screen" : {
+
+    },
     "Owned by me" : {
       "comment" : "Lists owned by the user"
     },

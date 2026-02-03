@@ -29,8 +29,8 @@ struct MainView: View {
                 switch destination {
                 case .archivedLists:
                     ListsGridScreen(archived: true)
-                case let .listRoute(listId: listId):
-                    ListScreen(listId: listId)
+                case let .listRoute(listId: listId, categoryId: categoryId):
+                    ListScreen(listId: listId, categoryId: categoryId)
                 case .settings:
                     SettingsView()
                 case .accountSettings:

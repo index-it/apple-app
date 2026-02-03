@@ -223,9 +223,8 @@ struct TodayTasksProvider: TimelineProvider {
             let modelContext = ModelContext(ModelContainerProvider.shared)
 
             // Create a predicate for today's tasks
-            var calendar = Calendar.current
-            calendar.timeZone = TimeZone(identifier: "UTC")!
-            let now = Date.now.toLocalDate()
+            let calendar = DateHelper.calendar()
+            let now = Date.now
 
             let predicate = #Predicate<IxTask> {
                 !$0.completed
@@ -243,7 +242,7 @@ struct TodayTasksProvider: TimelineProvider {
             let entry = TodayTasksEntry(
                 date: Date(),
                 tasks: tasks.filter {
-                    $0.dueDate == nil || calendar.compare($0.dueDate!, to: now, toGranularity: .day).rawValue <= 0
+                    $0.dueDate != nil && calendar.compare($0.dueDate!, to: now, toGranularity: .day).rawValue <= 0
                 }
             )
 

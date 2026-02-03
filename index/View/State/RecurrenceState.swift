@@ -406,8 +406,6 @@ class RecurrenceState {
                 end: end
             )
 
-            print(eKRecurrenceRule.description)
-
             return eKRecurrenceRule.description.split(separator: "RRULE").last?.trimmingCharacters(in: .whitespaces)
         } else {
             return nil
