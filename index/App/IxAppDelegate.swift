@@ -108,8 +108,17 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
                         let task = try await getTask(taskId: taskId)
                         guard let dueDate = task.dueDate else { return }
 
-                        let newReminderDaysBefore = DateHelper.daysDifference(Date.now, dueDate)
-                        let newReminderTimeOffset = DateHelper.millisFromStartOfDay() + 60 * 60 * 1000
+                        let utcCalendar = DateHelper.utcCalendar()
+                        let newReminderTimeOffsetDate = utcCalendar.date(byAdding: .hour, value: 1, to: Date.now)!
+                        let newReminderTimeOffset = Int64(newReminderTimeOffsetDate.timeIntervalSince(utcCalendar.startOfDay(for: newReminderTimeOffsetDate))) * 1000
+                        var newReminderDaysBefore = DateHelper.daysDifference(newReminderTimeOffsetDate, dueDate)
+                        if newReminderDaysBefore == -1 {
+                            task.dueDate = newReminderTimeOffsetDate
+                            newReminderDaysBefore = 0
+                        } else if newReminderDaysBefore < -1 {
+                            // this should never happen
+                            return
+                        }
 
                         task.reminders.append(IxTaskReminder(daysBefore: Int64(newReminderDaysBefore), timeOffset: newReminderTimeOffset))
 
@@ -138,11 +147,19 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
                         let task = try await getTask(taskId: taskId)
                         guard let dueDate = task.dueDate else { return }
 
-                        let newReminderDaysBefore = DateHelper.daysDifference(Date.now, dueDate) - 1
-                        if newReminderDaysBefore > 0 {
+                        let tomorrow = DateHelper.utcCalendar().date(byAdding: .day, value: 1, to: Date.now)!
+                        var newReminderDaysBefore = DateHelper.daysDifference(tomorrow, dueDate)
+                        if newReminderDaysBefore == -1 {
+                            // this means we exceeded the due date of the task with the new reminder
+                            // let's change the due date of the task to allow a reminder to be set
+                            // since reminders can only be set x (with x up to 0) days before, not in the future
+                            task.dueDate = tomorrow
+                            newReminderDaysBefore = 0
+                        } else if newReminderDaysBefore < -1 {
+                            // this should never happen
                             return
                         }
-                        let newReminderTimeOffset = DateHelper.startOfDayOffsetFromUtcToLocal(offset: 8 * 60 * 60 * 1000)
+                        let newReminderTimeOffset = DateHelper.startOfDayOffsetFromLocalToUtc(offset: 8 * 60 * 60 * 1000)
 
                         task.reminders.append(IxTaskReminder(daysBefore: Int64(newReminderDaysBefore), timeOffset: newReminderTimeOffset))
 

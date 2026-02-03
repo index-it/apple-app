@@ -158,13 +158,31 @@
     "Open item creation" : {
 
     },
+    "Open list" : {
+
+    },
+    "Open lists" : {
+
+    },
     "Open task creation" : {
+
+    },
+    "Open tasks" : {
+
+    },
+    "Open the app and navigate to a list" : {
 
     },
     "Open the app and navigate to the item creation screen" : {
 
     },
+    "Open the app and navigate to the lists screen" : {
+
+    },
     "Open the app and navigate to the task creation screen" : {
+
+    },
+    "Open the app and navigate to the tasks screen" : {
 
     },
     "Owned by me" : {
