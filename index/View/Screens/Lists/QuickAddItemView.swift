@@ -14,6 +14,7 @@ private let log = Logger(subsystem: IxSubsystems.APP, category: "QuickAddItemVie
 
 struct QuickAddItemView: View {
     @Environment(\.showPaywall) private var showPaywall
+    @Environment(\.showToast) private var showToast
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @Environment(\.modelContext) private var context
     @Environment(\.showError) private var showError
@@ -175,8 +176,13 @@ struct QuickAddItemView: View {
                     }
                 } catch {}
             }
-
-            onCancel()
+            
+            if itemEditorConfig.multi {
+                showToast("Item created", systemImage: "checkmark.circle", tint: .green, placement: .top)
+                itemEditorConfig.reset()
+            } else {
+                onCancel()
+            }
         } catch {
             onCancel()
         }
@@ -286,6 +292,7 @@ struct QuickAddItemView: View {
                 }
             }
             .navigationTitle("Index it")
+            .navigationSubtitle(itemEditorConfig.multi ? "Adding multiple items" : "")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $isAddingList) {
                 ListEditor(

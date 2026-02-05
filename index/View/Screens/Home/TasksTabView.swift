@@ -19,10 +19,12 @@ struct TasksTabView: View {
     @EnvironmentObject private var navigationManager: NavigationManager
 
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
-
+    
     // MARK: Date
 
-    @State private var todayDate: Date = Date.now
+    // we take the utc date and convert it to local date using calendar with the local timezone
+    @State private var todayDate: Date = DateHelper.calendar().startOfDay(for: Date())
+    let calendar = DateHelper.calendar()
 
     // MARK: Task creation
 
@@ -49,15 +51,6 @@ struct TasksTabView: View {
 
     @AppStorage(AppStorageKeys.Tasks.sorting) private var sorting = AppStorageKeys.Defaults.tasksSorting
     @AppStorage(AppStorageKeys.Tasks.sortOrder) private var sortOrder = AppStorageKeys.Defaults.tasksSortOrder
-
-    private let offsets: [TimeInterval] = [
-        DateHelper.oneDaySeconds,
-        DateHelper.twoDaySeconds,
-        DateHelper.threeDaySeconds,
-        DateHelper.fourDaySeconds,
-        DateHelper.fiveDaySeconds,
-        DateHelper.sixDaySeconds,
-    ]
 
     private func saveTask(_ task: IxTask) async throws {
         let id = task.id
@@ -204,7 +197,7 @@ struct TasksTabView: View {
     func rescheduleToNextDay(task: IxTask) async {
         do {
             let nextDueDate = task.dueDate
-                .flatMap { DateHelper.utcCalendar().date(byAdding: .day, value: 1, to: $0) }
+                .flatMap { calendar.date(byAdding: .day, value: 1, to: $0) }
                 ?? Date()
 
             let task = try await ixApiClient.editTask(
@@ -384,7 +377,7 @@ struct TasksTabView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name.NSCalendarDayChanged).receive(on: DispatchQueue.main)) { _ in
-            todayDate = Date.now
+            todayDate = DateHelper.calendar().startOfDay(for: Date.now)
         }
     }
 
@@ -415,12 +408,13 @@ struct TasksTabView: View {
                 task.dueDate = todayDate
                 editorConfig.present(entity: task)
             }
+            
 
-            ForEach(offsets, id: \.self) { offset in
-                let date = todayDate.addingTimeInterval(offset)
+            ForEach([1, 2, 3, 4, 5, 6], id: \.self) { offset in
+                let date = calendar.date(byAdding: .day, value: offset, to: todayDate)!
 
                 tasksListSection(
-                    title: DateHelper.Formatters.taskSectionHeading.string(from: date),
+                    title: offset == 1 ? "Tomorrow" : DateHelper.Formatters.taskSectionHeading.string(from: date),
                     subtitle: DateHelper.Formatters.taskSectionSubheading.string(from: date),
                     dateFilter: date,
                     noDateFilter: false,
@@ -435,13 +429,13 @@ struct TasksTabView: View {
 
             tasksListSection(
                 title: "Later",
-                dateFilter: todayDate.addingTimeInterval(DateHelper.sevenDaySeconds),
+                dateFilter: calendar.date(byAdding: .day, value: 7, to: todayDate),
                 noDateFilter: false,
                 earlierThan: false,
                 laterThan: true
             ) {
                 let task = IxTask.empty()
-                task.dueDate = todayDate.addingTimeInterval(DateHelper.sevenDaySeconds)
+                task.dueDate = calendar.date(byAdding: .day, value: 7, to: todayDate)!
                 editorConfig.present(entity: task)
             }
         }

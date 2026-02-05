@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@" : {
+
+    },
     "%@ not found." : {
       "comment" : "Entity not found error",
       "localizations" : {
@@ -11,6 +14,18 @@
           }
         }
       }
+    },
+    "%lld categories" : {
+
+    },
+    "%lld items" : {
+
+    },
+    "%lld lists" : {
+
+    },
+    "%lld tasks" : {
+
     },
     "A network error occurred. Please check your internet connection." : {
       "comment" : "Network error"
@@ -158,7 +173,7 @@
     "Open item creation" : {
 
     },
-    "Open list" : {
+    "Open List" : {
 
     },
     "Open lists" : {
@@ -168,9 +183,6 @@
 
     },
     "Open tasks" : {
-
-    },
-    "Open the app and navigate to a list" : {
 
     },
     "Open the app and navigate to the item creation screen" : {
@@ -241,6 +253,9 @@
     },
     "User" : {
       "comment" : "Entity type: User"
+    },
+    "Which list?" : {
+
     },
     "You" : {
       "comment" : "Entity type: Self User, referring to the current logged-in user"

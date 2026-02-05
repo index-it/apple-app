@@ -110,7 +110,7 @@ struct TasksList: View {
 
     var body: some View {
         let subtasksMaxWidth = UIScreen.main.bounds.width / 3
-        let calendar = DateHelper.utcCalendar()
+        let calendar = DateHelper.calendar()
 
         ForEach(tasks.filter {
             (dateFilter != nil && $0.dueDate != nil && calendar.isDate($0.dueDate!, inSameDayAs: dateFilter!)) ||

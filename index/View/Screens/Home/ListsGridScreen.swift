@@ -459,7 +459,7 @@ struct ListsGridScreen: View {
             }
             .sheet(isPresented: $navigationManager.quickAddItemViewPresented) {
                 QuickAddItemView(
-                    multi: false,
+                    multi: navigationManager.quickAddItemViewMulti,
                     onCancel: {
                         navigationManager.quickAddItemViewPresented = false
                     }

@@ -8,7 +8,7 @@
 import AppIntents
 
 @available(iOS 18.0, *)
-public struct QuickAddItemIntent: AppIntent {
+public struct QuickAddItemIntent: DeprecatedAppIntent {
     public static let title: LocalizedStringResource = "Create List Item"
     public static let description: IntentDescription = "Create a new list item"
 

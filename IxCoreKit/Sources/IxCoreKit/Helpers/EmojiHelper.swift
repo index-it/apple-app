@@ -5,7 +5,7 @@
 //  Created by Giulio Pimenoff Verdolin on 03/05/25.
 //
 
-import Foundation
+import SwiftUI
 
 public enum EmojiHelper {
     public static let emojiRanges: [UInt32] = [
@@ -47,5 +47,18 @@ public enum EmojiHelper {
         let ascii = emojiRangesForPickerInitialEmoji[Int(drand48() * Double(emojiRangesForPickerInitialEmoji.count))]
         let emoji = UnicodeScalar(ascii)?.description ?? "🎨"
         return emoji
+    }
+    
+    static func emojiImageData(_ emoji: String, size: CGFloat = 64) -> Data? {
+        let font = UIFont.systemFont(ofSize: size)
+        let attributes: [NSAttributedString.Key: Any] = [.font: font]
+        let textSize = emoji.size(withAttributes: attributes)
+
+        let renderer = UIGraphicsImageRenderer(size: textSize)
+        let image = renderer.image { _ in
+            emoji.draw(at: .zero, withAttributes: attributes)
+        }
+
+        return image.pngData()
     }
 }

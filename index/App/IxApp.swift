@@ -13,6 +13,7 @@ import os
 import RevenueCat
 import SwiftData
 import SwiftUI
+import AppIntents
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "AppEntrypoint")
 
@@ -66,7 +67,8 @@ struct IxApp: App {
     @State private var urlToPresentInSafariView: URL?
 
     init() {
-        modelContainer = ModelContainerProvider.shared
+        let modelContainer = ModelContainerProvider.shared
+        self.modelContainer = modelContainer
 
         let authHelper = AuthenticationHelper()
         _authenticationHelper = StateObject(wrappedValue: authHelper)
@@ -80,6 +82,8 @@ struct IxApp: App {
         let websocketEventHandler = IxWebsocketEventHandler(ixApiClient: ixApiClient, modelContext: modelContainer.mainContext)
         let websocketClient = IxWebsocketClient(ixWebsocketEventHandler: websocketEventHandler)
         ixWebsocketClient = websocketClient
+        
+        AppDependencyManager.shared.add(dependency: modelContainer)
     }
     
     func onBackendAuthStatusChange(_ authStatus: AuthStatus) {

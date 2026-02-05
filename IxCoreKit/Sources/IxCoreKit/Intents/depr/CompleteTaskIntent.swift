@@ -8,7 +8,7 @@
 import AppIntents
 import SwiftData
 
-public struct CompleteTaskIntent: AppIntent {
+public struct CompleteTaskIntent: DeprecatedAppIntent {
     public static var title: LocalizedStringResource {
         return "Complete Task"
     }

@@ -8,7 +8,7 @@
 import AppIntents
 
 @available(iOS 18.0, *)
-public struct QuickAddTaskIntent: AppIntent {
+public struct QuickAddTaskIntent: DeprecatedAppIntent {
     public static let title: LocalizedStringResource = "Create Task"
     public static let description: IntentDescription = "Create a new task"
 

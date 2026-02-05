@@ -112,6 +112,8 @@
 				View/Components/Pro/PaywallStateService.swift,
 				View/Components/Pro/PaywallView.swift,
 				View/Components/Pro/ShowPaywallAction.swift,
+				View/Components/Toast/ShowToastAction.swift,
+				View/Components/Toast/ToastInfo.swift,
 				View/Modifier/IfModifier.swift,
 				View/Modifier/MeshGradientBackground.swift,
 				View/Modifier/Style/CheckmarkToggleStyle.swift,

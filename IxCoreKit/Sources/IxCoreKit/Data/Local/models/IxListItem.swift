@@ -94,6 +94,7 @@ public final class IxListItem: Validatable, Sanitizable, EmptyInitializable {
         copy.name = name.sanitized
         copy.link = link?.sanitized
         copy.note = note?.sanitized
+        copy.categoryId = categoryId?.nonEmpty
 
         return copy
     }
