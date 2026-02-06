@@ -7,11 +7,17 @@
 
 @preconcurrency import AppIntents
 import SwiftData
+import IxCoreKit
 
 @available(iOS 26.0, *)
 struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery, EntityPropertyQuery {
     @Dependency
     var modelContainer: ModelContainer
+    
+    @IntentParameterDependency<CreateItemIntent>(
+        \.$list
+    )
+    var createItemIntent
 
     @MainActor
     func entities(for identifiers: [IxListCategoryEntity.ID]) async throws -> [IxListCategoryEntity] {
@@ -25,25 +31,38 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
 
     @MainActor
     func suggestedEntities() async throws -> [IxListCategoryEntity] {
-        let currentTimeMillis = Date.now.currentTimeMillis()
-
-        let descriptor = FetchDescriptor<IxListCategory>(
-            predicate: #Predicate { category in
-                currentTimeMillis - category.createdAt < 2_592_000_000
-            }
-        )
-        let categories = try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
-        if categories.isEmpty {
-            return try modelContainer.mainContext.fetch(FetchDescriptor<IxListCategory>()).map(IxListCategoryEntity.init)
+        if let createItemIntent = createItemIntent {
+            let listId = createItemIntent.list.id
+            let descriptor = FetchDescriptor<IxListCategory>(
+                predicate: #Predicate { category in
+                    category.listId == listId
+                }
+            )
+            return try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
         } else {
-            return categories
+            let currentTimeMillis = Date.now.currentTimeMillis()
+            
+            let descriptor = FetchDescriptor<IxListCategory>(
+                predicate: #Predicate { category in
+                    currentTimeMillis - category.createdAt < 2_592_000_000
+                }
+            )
+            let categories = try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
+            if categories.isEmpty {
+                return try modelContainer.mainContext.fetch(FetchDescriptor<IxListCategory>()).map(IxListCategoryEntity.init)
+            } else {
+                return categories
+            }
         }
     }
 
     @MainActor
     func entities(matching: String) async throws -> [IxListCategoryEntity] {
+        let listId = createItemIntent?.list.id
+        
         let descriptor = FetchDescriptor<IxListCategory>(
             predicate: #Predicate { category in
+                (listId == nil || (listId != nil && category.listId == listId!)) &&
                 category.name.localizedStandardContains(matching)
             }
         )
@@ -52,7 +71,16 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
 
     @MainActor
     func allEntities() async throws -> [IxListCategoryEntity] {
-        let descriptor = FetchDescriptor<IxListCategory>()
+        let descriptor = if let listId = createItemIntent?.list.id {
+            FetchDescriptor<IxListCategory>(
+                predicate: #Predicate { category in
+                    category.listId == listId
+                }
+            )
+        } else {
+            FetchDescriptor<IxListCategory>()
+        }
+        
         return try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
     }
 
@@ -97,10 +125,11 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
         sortedBy: [EntityQuerySort<IxListCategoryEntity>],
         limit: Int?
     ) async throws -> [IxListCategoryEntity] {
-        var fetchDescriptor = FetchDescriptor<IxListCategory>()
-        fetchDescriptor.fetchLimit = limit
-
-        var matchedCategories = try await MainActor.run { try modelContainer.mainContext
+        var matchedCategories = try await MainActor.run {
+            var fetchDescriptor = FetchDescriptor<IxListCategory>()
+            fetchDescriptor.fetchLimit = limit
+            
+            return try modelContainer.mainContext
                 .fetch(fetchDescriptor)
                 .map(IxListCategoryEntity.init)
                 .compactMap { category in

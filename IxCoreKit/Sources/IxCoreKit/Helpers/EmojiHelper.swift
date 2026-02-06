@@ -49,7 +49,7 @@ public enum EmojiHelper {
         return emoji
     }
     
-    static func emojiImageData(_ emoji: String, size: CGFloat = 64) -> Data? {
+    public static func emojiImageData(_ emoji: String, size: CGFloat = 64) -> Data? {
         let font = UIFont.systemFont(ofSize: size)
         let attributes: [NSAttributedString.Key: Any] = [.font: font]
         let textSize = emoji.size(withAttributes: attributes)

@@ -97,6 +97,28 @@
 		096C021C2F09E3C900425185 /* Exceptions for "index" folder in "indexShareExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				App/Intents/CreateEntity/CreateCategoryIntent.swift,
+				App/Intents/CreateEntity/CreateItemIntent.swift,
+				App/Intents/CreateEntity/CreateListIntent.swift,
+				App/Intents/CreateEntity/CreateTaskIntent.swift,
+				App/Intents/EditIntent/CompleteTaskIntent.swift,
+				App/Intents/Entities/IxListCategoryEntity.swift,
+				App/Intents/Entities/IxListEntity.swift,
+				App/Intents/Entities/IxListItemEntity.swift,
+				App/Intents/Entities/IxTaskEntity.swift,
+				App/Intents/Enum/TaskPriority.swift,
+				App/Intents/Navigation/OpenCreateItemIntent.swift,
+				App/Intents/Navigation/OpenCreateTaskIntent.swift,
+				App/Intents/Navigation/OpenListsIntent.swift,
+				App/Intents/Navigation/OpenTasksIntent.swift,
+				App/Intents/OpenEntities/OpenListCategoryIntent.swift,
+				App/Intents/OpenEntities/OpenListIntent.swift,
+				App/Intents/OpenEntities/OpenListItemIntent.swift,
+				App/Intents/OpenEntities/OpenTaskIntent.swift,
+				App/Intents/Query/IxListCategoryEntityQuery.swift,
+				App/Intents/Query/IxListEntityQuery.swift,
+				App/Intents/Query/IxListItemEntityQuery.swift,
+				App/Intents/Query/IxTaskEntityQuery.swift,
 				Navigation/HomeTab.swift,
 				Navigation/NavigationManager.swift,
 				Navigation/NavigationRoute.swift,
@@ -123,6 +145,34 @@
 			);
 			target = 09F48F3A2D7E623D00CA50AC /* indexShareExtension */;
 		};
+		09A33B3C2F363292005DF50C /* Exceptions for "index" folder in "indexWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				App/Intents/CreateEntity/CreateCategoryIntent.swift,
+				App/Intents/CreateEntity/CreateItemIntent.swift,
+				App/Intents/CreateEntity/CreateListIntent.swift,
+				App/Intents/CreateEntity/CreateTaskIntent.swift,
+				App/Intents/EditIntent/CompleteTaskIntent.swift,
+				App/Intents/Entities/IxListCategoryEntity.swift,
+				App/Intents/Entities/IxListEntity.swift,
+				App/Intents/Entities/IxListItemEntity.swift,
+				App/Intents/Entities/IxTaskEntity.swift,
+				App/Intents/Enum/TaskPriority.swift,
+				App/Intents/Navigation/OpenCreateItemIntent.swift,
+				App/Intents/Navigation/OpenCreateTaskIntent.swift,
+				App/Intents/Navigation/OpenListsIntent.swift,
+				App/Intents/Navigation/OpenTasksIntent.swift,
+				App/Intents/OpenEntities/OpenListCategoryIntent.swift,
+				App/Intents/OpenEntities/OpenListIntent.swift,
+				App/Intents/OpenEntities/OpenListItemIntent.swift,
+				App/Intents/OpenEntities/OpenTaskIntent.swift,
+				App/Intents/Query/IxListCategoryEntityQuery.swift,
+				App/Intents/Query/IxListEntityQuery.swift,
+				App/Intents/Query/IxListItemEntityQuery.swift,
+				App/Intents/Query/IxTaskEntityQuery.swift,
+			);
+			target = 092FE7C12D7F3C8200F38388 /* indexWidgetExtension */;
+		};
 		09F48F492D7E623D00CA50AC /* Exceptions for "indexShareExtension" folder in "indexShareExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -147,6 +197,7 @@
 			exceptions = (
 				0915C16D2CB80EC5003CF70B /* Exceptions for "index" folder in "index" target */,
 				096C021C2F09E3C900425185 /* Exceptions for "index" folder in "indexShareExtension" target */,
+				09A33B3C2F363292005DF50C /* Exceptions for "index" folder in "indexWidgetExtension" target */,
 			);
 			path = index;
 			sourceTree = "<group>";

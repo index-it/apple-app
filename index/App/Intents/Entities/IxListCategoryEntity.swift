@@ -6,12 +6,15 @@
 //
 
 import AppIntents
+import IxCoreKit
 
 @available(iOS 26.0, *)
 struct IxListCategoryEntity: IndexedEntity {
     static let defaultQuery = IxListCategoryEntityQuery()
     
     var id: String
+    
+    @Property
     var listId: String
     
     @Property(indexingKey: \.title)

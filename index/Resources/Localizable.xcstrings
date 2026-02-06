@@ -49,6 +49,15 @@
     "%lld" : {
 
     },
+    "%lld categories" : {
+
+    },
+    "%lld items" : {
+
+    },
+    "%lld lists" : {
+
+    },
     "%lld occurrence%@" : {
       "localizations" : {
         "en" : {
@@ -58,6 +67,9 @@
           }
         }
       }
+    },
+    "%lld tasks" : {
+
     },
     "%lld unplanned tasks" : {
       "extractionState" : "stale",
@@ -83,6 +95,12 @@
       }
     },
     "%lld usages left" : {
+
+    },
+    "A link stored in the item" : {
+
+    },
+    "A note for the item" : {
 
     },
     "A verification email has been sent to **%@**.\nPlease follow the instructions in the email to verify your account, consider checking your spam folder if you don't see the email!" : {
@@ -128,6 +146,9 @@
 
     },
     "Adding multiple tasks" : {
+
+    },
+    "Additional description for the task" : {
 
     },
     "After" : {
@@ -205,7 +226,13 @@
     "Cancel" : {
 
     },
+    "Categories" : {
+
+    },
     "Categorize" : {
+
+    },
+    "category" : {
 
     },
     "Category" : {
@@ -230,6 +257,12 @@
 
     },
     "Complete" : {
+
+    },
+    "Complete ${task}" : {
+
+    },
+    "Complete a task" : {
 
     },
     "Completed tasks" : {
@@ -262,7 +295,31 @@
     "Create" : {
 
     },
+    "Create a category in ${list} with ${name}" : {
+
+    },
     "Create a list" : {
+
+    },
+    "Create a list with ${name}" : {
+
+    },
+    "Create a new list" : {
+
+    },
+    "Create a new list category" : {
+
+    },
+    "Create a new list item" : {
+
+    },
+    "Create a new task" : {
+
+    },
+    "Create a new task with ${name} and optionally a ${description}, ${dueDate} and ${priority}" : {
+
+    },
+    "Create an item in ${list} with ${name} and optional ${category}, ${link} and ${note}" : {
 
     },
     "Create category" : {
@@ -326,6 +383,9 @@
 
     },
     "Done" : {
+
+    },
+    "Due date" : {
 
     },
     "Each" : {
@@ -466,7 +526,13 @@
     "Invite user" : {
 
     },
+    "item" : {
+
+    },
     "Item info" : {
+
+    },
+    "Items" : {
 
     },
     "Keep" : {
@@ -481,10 +547,19 @@
     "Link" : {
 
     },
+    "list" : {
+
+    },
     "List" : {
 
     },
+    "list item" : {
+
+    },
     "List name" : {
+
+    },
+    "Lists" : {
 
     },
     "Loading users..." : {
@@ -577,10 +652,37 @@
     "Open emails" : {
 
     },
+    "Open item creation" : {
+
+    },
     "Open link" : {
 
     },
+    "Open List" : {
+
+    },
+    "Open lists" : {
+
+    },
     "Open note" : {
+
+    },
+    "Open task creation" : {
+
+    },
+    "Open tasks" : {
+
+    },
+    "Open the app and navigate to the item creation screen" : {
+
+    },
+    "Open the app and navigate to the lists screen" : {
+
+    },
+    "Open the app and navigate to the task creation screen" : {
+
+    },
+    "Open the app and navigate to the tasks screen" : {
 
     },
     "Optional description to remember the purpose of this invite" : {
@@ -623,6 +725,9 @@
 
     },
     "Register" : {
+
+    },
+    "reminder" : {
 
     },
     "Reminders" : {
@@ -668,6 +773,18 @@
 
     },
     "Scroll horizontally for more colors" : {
+
+    },
+    "Search for categories based on complex criteria." : {
+
+    },
+    "Search for items based on complex criteria." : {
+
+    },
+    "Search for lists based on complex criteria." : {
+
+    },
+    "Search for tasks based on complex criteria." : {
 
     },
     "See note" : {
@@ -754,6 +871,15 @@
     "Swipe left to delete a reminder" : {
 
     },
+    "task" : {
+
+    },
+    "Task priority" : {
+
+    },
+    "Tasks" : {
+
+    },
     "Terms of service" : {
 
     },
@@ -790,10 +916,22 @@
     "Those are all the active invite links of this list, you can delete them by swiping left.\n\nUser specific invites are not shown here and are not deletable." : {
 
     },
+    "Time" : {
+
+    },
+    "Time at which you will be reminded of the task" : {
+
+    },
+    "to-do" : {
+
+    },
     "Today" : {
 
     },
     "Today's Tasks" : {
+
+    },
+    "todo" : {
 
     },
     "Type 'GOODBYE'" : {
@@ -851,6 +989,12 @@
 
     },
     "What's your email?" : {
+
+    },
+    "When the task should be completed" : {
+
+    },
+    "Which list?" : {
 
     },
     "Who are you?" : {

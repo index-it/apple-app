@@ -23,8 +23,8 @@ struct TasksTabView: View {
     // MARK: Date
 
     // we take the utc date and convert it to local date using calendar with the local timezone
-    @State private var todayDate: Date = DateHelper.calendar().startOfDay(for: Date())
-    let calendar = DateHelper.calendar()
+    @State private var todayDate: Date = DateHelper.localCalendar().startOfDay(for: Date())
+    let calendar = DateHelper.localCalendar()
 
     // MARK: Task creation
 
@@ -59,6 +59,8 @@ struct TasksTabView: View {
             try context.delete(model: IxTask.self, where: #Predicate { $0.id == id })
             context.insert(task)
         }
+        
+        try? await IxSystemIntegration.handleNewEntity(IxTaskEntity(task: task))
     }
 
     // MARK: - Task CRUD
@@ -79,8 +81,8 @@ struct TasksTabView: View {
                     context.insert(ixTask)
                 }
             }
-
-            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
+            
+            try? await IxSystemIntegration.handleNewEntities(tasks.map(IxTaskEntity.init))
         } catch {
             showError(.localizedError(title: "Error loading tasks", error: error))
         }
@@ -154,7 +156,6 @@ struct TasksTabView: View {
             )
 
             try await saveTask(task)
-            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
 
             if editorConfig.multi {
                 showToast("Task created", systemImage: "checkmark.circle", tint: .green, placement: .top)
@@ -187,7 +188,6 @@ struct TasksTabView: View {
                 itemId: editData.itemId
             )
             try await saveTask(task)
-            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
             editorConfig.isPresented = false
         } catch {
             showError(.localizedError(title: "Error editing task", error: error))
@@ -212,7 +212,6 @@ struct TasksTabView: View {
                 itemId: task.itemId
             )
             try await saveTask(task)
-            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch {
             showError(.localizedError(title: "Error rescheduling task", error: error))
         }
@@ -226,8 +225,6 @@ struct TasksTabView: View {
             let task = try await ixApiClient.setTaskCompletion(taskId: id, completed: completed)
 
             try await saveTask(task)
-
-            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         } catch {
             showError(.localizedError(title: "Error \(completed ? "completing" : "uncompleting") task", error: error))
         }
@@ -240,7 +237,7 @@ struct TasksTabView: View {
                 try context.delete(model: IxTask.self, where: #Predicate { $0.id == id })
             }
 
-            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
+            try? await IxSystemIntegration.handleEntityDeletion(id, of: IxTaskEntity.self)
         } catch IxApiClientError.notFound {
             do {
                 try context.transaction {
@@ -377,7 +374,7 @@ struct TasksTabView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name.NSCalendarDayChanged).receive(on: DispatchQueue.main)) { _ in
-            todayDate = DateHelper.calendar().startOfDay(for: Date.now)
+            todayDate = DateHelper.localCalendar().startOfDay(for: Date.now)
         }
     }
 

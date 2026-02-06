@@ -167,7 +167,7 @@ struct TodayTasksWidgetView: View {
 
     @ViewBuilder
     var createTaskButtonView: some View {
-        Button(intent: QuickAddTaskIntent()) {
+        Button(intent: OpenCreateTaskIntent()) {
             Label("Create", systemImage: "plus")
                 .labelStyle(.iconOnly)
         }
@@ -177,7 +177,7 @@ struct TodayTasksWidgetView: View {
     func tasksListView(_ tasks: ArraySlice<IxTask>) -> some View {
         ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
             HStack {
-                Button(intent: CompleteTaskIntent(taskId: task.id)) {
+                Button(intent: CompleteTaskIntent(task: IxTaskEntity(task: task))) {
                     Label("Complete", systemImage: task.completed ? "inset.filled.circle" : "circle")
                         .labelStyle(.iconOnly)
                         .font(.title3)
@@ -223,7 +223,7 @@ struct TodayTasksProvider: TimelineProvider {
             let modelContext = ModelContext(ModelContainerProvider.shared)
 
             // Create a predicate for today's tasks
-            let calendar = DateHelper.calendar()
+            let calendar = DateHelper.localCalendar()
             let now = Date.now
 
             let predicate = #Predicate<IxTask> {

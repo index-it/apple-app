@@ -1,16 +1,17 @@
 //
-//  QuickAddItemIntent.swift
+//  OpenCreateItemIntent.swift
 //  IxCoreKit
 //
-//  Created by Giulio Pimenoff Verdolin on 12/05/25.
+//  Created by Giulio Pimenoff Verdolin on 03/02/26.
 //
 
 import AppIntents
+import IxCoreKit
 
 @available(iOS 18.0, *)
-public struct QuickAddItemIntent: DeprecatedAppIntent {
-    public static let title: LocalizedStringResource = "Create List Item"
-    public static let description: IntentDescription = "Create a new list item"
+public struct OpenCreateItemIntent: AppIntent {
+    public static let title: LocalizedStringResource = "Open item creation"
+    public static let description: IntentDescription = "Open the app and navigate to the item creation screen"
 
     public init() {}
 

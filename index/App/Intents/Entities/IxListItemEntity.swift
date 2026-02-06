@@ -6,6 +6,7 @@
 //
 
 import AppIntents
+import IxCoreKit
 
 @available(iOS 26.0, *)
 struct IxListItemEntity: IndexedEntity {
@@ -20,7 +21,10 @@ struct IxListItemEntity: IndexedEntity {
     var completed: Bool
     
     @Property(indexingKey: \.contentURL)
-    var link: String?
+    var link: URL?
+    
+    @ComputedProperty
+    var linkString: String? { link?.absoluteString }
     
     @Property(indexingKey: \.contentDescription)
     var note: String?
@@ -40,7 +44,7 @@ struct IxListItemEntity: IndexedEntity {
         self.id = item.id
         self.name = item.name
         self.completed = item.completed
-        self.link = item.link
+        self.link = item.link.flatMap { URL(string: $0) }
         self.note = item.note
     }
 }

@@ -76,6 +76,8 @@ struct ListsGridScreen: View {
             try context.delete(model: IxList.self, where: #Predicate { $0.id == listId })
             context.insert(list)
         }
+        
+        IxSystemIntegration.handleNewEntity(IxListEntity(list: list))
     }
 
     // MARK: - List CRUD
@@ -91,6 +93,8 @@ struct ListsGridScreen: View {
                     context.insert(ixList)
                 }
             }
+            
+            try? await IxSystemIntegration.handleNewEntities(lists.map(IxListEntity.init))
         } catch {
             showError(.localizedError(title: "Error loading lists", error: error))
         }

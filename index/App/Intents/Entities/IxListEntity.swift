@@ -6,6 +6,7 @@
 //
 
 import AppIntents
+import IxCoreKit
 
 // TODO: Implement Transferrable protocol
 @available(iOS 26.0, *)

@@ -89,7 +89,7 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
                 }
             )
             taskFetchDescriptor.fetchLimit = 1
-
+            
             switch response.actionIdentifier {
             case IxNotificationIdentifiers.taskCompleteAction:
                 Task {
@@ -108,7 +108,7 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
                         let task = try await getTask(taskId: taskId)
                         guard let dueDate = task.dueDate else { return }
 
-                        let utcCalendar = DateHelper.utcCalendar()
+                        let utcCalendar = DateHelper.calendar()
                         let newReminderTimeOffsetDate = utcCalendar.date(byAdding: .hour, value: 1, to: Date.now)!
                         let newReminderTimeOffset = Int64(newReminderTimeOffsetDate.timeIntervalSince(utcCalendar.startOfDay(for: newReminderTimeOffsetDate))) * 1000
                         var newReminderDaysBefore = DateHelper.daysDifference(newReminderTimeOffsetDate, dueDate)
@@ -147,7 +147,7 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
                         let task = try await getTask(taskId: taskId)
                         guard let dueDate = task.dueDate else { return }
 
-                        let tomorrow = DateHelper.utcCalendar().date(byAdding: .day, value: 1, to: Date.now)!
+                        let tomorrow = DateHelper.calendar().date(byAdding: .day, value: 1, to: Date.now)!
                         var newReminderDaysBefore = DateHelper.daysDifference(tomorrow, dueDate)
                         if newReminderDaysBefore == -1 {
                             // this means we exceeded the due date of the task with the new reminder
@@ -189,7 +189,7 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
                     userInfo: [:]
                 )
             default:
-                break
+                break;
             }
         } else {
             // do nothing

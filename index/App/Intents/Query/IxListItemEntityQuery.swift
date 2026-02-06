@@ -7,6 +7,7 @@
 
 @preconcurrency import AppIntents
 import SwiftData
+import IxCoreKit
 
 @available(iOS 26.0, *)
 struct IxListItemEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery, EntityPropertyQuery {
@@ -82,20 +83,20 @@ struct IxListItemEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQu
             }
         }
 
-        Property(\IxListItemEntity.$link) {
+        Property(\IxListItemEntity.$linkString) {
             ContainsComparator { searchValue in
                 #Predicate<IxListItemEntity> { entity in
-                    entity.link != nil && entity.link!.localizedStandardContains(searchValue)
+                    entity.linkString != nil && entity.linkString!.localizedStandardContains(searchValue)
                 }
             }
             EqualToComparator { searchValue in
                 #Predicate<IxListItemEntity> { entity in
-                    entity.link != nil && entity.link == searchValue
+                    entity.linkString != nil && entity.linkString == searchValue
                 }
             }
             NotEqualToComparator { searchValue in
                 #Predicate<IxListItemEntity> { entity in
-                    entity.link != nil && entity.link != searchValue
+                    entity.linkString != nil && entity.linkString != searchValue
                 }
             }
         }
@@ -123,10 +124,11 @@ struct IxListItemEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQu
         sortedBy: [EntityQuerySort<IxListItemEntity>],
         limit: Int?
     ) async throws -> [IxListItemEntity] {
-        var fetchDescriptor = FetchDescriptor<IxListItem>()
-        fetchDescriptor.fetchLimit = limit
-
-        var matchedItems = try await MainActor.run { try modelContainer.mainContext
+        var matchedItems = try await MainActor.run {
+            var fetchDescriptor = FetchDescriptor<IxListItem>()
+            fetchDescriptor.fetchLimit = limit
+            
+            return try modelContainer.mainContext
                 .fetch(fetchDescriptor)
                 .map(IxListItemEntity.init)
                 .compactMap { item in

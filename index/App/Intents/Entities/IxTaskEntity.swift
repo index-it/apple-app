@@ -6,40 +6,41 @@
 //
 
 import AppIntents
+import IxCoreKit
 
 @available(iOS 26.0, *)
 struct IxTaskEntity: IndexedEntity {
-    static let defaultQuery = IxTaskEntityQuery()
+    public static let defaultQuery = IxTaskEntityQuery()
     
-    var id: String
+    public var id: String
     
     @Property(indexingKey: \.title)
-    var name: String
+    public var name: String
     
     @Property(indexingKey: \.contentDescription)
-    var description: String
+    public var description: String
     
     @Property
-    var completed: Bool
+    public var completed: Bool
     
     @Property
-    var dueDate: Date?
+    public var dueDate: Date?
     
     @Property
-    var priority: Int?
+    public var priority: Int?
     
-    static var typeDisplayRepresentation: TypeDisplayRepresentation {
+    public static var typeDisplayRepresentation: TypeDisplayRepresentation {
         TypeDisplayRepresentation(
             name: LocalizedStringResource("Task", table: "AppIntents"),
             numericFormat: "\(placeholder: .int) tasks"
         )
     }
     
-    var displayRepresentation: DisplayRepresentation {
+    public var displayRepresentation: DisplayRepresentation {
         DisplayRepresentation(title: "\(name)")
     }
     
-    init(task: IxTask) {
+    public init(task: IxTask) {
         self.id = task.id
         self.name = task.name
         self.completed = task.completed
@@ -50,7 +51,7 @@ struct IxTaskEntity: IndexedEntity {
 
 @available(iOS 26.0, *)
 extension IxTaskEntity: URLRepresentableEntity {
-    static var urlRepresentation: URLRepresentation {
+    public static var urlRepresentation: URLRepresentation {
         "https://web.index-it.app/tasks/\(.id)"
     }
 }

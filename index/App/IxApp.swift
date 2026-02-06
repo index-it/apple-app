@@ -73,17 +73,19 @@ struct IxApp: App {
         let authHelper = AuthenticationHelper()
         _authenticationHelper = StateObject(wrappedValue: authHelper)
 
-        ixApiClient = IxApiClient { newAuthStatus in
+        let ixApiClient = IxApiClient { newAuthStatus in
             Task { @MainActor in
                 authHelper.setBackendAuthStatus(newAuthStatus)
             }
         }
+        self.ixApiClient = ixApiClient
 
         let websocketEventHandler = IxWebsocketEventHandler(ixApiClient: ixApiClient, modelContext: modelContainer.mainContext)
         let websocketClient = IxWebsocketClient(ixWebsocketEventHandler: websocketEventHandler)
         ixWebsocketClient = websocketClient
         
         AppDependencyManager.shared.add(dependency: modelContainer)
+        AppDependencyManager.shared.add(dependency: ixApiClient)
     }
     
     func onBackendAuthStatusChange(_ authStatus: AuthStatus) {
@@ -167,6 +169,13 @@ struct IxApp: App {
                 .task {
                     await notificationManager.checkForPermissions()
                 }
+                .task {
+                    do {
+                        try await IxSystemIntegration.donateEntitiesToSpotlight(modelContainer: modelContainer)
+                    } catch {
+                        log.error("Failed donating app entities to spotlight: \(error)")
+                    }
+                }
                 .onChange(of: authenticationHelper.backendAuthStatus, initial: true) { _, newBackendAuthStatus in
                     onBackendAuthStatusChange(newBackendAuthStatus)
                 }
@@ -208,6 +217,9 @@ struct IxApp: App {
                     if let url = urlToPresentInSafariView {
                         SafariView(url: url)
                     }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: .navigateToTasks)) { _ in
+                    navigationManager.navigateToTab(.tasks)
                 }
         }
     }

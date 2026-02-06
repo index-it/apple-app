@@ -7,7 +7,7 @@
 
 import AppIntents
 
-extension EntityQuerySort.Ordering {
+public extension EntityQuerySort.Ordering {
     /// Convert sort information from `EntityQuerySort` to  Foundation's `SortOrder`.
     var sortOrder: SortOrder {
         switch self {

@@ -443,7 +443,7 @@ struct ListScreen: View {
             try context.transaction {
                 context.insert(task)
             }
-            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
+            try await IxSystemIntegration.handleNewEntity(IxTaskEntity(task: task))
 
             taskEditorConfig.isPresented = false
 
@@ -618,7 +618,7 @@ struct ListScreen: View {
 
             taskEditorConfig.present(entity: task)
         } onEdit: { item in
-            editorConfig.present(entity: item)
+            editorConfig.present(entity: item, mode: .edit)
         } onDelete: { item in
             Task {
                 await deleteItem(listId: listId, itemId: item.id)

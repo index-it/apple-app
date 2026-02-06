@@ -16,7 +16,7 @@ struct QuickAddTaskControlWidget: ControlWidget {
             kind: IxKinds.quickAddTaskControlCenterWidget
         ) {
             ControlWidgetButton(
-                action: QuickAddTaskIntent(),
+                action: OpenCreateTaskIntent(),
                 label: {
                     VStack {
                         Image(systemName: "calendar.badge.plus")
@@ -36,7 +36,7 @@ struct QuickAddItemControlWidget: ControlWidget {
             kind: IxKinds.quickAddItemControlCenterWidget
         ) {
             ControlWidgetButton(
-                action: QuickAddItemIntent(),
+                action: OpenCreateItemIntent(),
                 label: {
                     VStack {
                         Image(systemName: "note.text.badge.plus")

@@ -6,6 +6,7 @@
 //
 
 import AppIntents
+import IxCoreKit
 
 @available(iOS 18.0, *)
 public struct OpenCreateTaskIntent: AppIntent {

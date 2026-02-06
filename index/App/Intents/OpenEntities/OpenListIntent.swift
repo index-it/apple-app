@@ -6,6 +6,7 @@
 //
 
 import AppIntents
+import IxCoreKit
 
 /// Note: there is also a protocol TargetContentProvidingIntent that let's you handle the navigation part in SwiftUI
 /// I prefer using universal links for now

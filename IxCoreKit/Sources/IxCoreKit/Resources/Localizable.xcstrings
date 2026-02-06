@@ -15,18 +15,6 @@
         }
       }
     },
-    "%lld categories" : {
-
-    },
-    "%lld items" : {
-
-    },
-    "%lld lists" : {
-
-    },
-    "%lld tasks" : {
-
-    },
     "A network error occurred. Please check your internet connection." : {
       "comment" : "Network error"
     },
@@ -62,6 +50,7 @@
 
     },
     "Complete Task" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -81,21 +70,6 @@
           }
         }
       }
-    },
-    "Completes a task." : {
-
-    },
-    "Create a new list item" : {
-
-    },
-    "Create a new task" : {
-
-    },
-    "Create List Item" : {
-
-    },
-    "Create Task" : {
-
     },
     "Creation date" : {
       "comment" : "Sort categories by creation date\nSort items by creation date\nSort lists by creation date\nSort tasks by creation date"
@@ -170,33 +144,6 @@
     "Only the owner of the list can perform this action." : {
       "comment" : "Missing list ownership error"
     },
-    "Open item creation" : {
-
-    },
-    "Open List" : {
-
-    },
-    "Open lists" : {
-
-    },
-    "Open task creation" : {
-
-    },
-    "Open tasks" : {
-
-    },
-    "Open the app and navigate to the item creation screen" : {
-
-    },
-    "Open the app and navigate to the lists screen" : {
-
-    },
-    "Open the app and navigate to the task creation screen" : {
-
-    },
-    "Open the app and navigate to the tasks screen" : {
-
-    },
     "Owned by me" : {
       "comment" : "Lists owned by the user"
     },
@@ -222,9 +169,6 @@
 
     },
     "Task description can be %lld characters maximum" : {
-
-    },
-    "Task id" : {
 
     },
     "Task name can be %lld characters maximum" : {
@@ -253,9 +197,6 @@
     },
     "User" : {
       "comment" : "Entity type: User"
-    },
-    "Which list?" : {
-
     },
     "You" : {
       "comment" : "Entity type: Self User, referring to the current logged-in user"

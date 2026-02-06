@@ -8,6 +8,7 @@
 @preconcurrency import AppIntents
 import SwiftData
 import OSLog
+import IxCoreKit
 
 @available(iOS 26.0, *)
 struct IxListEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery, EntityPropertyQuery {
@@ -115,10 +116,11 @@ struct IxListEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery,
         sortedBy: [EntityQuerySort<IxListEntity>],
         limit: Int?
     ) async throws -> [IxListEntity] {
-        var fetchDescriptor = FetchDescriptor<IxList>()
-        fetchDescriptor.fetchLimit = limit
-
-        var matchedLists = try await MainActor.run { try modelContainer.mainContext
+        var matchedLists = try await MainActor.run {
+            var fetchDescriptor = FetchDescriptor<IxList>()
+            fetchDescriptor.fetchLimit = limit
+            
+            return try modelContainer.mainContext
                 .fetch(fetchDescriptor)
                 .map(IxListEntity.init)
                 .compactMap { list in

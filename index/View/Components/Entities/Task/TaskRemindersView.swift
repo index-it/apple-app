@@ -170,12 +170,13 @@ struct TaskRemindersView: View {
         if !reminders.isEmpty, user?.has_pro != true {
             showPaywall()
         } else {
-            let localTimeOffset = (Calendar.current.component(.hour, from: createReminderTime) * 60 * 60 * 1000) + (Calendar.current.component(.minute, from: createReminderTime) * 60 * 1000)
+            let timeOffset = DateHelper.getUtcReminderTimeOffset(localTimeDate: createReminderTime)
+            print("using timeoffset \(timeOffset)")
 
             reminders.append(
                 IxTaskReminder(
                     daysBefore: Int64(createReminderDays),
-                    timeOffset: Int64(DateHelper.startOfDayOffsetFromLocalToUtc(offset: Int64(localTimeOffset)))
+                    timeOffset: timeOffset
                 )
             )
         }
