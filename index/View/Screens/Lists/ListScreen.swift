@@ -151,6 +151,8 @@ struct ListScreen: View {
             try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
             context.insert(list)
         }
+
+        try? await IxSystemIntegration.handleNewEntity(IxListEntity(list: list))
     }
 
     func saveItem(_ item: IxListItem) async throws {
@@ -160,6 +162,8 @@ struct ListScreen: View {
             try context.delete(model: IxListItem.self, where: #Predicate { $0.id == id })
             context.insert(item)
         }
+
+        try? await IxSystemIntegration.handleNewEntity(IxListItemEntity(item: item))
     }
 
     func saveCategory(_ category: IxListCategory) async throws {
@@ -169,6 +173,8 @@ struct ListScreen: View {
             try context.delete(model: IxListCategory.self, where: #Predicate { $0.id == id })
             context.insert(category)
         }
+
+        try? await IxSystemIntegration.handleNewEntity(IxListCategoryEntity(category: category))
     }
 
     // MARK: - Fetchers
@@ -198,6 +204,8 @@ struct ListScreen: View {
                     context.insert(category)
                 }
             }
+
+            try? await IxSystemIntegration.handleNewEntities(categories.map(IxListCategoryEntity.init))
         } catch {
             showError(.localizedError(title: "Error loading categories", error: error))
         }
@@ -219,6 +227,8 @@ struct ListScreen: View {
                     context.insert(item)
                 }
             }
+
+            try? await IxSystemIntegration.handleNewEntities(items.map(IxListItemEntity.init))
         } catch {
             showError(.localizedError(title: "Error loading list items", error: error))
         }
@@ -341,6 +351,8 @@ struct ListScreen: View {
                     model: IxListItem.self, where: #Predicate { item in item.id == itemId }
                 )
             }
+
+            try? await IxSystemIntegration.handleEntityDeletion(itemId, of: IxListItemEntity.self)
         } catch IxApiClientError.notFound {
             do {
                 try context.transaction {
@@ -403,6 +415,8 @@ struct ListScreen: View {
                     where: #Predicate { category in category.id == categoryId }
                 )
             }
+
+            try? await IxSystemIntegration.handleEntityDeletion(categoryId, of: IxListCategoryEntity.self)
         } catch IxApiClientError.notFound {
             do {
                 try context.transaction {

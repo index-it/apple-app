@@ -12,17 +12,9 @@ import IxCoreKit
 /// I prefer using universal links for now
 
 @available(iOS 26.0, *)
-struct OpenLandmarkIntent: OpenIntent {
+struct OpenListIntent: OpenIntent, URLRepresentableIntent {
     static let title: LocalizedStringResource = "Open List"
 
     @Parameter(title: "List", requestValueDialog: "Which list?")
     var target: IxListEntity
-
-    func perform() async throws -> some IntentResult {
-        guard let url = URL(string: IxUniversalLinks.list(target.id)) else {
-            throw URLError(.badURL)
-        }
-
-        return .result(opensIntent: OpenURLIntent(url))
-    }
 }

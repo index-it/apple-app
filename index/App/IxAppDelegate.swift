@@ -26,9 +26,9 @@ class IxAppDelegate: NSObject, UIApplicationDelegate {
         
         Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
-
+        
         setupNotificationCategoriesAndActions()
-
+        
         return true
     }
 }

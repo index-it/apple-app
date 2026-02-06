@@ -14,6 +14,9 @@ struct IxListItemEntity: IndexedEntity {
     
     var id: String
     
+    @Property
+    var listId: String
+    
     @Property(indexingKey: \.title)
     var name: String
     
@@ -42,6 +45,7 @@ struct IxListItemEntity: IndexedEntity {
     
     init(item: IxListItem) {
         self.id = item.id
+        self.listId = item.listId
         self.name = item.name
         self.completed = item.completed
         self.link = item.link.flatMap { URL(string: $0) }
@@ -53,6 +57,6 @@ struct IxListItemEntity: IndexedEntity {
 //@available(iOS 26.0, *)
 //extension IxListItemEntity: URLRepresentableEntity {
 //    static var urlRepresentation: URLRepresentation {
-//        URLRepresentation(stringLiteral: "https://web.index-it.app/lists/\(.listId)/items/\(.id)")
+//        "https://web.index-it.app/lists/\(.listId)/items/\(.id)"
 //    }
 //}

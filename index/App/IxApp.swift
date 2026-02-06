@@ -202,9 +202,11 @@ struct IxApp: App {
                 .installToast(service: toastService)
                 .paywallCover(service: paywallService)
                 .onOpenURL { url in
-                    if GIDSignIn.sharedInstance.handle(url) {
-                        return
-                    }
+//                    if GIDSignIn.sharedInstance.handle(url) {
+//                        return
+//                    }
+                    
+                    print("OPENING URL \(url)")
 
                     UniversalLinksHelper.handleUniversalLink(url, navigationManager: navigationManager)
                 }

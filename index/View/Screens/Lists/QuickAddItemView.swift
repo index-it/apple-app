@@ -99,6 +99,7 @@ struct QuickAddItemView: View {
                 }
             }
 
+            try? await IxSystemIntegration.handleNewEntities(lists.map(IxListEntity.init))
         } catch {}
     }
 
@@ -118,6 +119,8 @@ struct QuickAddItemView: View {
                     context.insert(category)
                 }
             }
+
+            try? await IxSystemIntegration.handleNewEntities(categories.map(IxListCategoryEntity.init))
         } catch {}
     }
 
@@ -129,6 +132,7 @@ struct QuickAddItemView: View {
                 context.insert(list)
             }
 
+            try? await IxSystemIntegration.handleNewEntity(IxListEntity(list: list))
             itemEditorConfig.entity.listId = list.id
         } catch IxApiClientError.proRequired(_) {
             showPaywall()
@@ -149,6 +153,7 @@ struct QuickAddItemView: View {
                 context.insert(category)
             }
 
+            try? await IxSystemIntegration.handleNewEntity(IxListCategoryEntity(category: category))
             itemEditorConfig.entity.categoryId = category.id
         } catch {
             showError(.localizedError(title: "Error creating category", error: error))
@@ -174,6 +179,7 @@ struct QuickAddItemView: View {
                     try context.transaction {
                         context.insert(item)
                     }
+                    try? await IxSystemIntegration.handleNewEntity(IxListItemEntity(item: item))
                 } catch {}
             }
             

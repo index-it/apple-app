@@ -2,10 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>FirebaseAppDelegateProxyEnabled</key>
-	<false/>
-	<key>CFBundleIdentifier</key>
-	<string></string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -15,6 +11,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
 	<key>GIDClientID</key>
 	<string>367062845885-0f6o9fj6cbebggmkbbrmseagbln33m2c.apps.googleusercontent.com</string>
 	<key>GIDServerClientID</key>

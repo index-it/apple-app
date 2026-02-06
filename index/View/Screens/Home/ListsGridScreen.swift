@@ -77,7 +77,7 @@ struct ListsGridScreen: View {
             context.insert(list)
         }
         
-        IxSystemIntegration.handleNewEntity(IxListEntity(list: list))
+        try? await IxSystemIntegration.handleNewEntity(IxListEntity(list: list))
     }
 
     // MARK: - List CRUD
@@ -128,6 +128,8 @@ struct ListsGridScreen: View {
             try context.transaction {
                 try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
             }
+
+            try? await IxSystemIntegration.handleEntityDeletion(id, of: IxListEntity.self)
         } catch IxApiClientError.notFound {
             do {
                 try context.transaction {
@@ -147,6 +149,8 @@ struct ListsGridScreen: View {
             try context.transaction {
                 try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
             }
+
+            try? await IxSystemIntegration.handleEntityDeletion(id, of: IxListEntity.self)
         } catch IxApiClientError.notFound {
             do {
                 try context.transaction {

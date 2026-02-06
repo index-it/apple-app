@@ -36,23 +36,29 @@ struct CreateTaskIntent: AppIntent {
         description: "Time at which you will be reminded of the task",
         kind: .time
     )
-    var time: Date
+    var time: Date?
     @Parameter(title: "Priority")
     var priority: TaskPriority?
     
     
-
     @Dependency var modelContainer: ModelContainer
     @Dependency var ixApiClient: IxApiClient
 
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<IxTaskEntity> {
+        let reminder = time.flatMap {
+            IxTaskReminder(
+                daysBefore: 0,
+                timeOffset: DateHelper.getUtcReminderTimeOffset(localTimeDate: $0)
+            )
+        }
+        
         let task = try await ixApiClient.createTask(
             name: name,
             description: description,
             dueDate: dueDate,
             rrule: nil,
-            reminders: [],
+            reminders: [reminder].compactMap{ $0 },
             subtasks: [],
             priority: priority?.rawValue,
             itemId: nil

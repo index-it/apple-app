@@ -28,7 +28,10 @@ enum UniversalLinksHelper {
         case IxUniversalLinks.Sections.lists:
             navigationManager.navigateToTab(.lists)
             
+            print("NAV TO LISTS")
+            
             if let listId = pathComponents[safe: 1] {
+                print("LIST ID IS: \(listId)")
                 if let categoriesSection = pathComponents[safe: 2],
                    categoriesSection == IxUniversalLinks.Sections.categories,
                    let categoryId = pathComponents[safe: 3] {

@@ -15,7 +15,7 @@ struct IxListEntity: IndexedEntity {
     
     var id: String
     
-    @Property(indexingKey: \.title)
+    @Property(indexingKey: \.displayName)
     var name: String
     
     @Property

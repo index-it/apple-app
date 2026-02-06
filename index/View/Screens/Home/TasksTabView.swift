@@ -107,7 +107,9 @@ struct TasksTabView: View {
                     context.insert(item)
                 }
             }
-            
+
+            try? await IxSystemIntegration.handleNewEntities(items.map(IxListItemEntity.init))
+
             try context.transaction {
                 try context.delete(
                     model: IxListCategory.self,
@@ -120,7 +122,9 @@ struct TasksTabView: View {
                     context.insert(category)
                 }
             }
-            
+
+            try? await IxSystemIntegration.handleNewEntities(categories.map(IxListCategoryEntity.init))
+
             try context.transaction {
                 try context.delete(
                     model: IxList.self,
@@ -133,6 +137,8 @@ struct TasksTabView: View {
                     context.insert(list)
                 }
             }
+
+            try? await IxSystemIntegration.handleNewEntities(lists.map(IxListEntity.init))
         } catch {
             showError(.localizedError(title: "Error loading task connected items", error: error))
         }
@@ -550,7 +556,7 @@ struct TasksTabView: View {
         ToolbarItem(placement: .topBarTrailing) {
             NavigationLink {
                 CompletedTasksList { task in
-                    editorConfig.present(entity: task)
+                    editorConfig.present(entity: task, mode: .edit)
                 } onCompletionToggle: { task in
                     Task {
                         await setTaskCompletion(id: task.id, completed: !task.completed)
