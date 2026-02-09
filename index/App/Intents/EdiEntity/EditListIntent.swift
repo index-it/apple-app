@@ -10,19 +10,34 @@ import SwiftData
 import IxCoreKit
 
 @available(iOS 26.0, *)
-struct CreateListIntent: AppIntent {
-    static let title: LocalizedStringResource = "Create list"
+struct EditListIntent: AppIntent {
+    static let title: LocalizedStringResource = "Edit List"
     
     static var parameterSummary: some ParameterSummary {
-        Summary("Create a \(\.$name) list.") {
-            \.$icon
-            \.$color
-            \.$items
+        When(\.$items, .hasAnyValue) {
+            Summary("Add \(\.$items) to \(\.$list)") {
+                \.$name
+                \.$icon
+                \.$color
+                \.$archive
+                \.$items
+            }
+        } otherwise: {
+            Summary("Edit \(\.$list).") {
+                \.$name
+                \.$icon
+                \.$color
+                \.$archive
+                \.$items
+            }
         }
     }
+    
+    @Parameter(title: "List", description: "The list to edit")
+    var list: IxListEntity
 
     @Parameter(title: "Name")
-    var name: String
+    var name: String?
     
     @Parameter(title: "Icon", description: "The emoji to use as the list icon")
     var icon: String?
@@ -30,25 +45,31 @@ struct CreateListIntent: AppIntent {
     @Parameter(title: "Color", description: "The color for the list")
     var color: IxColorEnum?
     
-    @Parameter(title: "Items", description: "Items to add to this list")
-    var items: [String]?
-
+    @Parameter(title: "Archive", description: "Whether the list is archived or not")
+    var archive: Bool?
+    
+    @Parameter(title: "Items", description: "Items to add to this list", default: [])
+    var items: [String]
+    
     @Dependency var modelContainer: ModelContainer
     @Dependency var ixApiClient: IxApiClient
 
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<IxListEntity> & ProvidesDialog & ShowsSnippetIntent {
-        let list = try await ixApiClient.createList(
-            name: name,
-            icon: icon?.emoji ?? EmojiHelper.randomEmoji(),
-            color: color?.color.hexString ?? ColorHelper.randomIxColor().hexString,
-            archived: false,
-            is_public: false
+        let list = try await ixApiClient.editList(
+            id: list.id,
+            name: name ?? list.name,
+            icon: icon?.emoji ?? list.icon,
+            color: color?.color.hexString ?? list.color,
+            archived: archive ?? list.archived,
+            is_public: list.isPublic
         )
 
         let modelContext = modelContainer.mainContext
         
+        let listId = list.id
         try modelContext.transaction {
+            try modelContext.delete(model: IxList.self, where: #Predicate { list in list.id == listId })
             modelContext.insert(list)
         }
         
@@ -56,7 +77,7 @@ struct CreateListIntent: AppIntent {
         try? await IxSystemIntegration.handleNewEntity(listEntity)
         
         var newItems: [IxListItem] = []
-        if let items = items, !items.isEmpty {
+        if !items.isEmpty {
             for itemName in items {
                 let newItem = try await ixApiClient.createListItem(
                     listId: list.id,
@@ -82,8 +103,8 @@ struct CreateListIntent: AppIntent {
         return .result(
             value: listEntity,
             dialog: IntentDialog(
-                full: "Created list \(list.icon) \(list.name)\(newItems.isEmpty ? "" : " with \(newItems.count) items").",
-                supporting: "Here's the created list."
+                full: "List \(list.icon) \(list.name) modified\(newItems.isEmpty ? "" : " adding \(newItems.count) items").",
+                supporting: "Here's the modified list."
             ),
             snippetIntent: ListSnippetIntent(list: listEntity)
         )

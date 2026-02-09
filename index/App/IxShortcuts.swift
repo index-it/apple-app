@@ -22,6 +22,41 @@ struct IxShorcuts: AppShortcutsProvider {
         )
         
         AppShortcut(
+            intent: CreateItemIntent(),
+            phrases: [
+                "Add item to \(\.$list) in \(.applicationName)",
+                "Create an item in \(\.$list)  in \(.applicationName)"
+            ],
+            shortTitle: "Add Item",
+            systemImageName: "note.text.badge.plus",
+            parameterPresentation: ParameterPresentation(
+                for: \.$list,
+                summary: Summary("Add item to \(\.$list)"),
+                optionsCollections: {
+                    OptionsCollection(IxListEntityQuery(), title: "Add item to a List", systemImageName: "square.grid.2x2.fill")
+                }
+            )
+        )
+        
+        AppShortcut(
+            intent: OpenListIntent(),
+            phrases: [
+                "Open \(\.$target) in \(.applicationName)",
+                "Open \(\.$target) list in \(.applicationName)",
+                "Open the \(\.$target) list in \(.applicationName)"
+            ],
+            shortTitle: "Open List",
+            systemImageName: "note.text.badge.plus",
+            parameterPresentation: ParameterPresentation(
+                for: \.$target,
+                summary: Summary("Open \(\.$target)"),
+                optionsCollections: {
+                    OptionsCollection(IxListEntityQuery(), title: "Open a List", systemImageName: "square.grid.2x2.fill")
+                }
+            )
+        )
+        
+        AppShortcut(
             intent: NavigateIntent(),
             phrases: [
                 "Navigate in \(.applicationName)",

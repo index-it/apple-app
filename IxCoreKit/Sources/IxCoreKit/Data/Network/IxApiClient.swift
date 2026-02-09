@@ -1222,6 +1222,39 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
+    
+    /// Move list items between lists
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermission` List editor permissions required
+    /// - `IxApiClientError.NotFound` List or item not found
+    /// - `IxApiClientError.Unknown` Unknown error
+    @Sendable public func moveListItems(listId: String, itemIds: [String], moveListId: String?, moveCategoryId: String?) async throws -> [IxListItem] {
+        let url = URL(string: "\(Self.baseUrl)/lists/\(listId)/items/move")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        // Setting the body for the request
+        let body = ListItemsMoveReqBody(ids: itemIds, listId: moveListId, categoryId: moveCategoryId)
+        request.httpBody = try Self.encoder().encode(body)
+
+        let (data, response) = try await urlSession.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+
+        switch httpResponse.statusCode {
+        case 200:
+            return try Self.decoder().decode([NetworkListItem].self, from: data).map { IxListItem(networkListItem: $0) }
+        case 400:
+            throw IxApiClientError.invalidData
+        case 403:
+            throw IxApiClientError.missingPermission(.editor)
+        case 404:
+            throw IxApiClientError.notFound(.item)
+        default:
+            throw IxApiClientError.unknown
+        }
+    }
 
     /// Deletes a list item
     ///

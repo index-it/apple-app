@@ -41,7 +41,7 @@ public final class IxListCategory: Sanitizable, Validatable, EmptyInitializable 
 
     public static func mock(
         name: String,
-        color: String?,
+        color: String? = nil,
         listId: String = UUID().uuidString,
         userId: String = UUID().uuidString
     ) -> IxListCategory {

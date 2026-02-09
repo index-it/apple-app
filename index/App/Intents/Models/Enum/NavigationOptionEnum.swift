@@ -23,8 +23,8 @@ enum NavigationOptionEnum: String, Hashable, Identifiable, CaseIterable, AppEnum
     }
 
     static var caseDisplayRepresentations: [NavigationOptionEnum : DisplayRepresentation] = [
-        .lists: DisplayRepresentation(title: "Lists", image: .init(systemName: "square.grid.2x2.fill")),
-        .tasks: DisplayRepresentation(title: "Tasks", image: .init(systemName: "rectangle.grid.1x2.fill")),
+        .lists: DisplayRepresentation(title: "Lists", image: .init(systemName: "square.grid.2x2")),
+        .tasks: DisplayRepresentation(title: "Tasks", image: .init(systemName: "rectangle.grid.1x2")),
         .createTask: DisplayRepresentation(title: "Create task", image: .init(systemName: "calendar.badge.plus")),
         .createItem: DisplayRepresentation(title: "Create item", image: .init(systemName: "note.text.badge.plus")),
     ]

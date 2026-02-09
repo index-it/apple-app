@@ -82,16 +82,6 @@ struct TaskRowContentView: View {
     var onCompletionToggle: (IxTask) -> Void
     var onDelete: (IxTask) -> Void
 
-    var priorityColor: Color {
-        switch task.priority {
-        case 0: .gray
-        case 1: .green
-        case 2: .orange
-        case 3: .red
-        default: .gray
-        }
-    }
-
     @Query var taskItemCategory: [IxListCategory]
     @Query var taskItemList: [IxList]
 
@@ -212,9 +202,9 @@ struct TaskRowContentView: View {
 
                 Spacer()
 
-                if task.priority != nil {
+                if let priority = task.priority {
                     Image(systemName: "flag.fill")
-                        .foregroundStyle(priorityColor)
+                        .foregroundStyle(IxTask.priorityColor(priority))
                 }
             }
         }

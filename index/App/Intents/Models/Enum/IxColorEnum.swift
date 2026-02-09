@@ -7,6 +7,7 @@
 
 import AppIntents
 import SwiftUI
+import IxCoreKit
 
 enum IxColorEnum: String, Hashable, Identifiable, CaseIterable, AppEnum {
     case darkGreen

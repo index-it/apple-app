@@ -79,7 +79,9 @@ struct ItemRow: View {
                 }
 
                 if let link = link {
-                    linkButtonView(link)
+                    LinkButtonView(link: link, url: url) {
+                        onOpenLink(item)
+                    }
                 }
             }
         }
@@ -223,55 +225,6 @@ struct ItemRow: View {
                 Button("Cancel", role: .cancel) {}
             } label: {
                 Label("Delete", systemImage: "trash")
-            }
-        }
-    }
-
-    private func linkButtonView(_ link: String) -> some View {
-        Button {
-            onOpenLink(item)
-        } label: {
-            HStack(spacing: 6) {
-                FaviconImage(link: link) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .clipShape(.buttonBorder)
-                        .frame(width: 24, height: 24)
-                } placeholder: {
-                    Image(systemName: "globe")
-                        .frame(width: 16, height: 24)
-                }
-
-                Group {
-                    if let url = url,
-                       let host = url.host
-                    {
-                        Text(host.hasPrefix("www.") ? String(host.dropFirst(4)) : host)
-                    } else {
-                        Text(link)
-                    }
-                }
-                .font(.footnote)
-            }
-        }
-        .foregroundStyle(Color.systemLabel)
-        .buttonBorderShape(.roundedRectangle)
-        .controlSize(.small)
-        .buttonStyle(.bordered)
-        .contextMenu {
-            Button("Copy", systemImage: "document.on.document") {
-                UIPasteboard.general.url = url
-            }
-
-            if let url = url {
-                ShareLink(item: url) {
-                    Label("Share", systemImage: "square.and.arrow.up")
-                }
-            }
-        } preview: {
-            if let url = url {
-                SafariView(url: url)
             }
         }
     }

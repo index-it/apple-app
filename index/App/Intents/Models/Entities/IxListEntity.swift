@@ -27,6 +27,9 @@ struct IxListEntity: IndexedEntity {
     @Property
     var archived: Bool
     
+    @Property
+    var isPublic: Bool
+    
     static var typeDisplayRepresentation: TypeDisplayRepresentation {
         TypeDisplayRepresentation(
             name: LocalizedStringResource("List", table: "AppIntents", comment: "The type name for the list entity"),
@@ -47,6 +50,7 @@ struct IxListEntity: IndexedEntity {
         self.icon = list.icon
         self.color = list.color
         self.archived = list.archived
+        self.isPublic = list.isPublic
     }
 }
 

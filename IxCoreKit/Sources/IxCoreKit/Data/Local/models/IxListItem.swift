@@ -51,6 +51,30 @@ public final class IxListItem: Validatable, Sanitizable, EmptyInitializable {
             completed_at: networkListItem.completedAt
         )
     }
+    
+    public static func mock(
+        name: String,
+        completed: Bool = false,
+        listId: String = UUID().uuidString,
+        userId: String = UUID().uuidString,
+        categoryId: String? = nil,
+        link: String? = nil,
+        note: String? = nil
+    ) -> IxListItem {
+        return IxListItem(
+            id: UUID().uuidString,
+            user_id: userId,
+            list_id: listId,
+            category_id: categoryId,
+            name: name,
+            completed: completed,
+            link: link,
+            note: note,
+            created_at: Date().currentTimeMillis(),
+            edited_at: nil,
+            completed_at: completed ? Date().currentTimeMillis() : nil
+        )
+    }
 
     public static func empty() -> IxListItem {
         return IxListItem(
