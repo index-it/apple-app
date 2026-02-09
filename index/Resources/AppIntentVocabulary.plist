@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IntentPhrases</key>
+	<array>
+		<dict>
+			<key>IntentName</key>
+			<string>INAddTasksIntent</string>
+			<key>IntentExamples</key>
+			<array>
+				<string>Remind me to wax my skis tomorrow</string>
+				<string>Create a task every Sunday called Reflect on the week</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

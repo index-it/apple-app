@@ -11,6 +11,7 @@ import SwiftUI
 struct HomeScreen: View {
     @EnvironmentObject var navigationManager: NavigationManager
     @EnvironmentObject var notificationManager: NotificationManager
+    @EnvironmentObject var siriManager: SiriManager
     @AppStorage(AppStorageKeys.onboardingShowed) private var onboardingShowed: Bool = false
 
     var body: some View {
@@ -34,7 +35,8 @@ struct HomeScreen: View {
                     onboardingShowed = true
 
                     Task {
-                        await notificationManager.requestPermissions()
+                        let _ = await notificationManager.requestPermissions()
+                        siriManager.requestPermissions()
                     }
                 }
             )
@@ -43,7 +45,8 @@ struct HomeScreen: View {
                 onboardingShowed = true
 
                 Task {
-                    await notificationManager.requestPermissions()
+                    let _ = await notificationManager.requestPermissions()
+                    siriManager.requestPermissions()
                 }
             }
         }

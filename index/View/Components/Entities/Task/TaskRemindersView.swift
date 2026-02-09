@@ -170,8 +170,7 @@ struct TaskRemindersView: View {
         if !reminders.isEmpty, user?.has_pro != true {
             showPaywall()
         } else {
-            let timeOffset = DateHelper.getUtcReminderTimeOffset(localTimeDate: createReminderTime)
-            print("using timeoffset \(timeOffset)")
+            let timeOffset = DateHelper.getUtcReminderTimeOffset(createReminderTime)
 
             reminders.append(
                 IxTaskReminder(

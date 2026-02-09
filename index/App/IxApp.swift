@@ -55,6 +55,7 @@ struct IxApp: App {
     @StateObject private var navigationManager = NavigationManager()
     @StateObject private var authNavigationManager = AuthNavigationManager()
     @StateObject var notificationManager = NotificationManager()
+    @StateObject var siriManager = SiriManager()
     @StateObject private var errorService = ErrorStateService()
     @StateObject private var toastService = ToastStateService()
     @StateObject private var paywallService = PaywallStateService()
@@ -115,8 +116,9 @@ struct IxApp: App {
                 async let disconnectResult: () = ixWebsocketClient.disconnect()
                 async let clearRegisterResult: () = SyncRegister.shared.clear()
                 async let revenueCatResult: () = RevenueCatHelper.logout()
+                async let clearAppEntities: () = IxSystemIntegration.clearEntities()
 
-                _ = await (disconnectResult, clearRegisterResult, revenueCatResult)
+                _ = await (disconnectResult, clearRegisterResult, revenueCatResult, try? clearAppEntities)
             }
         case let .authenticated(user: networkUser):
             log.debug("network client authenticated - id: \(networkUser.id) - email: \(networkUser.email)")
@@ -176,6 +178,9 @@ struct IxApp: App {
                         log.error("Failed donating app entities to spotlight: \(error)")
                     }
                 }
+                .task {
+                    siriManager.checkForPermissions()
+                }
                 .onChange(of: authenticationHelper.backendAuthStatus, initial: true) { _, newBackendAuthStatus in
                     onBackendAuthStatusChange(newBackendAuthStatus)
                 }
@@ -192,6 +197,7 @@ struct IxApp: App {
                 .environmentObject(authNavigationManager)
                 .environmentObject(navigationManager)
                 .environmentObject(notificationManager)
+                .environmentObject(siriManager)
                 .environmentObject(errorService)
                 .environmentObject(toastService)
                 .environmentObject(paywallService)

@@ -27,6 +27,10 @@ public extension EKRecurrenceRule {
                          setPositions: parser.setPositions,
                          end: parser.end)
     }
+    
+    func lastRRuleString() -> String? {
+        return description.split(separator: "RRULE").last?.trimmingCharacters(in: .whitespaces)
+    }
 }
 
 struct RecurrenceParser {

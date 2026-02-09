@@ -14,6 +14,6 @@
 	],
 	"workspace": "/Users/j/ghq/github.com/index-it/index/index.xcodeproj/project.xcworkspace",
 	"build_root": "/Users/j/Library/Developer/Xcode/DerivedData/index-dbyurnosywjicsbodvftlqzvocnm",
-	"scheme": "index",
+	"scheme": "IxIntentsExtension",
 	"kind": "xcode"
 }

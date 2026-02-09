@@ -25,6 +25,10 @@ enum IxSystemIntegration {
         try await CSSearchableIndex.default().indexAppEntities(tasks)
     }
     
+    static func clearEntities() async throws {
+        try await CSSearchableIndex.default().deleteAllSearchableItems()
+    }
+    
     static func handleNewEntities<T: IndexedEntity>(_ entities: [T]) async throws {
         try await CSSearchableIndex.default().deleteAppEntities(identifiedBy: entities.map(\.id), ofType: T.self)
         try await CSSearchableIndex.default().indexAppEntities(entities)

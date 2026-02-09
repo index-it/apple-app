@@ -148,9 +148,6 @@
     "Adding multiple tasks" : {
 
     },
-    "Additional description for the task" : {
-
-    },
     "After" : {
 
     },
@@ -313,12 +310,6 @@
     "Create a new list item" : {
 
     },
-    "Create a new task" : {
-
-    },
-    "Create a new task with ${name} and optionally a ${description}, ${dueDate} and ${priority}" : {
-
-    },
     "Create an item in ${list} with ${name} and optional ${category}, ${link} and ${note}" : {
 
     },
@@ -383,9 +374,6 @@
 
     },
     "Done" : {
-
-    },
-    "Due date" : {
 
     },
     "Each" : {
@@ -916,12 +904,6 @@
     "Those are all the active invite links of this list, you can delete them by swiping left.\n\nUser specific invites are not shown here and are not deletable." : {
 
     },
-    "Time" : {
-
-    },
-    "Time at which you will be reminded of the task" : {
-
-    },
     "to-do" : {
 
     },
@@ -989,9 +971,6 @@
 
     },
     "What's your email?" : {
-
-    },
-    "When the task should be completed" : {
 
     },
     "Which list?" : {
