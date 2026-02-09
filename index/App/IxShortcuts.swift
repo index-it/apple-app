@@ -25,7 +25,9 @@ struct IxShorcuts: AppShortcutsProvider {
             intent: CreateItemIntent(),
             phrases: [
                 "Add item to \(\.$list) in \(.applicationName)",
-                "Create an item in \(\.$list)  in \(.applicationName)"
+                "Add item to my \(\.$list) list in \(.applicationName)",
+                "Create an item in \(\.$list)  in \(.applicationName)",
+                "Create an item in my \(\.$list) list in \(.applicationName)"
             ],
             shortTitle: "Add Item",
             systemImageName: "note.text.badge.plus",

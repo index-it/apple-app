@@ -255,6 +255,10 @@ struct ListScreen: View {
             } else {
                 editorConfig.isPresented = false
             }
+            
+            Task {
+                await IxSystemIntegration.donateIntent(.createItem)
+            }
         } catch {
             showError(.localizedError(title: "Error creating item", error: error))
         }

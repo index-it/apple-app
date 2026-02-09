@@ -169,6 +169,10 @@ struct TasksTabView: View {
             } else {
                 editorConfig.isPresented = false
             }
+            
+            Task {
+                await IxSystemIntegration.donateIntent(.createTask)
+            }
         } catch IxApiClientError.proRequired(_) {
             showPaywall()
         } catch {

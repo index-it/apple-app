@@ -554,6 +554,10 @@ struct ListsGridScreen: View {
             },
             onListCardTap: { list in
                 navigator.push(.listRoute(listId: list.id))
+                
+                Task {
+                    await IxSystemIntegration.donateIntent(.openList(list))
+                }
             },
             onShare: { list in
                 selectedList = list

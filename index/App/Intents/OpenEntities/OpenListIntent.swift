@@ -17,4 +17,10 @@ struct OpenListIntent: OpenIntent, URLRepresentableIntent {
 
     @Parameter(title: "List", requestValueDialog: "Which list?")
     var target: IxListEntity
+    
+    init() {}
+    
+    init(target: IxListEntity) {
+        self.target = target
+    }
 }

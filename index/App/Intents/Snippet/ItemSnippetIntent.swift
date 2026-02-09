@@ -60,6 +60,7 @@ struct ItemSnippetIntentView: View {
                 Spacer()
             }
         }
+        .padding(.top)
     }
 }
 

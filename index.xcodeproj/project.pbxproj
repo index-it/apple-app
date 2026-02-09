@@ -113,6 +113,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/Intents/CreateEntity/CreateItemIntent.swift,
+				App/Intents/CreateEntity/CreateTaskIntent.swift,
 				App/Intents/EdiEntity/EditItemIntent.swift,
 				App/Intents/IxIntentError.swift,
 				App/Intents/Models/Entities/IxListCategoryEntity.swift,
@@ -120,12 +121,17 @@
 				App/Intents/Models/Entities/IxListItemEntity.swift,
 				App/Intents/Models/Entities/IxTaskEntity.swift,
 				App/Intents/Models/Enum/IxColorEnum.swift,
+				App/Intents/Models/Enum/NavigationOptionEnum.swift,
 				App/Intents/Models/Query/IxListCategoryEntityQuery.swift,
 				App/Intents/Models/Query/IxListEntityQuery.swift,
 				App/Intents/Models/Query/IxListItemEntityQuery.swift,
 				App/Intents/Models/Query/IxTaskEntityQuery.swift,
+				App/Intents/Navigation/NavigateIntent.swift,
 				App/Intents/NonDiscoverable/CompleteItemByIdIntent.swift,
+				App/Intents/NonDiscoverable/CompleteTaskByIdIntent.swift,
+				App/Intents/OpenEntities/OpenListIntent.swift,
 				App/Intents/Snippet/ItemSnippetIntent.swift,
+				App/Intents/Snippet/TaskSnippetIntent.swift,
 				App/IxSystemIntegration.swift,
 				Navigation/IxNavigator.swift,
 				View/Components/ColorPicker.swift,
@@ -162,6 +168,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/Intents/CreateEntity/CreateItemIntent.swift,
+				App/Intents/CreateEntity/CreateTaskIntent.swift,
 				App/Intents/EdiEntity/EditItemIntent.swift,
 				App/Intents/IxIntentError.swift,
 				App/Intents/Models/Entities/IxListCategoryEntity.swift,
@@ -177,7 +184,9 @@
 				App/Intents/Navigation/NavigateIntent.swift,
 				App/Intents/NonDiscoverable/CompleteItemByIdIntent.swift,
 				App/Intents/NonDiscoverable/CompleteTaskByIdIntent.swift,
+				App/Intents/OpenEntities/OpenListIntent.swift,
 				App/Intents/Snippet/ItemSnippetIntent.swift,
+				App/Intents/Snippet/TaskSnippetIntent.swift,
 				App/IxSystemIntegration.swift,
 				Navigation/IxNavigator.swift,
 			);
@@ -187,6 +196,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/Intents/CreateEntity/CreateItemIntent.swift,
+				App/Intents/CreateEntity/CreateTaskIntent.swift,
 				App/Intents/EdiEntity/EditItemIntent.swift,
 				App/Intents/IxIntentError.swift,
 				App/Intents/Models/Entities/IxListCategoryEntity.swift,
@@ -194,12 +204,17 @@
 				App/Intents/Models/Entities/IxListItemEntity.swift,
 				App/Intents/Models/Entities/IxTaskEntity.swift,
 				App/Intents/Models/Enum/IxColorEnum.swift,
+				App/Intents/Models/Enum/NavigationOptionEnum.swift,
 				App/Intents/Models/Query/IxListCategoryEntityQuery.swift,
 				App/Intents/Models/Query/IxListEntityQuery.swift,
 				App/Intents/Models/Query/IxListItemEntityQuery.swift,
 				App/Intents/Models/Query/IxTaskEntityQuery.swift,
+				App/Intents/Navigation/NavigateIntent.swift,
 				App/Intents/NonDiscoverable/CompleteItemByIdIntent.swift,
+				App/Intents/NonDiscoverable/CompleteTaskByIdIntent.swift,
+				App/Intents/OpenEntities/OpenListIntent.swift,
 				App/Intents/Snippet/ItemSnippetIntent.swift,
+				App/Intents/Snippet/TaskSnippetIntent.swift,
 				App/IxSystemIntegration.swift,
 				Navigation/IxNavigator.swift,
 			);

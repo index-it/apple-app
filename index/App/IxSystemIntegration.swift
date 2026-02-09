@@ -10,8 +10,42 @@ import SwiftData
 import IxCoreKit
 import CoreSpotlight
 import WidgetKit
+import OSLog
+
+private let log = Logger(subsystem: IxSubsystems.APP, category: "IxSystemIntegration")
+
+enum IxDonatableIntent {
+    case openTasks
+    case openLists
+    case openList(IxList)
+    case createItem
+    case createTask
+    
+    var intent: any AppIntent {
+        return switch self {
+        case .openLists:
+            NavigateIntent(navigationOption: .lists)
+        case .openTasks:
+            NavigateIntent(navigationOption: .tasks)
+        case .openList(let list):
+            OpenListIntent(target: IxListEntity(list: list))
+        case .createItem:
+            CreateItemIntent()
+        case .createTask:
+            CreateTaskIntent()
+        }
+    }
+}
 
 enum IxSystemIntegration {
+    static func donateIntent(_ intent: IxDonatableIntent) async {
+        do {
+            try await IntentDonationManager.shared.donate(intent: intent.intent)
+        } catch {
+            log.error("Failed donating intent: \(error)")
+        }
+    }
+    
     @MainActor
     static func donateEntitiesToSpotlight(modelContainer: ModelContainer) async throws {
         let lists = try modelContainer.mainContext.fetch(FetchDescriptor<IxList>()).map(IxListEntity.init)

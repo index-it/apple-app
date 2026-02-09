@@ -37,6 +37,11 @@ struct HomeScreen: View {
                 }
             }
         }
+        .onChange(of: navigator.tab, initial: false) { _, newValue in
+            Task {
+                await IxSystemIntegration.donateIntent(newValue == .lists ? IxDonatableIntent.openLists : IxDonatableIntent.openTasks)
+            }
+        }
         .fullScreenCover(
             isPresented: Binding(
                 get: {
