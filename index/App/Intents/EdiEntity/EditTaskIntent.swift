@@ -6,13 +6,13 @@
 //
 
 import AppIntents
-import SwiftData
 import IxCoreKit
+import SwiftData
 
 @available(iOS 26.0, *)
 struct EditTaskIntent: AppIntent {
     static let title: LocalizedStringResource = "Edit Task"
-    
+
     static var parameterSummary: some ParameterSummary {
         Summary("Edit \(\.$task).") {
             \.$name
@@ -28,19 +28,19 @@ struct EditTaskIntent: AppIntent {
 
     @Parameter(title: "Name")
     var name: String?
-    
+
     @Parameter(title: "Description", description: "A description for the task")
     var description: String?
-    
+
     @Parameter(title: "Due date", description: "The due date for the task")
     var dueDate: Date?
-    
+
     @Parameter(title: "Priority", description: "The priority level for the task")
     var priority: Int?
-    
+
     @Parameter(title: "Completed", description: "Whether the task is completed or not")
     var completed: Bool?
-    
+
     @Dependency var modelContainer: ModelContainer
     @Dependency var ixApiClient: IxApiClient
 
@@ -59,23 +59,23 @@ struct EditTaskIntent: AppIntent {
         )
 
         let modelContext = modelContainer.mainContext
-        
+
         let taskId = task.id
         try modelContext.transaction {
             try modelContext.delete(model: IxTask.self, where: #Predicate { $0.id == taskId })
             modelContext.insert(task)
         }
-        
+
         let taskEntity = IxTaskEntity(task: task)
         try? await IxSystemIntegration.handleNewEntity(taskEntity)
-        
+
         // full: read by the system when it cannot display the view
         // supporting: read before displaying the view
         let dialog = IntentDialog(
             full: "Task \(task.name) modified.",
             supporting: "Here's the modified task."
         )
-        
+
         return .result(
             value: taskEntity,
             dialog: dialog,

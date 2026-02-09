@@ -5,11 +5,11 @@
 //  Created by Giulio Pimenoff Verdolin on 18/11/24.
 //
 
+import _AppIntents_SwiftUI
 import IxCoreKit
 import MCEmojiPicker
 import SwiftData
 import SwiftUI
-import _AppIntents_SwiftUI
 
 struct ListsGridScreen: View {
     @Environment(IxNavigator.self) private var navigator
@@ -17,32 +17,32 @@ struct ListsGridScreen: View {
     @Environment(\.modelContext) private var context
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @Environment(\.showError) private var showError
-    
+
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
-    
+
     @Query private var lists: [IxList]
     private var archived: Bool
-    
+
     // MARK: List creation
-    
+
     @State private var isAddingList = false
     @State private var newListColor: Color = ColorHelper.randomIxColor()
     @State private var newListEmoji: String = EmojiHelper.randomEmojiForPickerInitial()
-    
+
     // MARK: Selected list
-    
+
     @State private var selectedList: IxList? = nil
     @State private var isEditingList = false
     @State private var showDeleteConfirmationDialog = false
-    
+
     // MARK: Sorting and filtering
-    
+
     @AppStorage(AppStorageKeys.Lists.sorting) private var sorting = AppStorageKeys.Defaults.listsSorting
     @AppStorage(AppStorageKeys.Lists.sortOrder) private var sortOrder = AppStorageKeys.Defaults.listsSortOrder
     @AppStorage(AppStorageKeys.Lists.filter) private var filter = AppStorageKeys.Defaults.listsFilter
-    
+
     // MARK: Share sheet
-    
+
     @State private var selectedListUsersWithAccess: [IxListSingleUserAccessInfo] = []
     @State private var selectedListActiveInvites: [IxListInvite] = []
     @State private var showShareSheet = false
@@ -54,58 +54,58 @@ struct ListsGridScreen: View {
     @State private var showLeaveListConfirmation = false
     @State private var inviteEditorConfig = EditorConfig<IxListInvite>()
     @State private var inviteUrl: URL? = nil
-    
+
     // MARK: Quick add sheet
-    
+
     @State private var showQuickAddSheet: Bool = false
     @State private var quickAddSheetMultiMode: Bool = false
-    
+
     init(archived: Bool) {
         self.archived = archived
-        
+
         let listsDescriptor = FetchDescriptor<IxList>(
             predicate: #Predicate { list in
                 list.archived == archived
             }
         )
-        
+
         _lists = Query(listsDescriptor)
     }
-    
+
     private func saveList(_ list: IxList) async throws {
         let listId = list.id
         try context.transaction {
             try context.delete(model: IxList.self, where: #Predicate { $0.id == listId })
             context.insert(list)
         }
-        
+
         try? await IxSystemIntegration.handleNewEntity(IxListEntity(list: list))
     }
-    
+
     // MARK: - List CRUD
-    
+
     private func fetchLists() async {
         do {
             let lists = try await ixApiClient.getLists()
-            
+
             try context.transaction {
                 try context.delete(model: IxList.self)
-                
+
                 for ixList in lists {
                     context.insert(ixList)
                 }
             }
-            
+
             try? await IxSystemIntegration.handleNewEntities(lists.map(IxListEntity.init))
         } catch {
             showError(.localizedError(title: "Error loading lists", error: error))
         }
     }
-    
+
     private func createList(name: String, color: Color, emoji: String, isPublic: Bool) async {
         do {
             let list = try await ixApiClient.createList(name: name, icon: emoji, color: color.hexString, archived: false, is_public: isPublic)
-            
+
             try await saveList(list)
         } catch IxApiClientError.proRequired(_) {
             showPaywall()
@@ -113,24 +113,24 @@ struct ListsGridScreen: View {
             showError(.localizedError(title: "Error creating list", error: error))
         }
     }
-    
+
     private func editList(id: String, name: String, color: String, emoji: String, archived: Bool, isPublic: Bool) async {
         do {
             let list = try await ixApiClient.editList(id: id, name: name, icon: emoji, color: color, archived: archived, is_public: isPublic)
-            
+
             try await saveList(list)
         } catch {
             showError(.localizedError(title: "Error editing list", error: error))
         }
     }
-    
+
     private func deleteList(id: String) async {
         do {
             try await ixApiClient.deleteList(id: id)
             try context.transaction {
                 try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
             }
-            
+
             try? await IxSystemIntegration.handleEntityDeletion(id, of: IxListEntity.self)
         } catch IxApiClientError.notFound {
             do {
@@ -142,16 +142,16 @@ struct ListsGridScreen: View {
             showError(.localizedError(title: "Error deleting list", error: error))
         }
     }
-    
+
     // MARK: - LIST SHARING FUNCTIONS
-    
+
     private func leaveList(id: String) async {
         do {
             try await ixApiClient.leaveList(id: id)
             try context.transaction {
                 try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
             }
-            
+
             try? await IxSystemIntegration.handleEntityDeletion(id, of: IxListEntity.self)
         } catch IxApiClientError.notFound {
             do {
@@ -163,24 +163,24 @@ struct ListsGridScreen: View {
             showError(.localizedError(title: "Error leaving list", error: error))
         }
     }
-    
+
     private func editListPublic(isPublic: Bool) async {
         if let selectedList {
             do {
                 loadingSelectedListPublic = true
                 let list = try await ixApiClient.editList(id: selectedList.id, name: selectedList.name, icon: selectedList.icon, color: selectedList.color, archived: selectedList.archived, is_public: isPublic)
-                
+
                 loadingSelectedListPublic = false
-                
+
                 try await saveList(list)
             } catch {
                 loadingSelectedListPublic = false
-                
+
                 showError(.localizedError(title: "Error updating list", error: error))
             }
         }
     }
-    
+
     private func fetchListUsersWthAccess(listId: String) async {
         do {
             loadingSelectedListUsers = true
@@ -191,7 +191,7 @@ struct ListsGridScreen: View {
             showError(.localizedError(title: "Error fetching users", error: error))
         }
     }
-    
+
     private func fetchListActiveInvites(listId: String) async {
         do {
             selectedListActiveInvites = try await ixApiClient.getListInvites(listId: listId)
@@ -199,17 +199,17 @@ struct ListsGridScreen: View {
             showError(.localizedError(title: "Error fetching active invites", error: error))
         }
     }
-    
+
     private func inviteUser(email: String, editor: Bool) async {
         if let selectedList {
             do {
                 loadingSelectedListUserInvite = true
                 let list = try await ixApiClient.inviteUserToList(listId: selectedList.id, email: email, editor: editor)
-                
+
                 if list == nil {
                     showUserInvitationSuccessAlert = true
                 }
-                
+
                 loadingSelectedListUserInvite = false
             } catch {
                 loadingSelectedListUserInvite = false
@@ -217,22 +217,22 @@ struct ListsGridScreen: View {
             }
         }
     }
-    
+
     private func editUserPermissions(email: String, editor: Bool) async {
         if let selectedList {
             do {
                 loadingSelectedListUserEditOrRevokePermissions = selectedListUsersWithAccess.first(where: { user in
                     user.email == email
                 })?.userId
-                
+
                 let list = try await ixApiClient.inviteUserToList(listId: selectedList.id, email: email, editor: editor)
-                
+
                 loadingSelectedListUserEditOrRevokePermissions = nil
-                
+
                 if let list {
                     try await saveList(list)
                 }
-                
+
                 await fetchListUsersWthAccess(listId: selectedList.id)
             } catch {
                 loadingSelectedListUserEditOrRevokePermissions = nil
@@ -240,17 +240,17 @@ struct ListsGridScreen: View {
             }
         }
     }
-    
+
     private func revokeUserAccessFromList(userId: String) async {
         if let selectedList {
             do {
                 loadingSelectedListUserEditOrRevokePermissions = userId
-                
+
                 let list = try await ixApiClient.revokeListAccessFromUser(listId: selectedList.id, userId: userId)
                 loadingSelectedListUserEditOrRevokePermissions = nil
-                
+
                 try await saveList(list)
-                
+
                 await fetchListUsersWthAccess(listId: selectedList.id)
             } catch {
                 loadingSelectedListUserEditOrRevokePermissions = nil
@@ -258,14 +258,14 @@ struct ListsGridScreen: View {
             }
         }
     }
-    
+
     private func createInvite() async {
         if let selectedList {
             do {
                 inviteEditorConfig.loading = true
                 defer { inviteEditorConfig.loading = false }
                 let createData = try inviteEditorConfig.sanitizeAndValidate()
-                
+
                 let invite = try await ixApiClient.createListInvite(
                     listId: selectedList.id,
                     editor: createData.editor,
@@ -273,7 +273,7 @@ struct ListsGridScreen: View {
                     expiresAt: createData.expiresAt,
                     description: createData.description
                 )
-                
+
                 inviteEditorConfig.isPresented = false
                 if let token = invite.token, let url = URL(string: IxUniversalLinks.listInvite(token)) {
                     inviteUrl = url
@@ -285,7 +285,7 @@ struct ListsGridScreen: View {
             }
         }
     }
-    
+
     private func deleteInvite(_ inviteId: String) async {
         if let selectedList {
             do {
@@ -296,7 +296,7 @@ struct ListsGridScreen: View {
             }
         }
     }
-    
+
     var body: some View {
         ListsDisplayerView
             .navigationTitle(archived ? "Archived lists" : "Your lists")
@@ -321,7 +321,7 @@ struct ListsGridScreen: View {
                         Label("Settings", systemImage: "gearshape")
                     }
                 }
-                
+
                 if !archived {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
@@ -335,7 +335,7 @@ struct ListsGridScreen: View {
                         }
                     }
                 }
-                
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Menu {
@@ -347,12 +347,12 @@ struct ListsGridScreen: View {
                             } label: {
                                 Text("Sorting")
                             }
-                            
+
                             //                            if sorting != .manual {
                             Picker(selection: $sortOrder) {
                                 Text(SortOrder.forward.labelForListsSorting(sorting))
                                     .tag(SortOrder.forward)
-                                
+
                                 Text(SortOrder.reverse.labelForListsSorting(sorting))
                                     .tag(SortOrder.reverse)
                             } label: {
@@ -366,7 +366,7 @@ struct ListsGridScreen: View {
                                 Image(systemName: "arrow.up.arrow.down")
                             }
                         }
-                        
+
                         Picker(selection: $filter) {
                             ForEach(ListsFilter.allCases) { filter in
                                 Text(filter.label)
@@ -379,9 +379,9 @@ struct ListsGridScreen: View {
                                 Image(systemName: "line.3.horizontal.decrease")
                             }
                         }.pickerStyle(.menu)
-                        
+
                         Divider()
-                        
+
                         if !archived {
                             Button {
                                 navigator.push(.archivedLists)
@@ -488,7 +488,7 @@ struct ListsGridScreen: View {
                             }
                         }
                     }
-                    
+
                     Button("Keep", role: .cancel) {
                         showDeleteConfirmationDialog = false
                     }
@@ -508,7 +508,7 @@ struct ListsGridScreen: View {
                             }
                         }
                     }
-                    
+
                     Button("Stay", role: .cancel) {
                         showLeaveListConfirmation = false
                     }
@@ -520,7 +520,7 @@ struct ListsGridScreen: View {
             .onAppear {
                 Task {
                     let shouldSync = await SyncRegister.shared.hasExpired(SyncResource.lists)
-                    
+
                     if shouldSync {
                         await fetchLists()
                     }
@@ -539,7 +539,7 @@ struct ListsGridScreen: View {
                 }
             }
     }
-    
+
     private var ListsDisplayerView: some View {
         ListsGrid(
             userId: user?.id ?? "",
@@ -555,7 +555,7 @@ struct ListsGridScreen: View {
             },
             onListCardTap: { list in
                 navigator.push(.listRoute(listId: list.id))
-                
+
                 Task {
                     await IxSystemIntegration.donateIntent(.openList(list))
                 }
@@ -573,7 +573,7 @@ struct ListsGridScreen: View {
                 } else {
                     showLeaveListConfirmation = true
                 }
-                
+
             },
             onEdit: { list in
                 selectedList = list

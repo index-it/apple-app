@@ -6,7 +6,7 @@
 //
 
 struct NetworkTaskConnectedItems: Codable, Sendable {
-    public let items: [NetworkListItem]
-    public let categories: [NetworkListCategory]
-    public let lists: [NetworkList]
+    let items: [NetworkListItem]
+    let categories: [NetworkListCategory]
+    let lists: [NetworkList]
 }

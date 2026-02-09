@@ -1,18 +1,18 @@
 //
-//  CreateListIntent.swift
+//  EditListIntent.swift
 //  IxCoreKit
 //
 //  Created by Giulio Pimenoff Verdolin on 05/02/26.
 //
 
 import AppIntents
-import SwiftData
 import IxCoreKit
+import SwiftData
 
 @available(iOS 26.0, *)
 struct EditListIntent: AppIntent {
     static let title: LocalizedStringResource = "Edit List"
-    
+
     static var parameterSummary: some ParameterSummary {
         When(\.$items, .hasAnyValue) {
             Summary("Add \(\.$items) to \(\.$list)") {
@@ -32,25 +32,25 @@ struct EditListIntent: AppIntent {
             }
         }
     }
-    
+
     @Parameter(title: "List", description: "The list to edit")
     var list: IxListEntity
 
     @Parameter(title: "Name")
     var name: String?
-    
+
     @Parameter(title: "Icon", description: "The emoji to use as the list icon")
     var icon: String?
-    
+
     @Parameter(title: "Color", description: "The color for the list")
     var color: IxColorEnum?
-    
+
     @Parameter(title: "Archive", description: "Whether the list is archived or not")
     var archive: Bool?
-    
+
     @Parameter(title: "Items", description: "Items to add to this list", default: [])
     var items: [String]
-    
+
     @Dependency var modelContainer: ModelContainer
     @Dependency var ixApiClient: IxApiClient
 
@@ -66,16 +66,16 @@ struct EditListIntent: AppIntent {
         )
 
         let modelContext = modelContainer.mainContext
-        
+
         let listId = list.id
         try modelContext.transaction {
             try modelContext.delete(model: IxList.self, where: #Predicate { list in list.id == listId })
             modelContext.insert(list)
         }
-        
+
         let listEntity = IxListEntity(list: list)
         try? await IxSystemIntegration.handleNewEntity(listEntity)
-        
+
         var newItems: [IxListItem] = []
         if !items.isEmpty {
             for itemName in items {
@@ -88,13 +88,13 @@ struct EditListIntent: AppIntent {
                 )
                 newItems.append(newItem)
             }
-           
+
             try modelContext.transaction {
                 for newItem in newItems {
                     modelContext.insert(newItem)
                 }
             }
-            
+
             try? await IxSystemIntegration.handleNewEntities(newItems.map(IxListItemEntity.init))
         }
 

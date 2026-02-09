@@ -13,7 +13,9 @@ public enum TasksSorting: String, CaseIterable, Identifiable, Sendable {
     case creation
 //    case manual
 
-    public var id: Self { self }
+    public var id: Self {
+        self
+    }
 
     public var label: String {
         switch self {

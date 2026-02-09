@@ -45,7 +45,7 @@ public enum DateHelper {
         calendar.timeZone = TimeZone(identifier: "UTC")!
         return calendar
     }
-    
+
     public static func utcDate(from localDateComponents: DateComponents) -> Date? {
         return localCalendar().date(from: localDateComponents)
     }
@@ -53,7 +53,7 @@ public enum DateHelper {
     public static func startOfDay() -> Date {
         return calendar().startOfDay(for: Date.now)
     }
-    
+
     public static func millisFromStartOfDay() -> Int64 {
         return Int64(Date.now.timeIntervalSince(startOfDay()) * 1000)
     }
@@ -67,24 +67,24 @@ public enum DateHelper {
     public static func startOfDayOffsetFromLocalToUtc(offset: Int64) -> Int64 {
         return offset - Int64(TimeZone.current.secondsFromGMT() * 1000)
     }
-    
+
     public static func daysDifference(_ from: Date, _ to: Date) -> Int {
         return calendar().dateComponents([.day], from: from, to: to).day ?? 0
     }
-    
+
     public static func getUtcReminderTimeOffset(_ date: Date) -> Int64 {
         let components = calendar().dateComponents([.hour, .minute], from: date)
         let hoursInMs = Int64((components.hour ?? 0) * 60 * 60 * 1000)
         let minutesInMs = Int64((components.minute ?? 0) * 60 * 1000)
-        
+
         return hoursInMs + minutesInMs
     }
-    
+
     public static func getUtcReminderTimeOffset(from localDateComponents: DateComponents) -> Int64? {
         if localDateComponents.hour == nil || localDateComponents.minute == nil {
             return nil
         }
-        
+
         guard let date = localCalendar().date(from: localDateComponents) else {
             return nil
         }

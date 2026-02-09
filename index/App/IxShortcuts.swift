@@ -1,5 +1,5 @@
 //
-//  IxAppShortcutsProvider.swift
+//  IxShortcuts.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 09/02/26.
@@ -8,26 +8,28 @@
 import AppIntents
 
 struct IxShorcuts: AppShortcutsProvider {
-    static var shortcutTileColor: ShortcutTileColor { .grayGreen }
-    
+    static var shortcutTileColor: ShortcutTileColor {
+        .grayGreen
+    }
+
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
             intent: CreateListIntent(),
             phrases: [
                 "Create a list in \(.applicationName)",
-                "Add a list in \(.applicationName)"
+                "Add a list in \(.applicationName)",
             ],
             shortTitle: "Create List",
             systemImageName: "text.pad.header.badge.plus"
         )
-        
+
         AppShortcut(
             intent: CreateItemIntent(),
             phrases: [
                 "Add item to \(\.$list) in \(.applicationName)",
                 "Add item to my \(\.$list) list in \(.applicationName)",
                 "Create an item in \(\.$list)  in \(.applicationName)",
-                "Create an item in my \(\.$list) list in \(.applicationName)"
+                "Create an item in my \(\.$list) list in \(.applicationName)",
             ],
             shortTitle: "Add Item",
             systemImageName: "note.text.badge.plus",
@@ -39,13 +41,13 @@ struct IxShorcuts: AppShortcutsProvider {
                 }
             )
         )
-        
+
         AppShortcut(
             intent: OpenListIntent(),
             phrases: [
                 "Open \(\.$target) in \(.applicationName)",
                 "Open \(\.$target) list in \(.applicationName)",
-                "Open the \(\.$target) list in \(.applicationName)"
+                "Open the \(\.$target) list in \(.applicationName)",
             ],
             shortTitle: "Open List",
             systemImageName: "note.text.badge.plus",
@@ -57,12 +59,12 @@ struct IxShorcuts: AppShortcutsProvider {
                 }
             )
         )
-        
+
         AppShortcut(
             intent: NavigateIntent(),
             phrases: [
                 "Navigate in \(.applicationName)",
-                "Navigate to \(\.$navigationOption) in \(.applicationName)"
+                "Navigate to \(\.$navigationOption) in \(.applicationName)",
             ],
             shortTitle: "Navigate",
             systemImageName: "arrowshape.forward"

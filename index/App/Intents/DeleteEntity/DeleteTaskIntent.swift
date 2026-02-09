@@ -6,13 +6,13 @@
 //
 
 import AppIntents
-import SwiftData
 import IxCoreKit
+import SwiftData
 
 @available(iOS 26.0, *)
 struct DeleteTaskIntent: AppIntent {
     static let title: LocalizedStringResource = "Delete Task"
-    
+
     static var parameterSummary: some ParameterSummary {
         Summary("Delete\(\.$task).")
     }
@@ -29,7 +29,7 @@ struct DeleteTaskIntent: AppIntent {
         try? await ixApiClient.deleteTask(taskId: taskId)
         try? modelContainer.mainContext.delete(model: IxTask.self, where: #Predicate { $0.id == taskId })
         try? await IxSystemIntegration.handleEntityDeletion(taskId, of: IxTaskEntity.self)
-        
+
         return .result(
             dialog: "\(task.name) deleted."
         )

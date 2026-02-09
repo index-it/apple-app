@@ -12,7 +12,9 @@ public enum ListsFilter: String, CaseIterable, Identifiable, Sendable {
     case ownedByMe
     case sharedWithMe
 
-    public var id: Self { self }
+    public var id: Self {
+        self
+    }
 
     public var label: String {
         switch self {

@@ -51,7 +51,7 @@ public final class IxListItem: Validatable, Sanitizable, EmptyInitializable {
             completed_at: networkListItem.completedAt
         )
     }
-    
+
     public static func mock(
         name: String,
         completed: Bool = false,

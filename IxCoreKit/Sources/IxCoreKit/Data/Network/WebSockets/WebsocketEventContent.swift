@@ -65,7 +65,7 @@ enum WebsocketEventContent: Decodable {
         }
     }
 
-    // Event content types
+    /// Event content types
     struct UserUpdateEventContent: Codable {
         let user: NetworkUser
     }

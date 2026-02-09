@@ -50,14 +50,14 @@ struct QuickAddItemView: View {
     ) {
         self.onCancel = onCancel
         self.syncThreeshold = syncThreeshold
-        
+
         let item = IxListItem.empty()
         item.name = name ?? ""
         item.link = link
         item.note = note
         item.listId = selectedListId ?? ""
         item.categoryId = selectedCategoryId ?? ""
-        
+
         // NOTE: this in teory is bad practice
         _itemEditorConfig = State(initialValue: EditorConfig<IxListItem>(entity: item, multi: multi))
     }
@@ -182,7 +182,7 @@ struct QuickAddItemView: View {
                     try? await IxSystemIntegration.handleNewEntity(IxListItemEntity(item: item))
                 } catch {}
             }
-            
+
             if itemEditorConfig.multi {
                 showToast("Item created", systemImage: "checkmark.circle", tint: .green, placement: .top)
                 itemEditorConfig.reset()

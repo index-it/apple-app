@@ -23,7 +23,9 @@ enum RecurrenceFrequency: String, CaseIterable, Identifiable {
     case monthly = "Monthly"
     case yearly = "Yearly"
 
-    var id: Self { self }
+    var id: Self {
+        self
+    }
 }
 
 enum WeeklyFrequency: String, CaseIterable, Identifiable {
@@ -35,7 +37,9 @@ enum WeeklyFrequency: String, CaseIterable, Identifiable {
     case friday = "Friday"
     case saturday = "Saturday"
 
-    var id: Self { self }
+    var id: Self {
+        self
+    }
 }
 
 enum MonthlyWeekdayFrequency: String, CaseIterable, Identifiable {
@@ -46,7 +50,9 @@ enum MonthlyWeekdayFrequency: String, CaseIterable, Identifiable {
     case fifth
     case last
 
-    var id: Self { self }
+    var id: Self {
+        self
+    }
 }
 
 enum MonthlyWeekdayFrequencyTarget: String, CaseIterable, Identifiable {
@@ -62,7 +68,9 @@ enum MonthlyWeekdayFrequencyTarget: String, CaseIterable, Identifiable {
     //    case weekday = "weekday";
     //    case weekendDay = "weekend day";
 
-    var id: Self { self }
+    var id: Self {
+        self
+    }
 }
 
 enum EndRepeat {

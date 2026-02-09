@@ -14,7 +14,7 @@ class PassThroughWindow: UIWindow {
             return nil
         } else {
             if #unavailable(iOS 18) {
-                /// Less than iOS 18
+                // Less than iOS 18
                 return hitView == rootView ? nil : hitView
             } else {
                 for subview in rootView.subviews.reversed() {

@@ -1,5 +1,5 @@
 //
-//  WidgetDependencies.swift
+//  IxWidgetDependencies.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 09/02/26.
@@ -13,8 +13,8 @@ actor IxWidgetDependencies {
 
     @MainActor
     static func setup() async {
-        if !Self.isSetup {
-            Self.isSetup = true
+        if !isSetup {
+            isSetup = true
             AppDependencyManager.shared.add(dependency: ModelContainerProvider.shared)
             AppDependencyManager.shared.add(dependency: IxApiClient { _ in })
         }

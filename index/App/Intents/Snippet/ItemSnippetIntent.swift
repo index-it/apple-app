@@ -7,19 +7,19 @@
 
 import AppIntents
 import IxCoreKit
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ItemSnippetIntent: SnippetIntent {
     static let title: LocalizedStringResource = "Item Snippet"
 
     @Parameter var item: IxListItemEntity
     @Dependency var modelContainer: ModelContainer
-    
+
     init(item: IxListItemEntity) {
         self.item = item
     }
-    
+
     init() {}
 
     @MainActor
@@ -32,7 +32,7 @@ struct ItemSnippetIntent: SnippetIntent {
 
 struct ItemSnippetIntentView: View {
     let item: IxListItemEntity
-    
+
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
@@ -43,12 +43,12 @@ struct ItemSnippetIntentView: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
-                
+
                 VStack(alignment: .leading) {
                     Text(item.name)
                         .lineLimit(1)
                         .font(.footnote)
-                    
+
                     if let note = item.note {
                         Text(note)
                             .lineLimit(2)
@@ -56,7 +56,7 @@ struct ItemSnippetIntentView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                
+
                 Spacer()
             }
         }
@@ -68,5 +68,5 @@ struct ItemSnippetIntentView: View {
     ItemSnippetIntentView(
         item: IxListItemEntity(item: .mock(name: "test"))
     )
-        .padding()
+    .padding()
 }

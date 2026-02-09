@@ -6,13 +6,12 @@
 //
 
 @preconcurrency import AppIntents
-import SwiftData
-import OSLog
 import IxCoreKit
+import OSLog
+import SwiftData
 
 @available(iOS 26.0, *)
 struct IxListEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery, EntityPropertyQuery {
-
     @Dependency
     var modelContainer: ModelContainer
 
@@ -119,7 +118,7 @@ struct IxListEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery,
         var matchedLists = try await MainActor.run {
             var fetchDescriptor = FetchDescriptor<IxList>()
             fetchDescriptor.fetchLimit = limit
-            
+
             return try modelContainer.mainContext
                 .fetch(fetchDescriptor)
                 .map(IxListEntity.init)
@@ -136,7 +135,7 @@ struct IxListEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery,
                 }
         }
 
-        /**
+        /* 
          Apply the requested sort. `EntityQuerySort` specifies the value to sort by using a `PartialKeyPath`. This key path builds a
          `KeyPathComparator` to use default sorting implementations for the value that the key path provides. For example, this approach uses
          `SortComparator.localizedStandard` when sorting key paths with a `String` value.

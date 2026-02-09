@@ -32,7 +32,7 @@ public enum IxUniversalLinks {
     public static func list(_ listId: String) -> String {
         "https://\(host)/\(Sections.lists)/\(listId)"
     }
-    
+
     public static func listInvite(_ token: String) -> String {
         "https://\(host)/\(Sections.callback)/lists/accept-invite?token=\(token)"
     }

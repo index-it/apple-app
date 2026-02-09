@@ -1,10 +1,9 @@
 //
-//  TrailIntentError.swift
+//  IxIntentError.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 09/02/26.
 //
-
 
 import Foundation
 
@@ -15,7 +14,7 @@ import Foundation
 enum IxIntentError: Error, CustomLocalizedStringResourceConvertible {
     case listNotFound
     case unknown
-    
+
     var localizedStringResource: LocalizedStringResource {
         switch self {
         case .listNotFound:

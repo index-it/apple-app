@@ -38,7 +38,7 @@ struct TodayTasksWidgetView: View {
 
     @Environment(\.widgetFamily) var widgetFamily
     @Environment(\.openURL) var openUrl
-    
+
     var body: some View {
         tasksView
             .containerBackground(.background, for: .widget)
@@ -61,7 +61,6 @@ struct TodayTasksWidgetView: View {
         }
     }
 
-    @ViewBuilder
     var systemSmallView: some View {
         VStack(alignment: .leading) {
             HStack {
@@ -87,7 +86,6 @@ struct TodayTasksWidgetView: View {
         }
     }
 
-    @ViewBuilder
     var systemMediumView: some View {
         HStack {
             VStack {
@@ -126,7 +124,6 @@ struct TodayTasksWidgetView: View {
         }
     }
 
-    @ViewBuilder
     var systemLargeView: some View {
         VStack(alignment: .leading) {
             HStack {
@@ -169,7 +166,6 @@ struct TodayTasksWidgetView: View {
         }
     }
 
-    @ViewBuilder
     var createTaskButtonView: some View {
         Button(intent: NavigateIntent(navigationOption: NavigationOptionEnum.createTask)) {
             Label("Create", systemImage: "plus")
@@ -177,7 +173,6 @@ struct TodayTasksWidgetView: View {
         }
     }
 
-    @ViewBuilder
     func tasksListView(_ tasks: ArraySlice<IxTask>) -> some View {
         ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
             HStack {

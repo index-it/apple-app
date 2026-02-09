@@ -46,8 +46,7 @@ struct CategoryEditor: View {
                     } footer: {
                         Text(config.entity.color == nil ?
                             "The color of the category will be the same as the one of the list" :
-                            "Scroll horizontally for more colors"
-                        )
+                            "Scroll horizontally for more colors")
                     }
                 }
                 .animation(.default, value: config.entity.color)

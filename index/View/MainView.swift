@@ -16,7 +16,7 @@ struct MainView: View {
 
     var body: some View {
         @Bindable var navigator = navigator
-        
+
         NavigationStack(path: $navigator.path) {
             Group {
                 switch authStatus {

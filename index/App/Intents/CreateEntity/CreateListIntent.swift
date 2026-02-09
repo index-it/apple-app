@@ -6,13 +6,13 @@
 //
 
 import AppIntents
-import SwiftData
 import IxCoreKit
+import SwiftData
 
 @available(iOS 26.0, *)
 struct CreateListIntent: AppIntent {
     static let title: LocalizedStringResource = "Create list"
-    
+
     static var parameterSummary: some ParameterSummary {
         Summary("Create a \(\.$name) list.") {
             \.$icon
@@ -23,13 +23,13 @@ struct CreateListIntent: AppIntent {
 
     @Parameter(title: "Name")
     var name: String
-    
+
     @Parameter(title: "Icon", description: "The emoji to use as the list icon")
     var icon: String?
-    
+
     @Parameter(title: "Color", description: "The color for the list")
     var color: IxColorEnum?
-    
+
     @Parameter(title: "Items", description: "Items to add to this list")
     var items: [String]?
 
@@ -47,14 +47,14 @@ struct CreateListIntent: AppIntent {
         )
 
         let modelContext = modelContainer.mainContext
-        
+
         try modelContext.transaction {
             modelContext.insert(list)
         }
-        
+
         let listEntity = IxListEntity(list: list)
         try? await IxSystemIntegration.handleNewEntity(listEntity)
-        
+
         var newItems: [IxListItem] = []
         if let items = items, !items.isEmpty {
             for itemName in items {
@@ -67,13 +67,13 @@ struct CreateListIntent: AppIntent {
                 )
                 newItems.append(newItem)
             }
-           
+
             try modelContext.transaction {
                 for newItem in newItems {
                     modelContext.insert(newItem)
                 }
             }
-            
+
             try? await IxSystemIntegration.handleNewEntities(newItems.map(IxListItemEntity.init))
         }
 

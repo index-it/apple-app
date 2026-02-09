@@ -51,7 +51,8 @@ struct ListsGrid: View {
         self.onDelete = onDelete
         self.onLeave = onLeave
 
-        var filterPredicate = #Predicate<IxList> { list in
+        var filterPredicate = #Predicate<IxList> {
+            list in
             list.archived == archived
         }
 

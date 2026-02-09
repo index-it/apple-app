@@ -72,7 +72,7 @@ public final class IxTask: Sanitizable, Validatable, EmptyInitializable {
             return DateHelper.Formatters.taskRowDate.string(from: dueDate)
         }
     }
-    
+
     public static func priorityColor(_ priority: Int) -> Color {
         return switch priority {
         case 0: .gray
@@ -82,7 +82,7 @@ public final class IxTask: Sanitizable, Validatable, EmptyInitializable {
         default: .gray
         }
     }
-    
+
     public static func empty() -> IxTask {
         return IxTask(
             id: "",
@@ -101,7 +101,7 @@ public final class IxTask: Sanitizable, Validatable, EmptyInitializable {
             completedAt: nil
         )
     }
-    
+
     public static func empty(
         dueDate: Date? = nil
     ) -> IxTask {
@@ -122,40 +122,40 @@ public final class IxTask: Sanitizable, Validatable, EmptyInitializable {
             completedAt: nil
         )
     }
-    
+
     public var validationRes: Result<Void, ValidationError> {
         if name.isEmpty {
             return .failure(.init("Task name cannot be empty"))
         }
-        
+
         if name.count > IxValidations.Task.maxNameLength {
             return .failure(.init("Task name can be \(IxValidations.Task.maxNameLength) characters maximum"))
         }
-        
+
         if taskDescription?.count ?? 0 > IxValidations.Task.maxDescriptionLength {
             return .failure(.init("Task description can be \(IxValidations.Task.maxDescriptionLength) characters maximum"))
         }
-        
+
         if subtasks.count > IxValidations.Task.maxSubtaskCount {
             return .failure(.init("Task can have maximum \(IxValidations.Task.maxSubtaskCount) subtasks"))
         }
-        
+
         if reminders.count > IxValidations.Task.maxRemindersCount {
             return .failure(.init("Task can have maximum \(IxValidations.Task.maxRemindersCount) reminders"))
         }
-        
+
         return .success(())
     }
-    
+
     public var sanitized: IxTask {
         let copy = self
-        
+
         copy.name = name.sanitized
         copy.taskDescription = taskDescription?.sanitized
-        
+
         return copy
     }
-    
+
     public static func mock(
         name: String,
         description: String? = nil,

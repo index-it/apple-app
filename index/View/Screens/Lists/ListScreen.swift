@@ -79,14 +79,14 @@ struct ListScreen: View {
 
         return selectedCategoryColor.toColor()
     }
-    
+
     init(listId: String) {
         self.listId = listId
 
         _selectedCategoryId = AppStorage(
             wrappedValue: "", AppStorageKeys.Categories.selectedCategory(listId)
         )
-        
+
         // MARK: AppStorage init
 
         _showCompletedItems = AppStorage(
@@ -140,12 +140,12 @@ struct ListScreen: View {
         )
         _items = Query(listItemsDescriptor)
     }
-  
+
     // MARK: - Local storage savers
 
     func saveList(_ list: IxList) async throws {
         let id = list.id
-        
+
         try context.transaction {
             try context.delete(model: IxList.self, where: #Predicate { $0.id == id })
             context.insert(list)
@@ -156,7 +156,7 @@ struct ListScreen: View {
 
     func saveItem(_ item: IxListItem) async throws {
         let id = item.id
-        
+
         try context.transaction {
             try context.delete(model: IxListItem.self, where: #Predicate { $0.id == id })
             context.insert(item)
@@ -167,7 +167,7 @@ struct ListScreen: View {
 
     func saveCategory(_ category: IxListCategory) async throws {
         let id = category.id
-        
+
         try context.transaction {
             try context.delete(model: IxListCategory.self, where: #Predicate { $0.id == id })
             context.insert(category)
@@ -255,7 +255,7 @@ struct ListScreen: View {
             } else {
                 editorConfig.isPresented = false
             }
-            
+
             Task {
                 await IxSystemIntegration.donateIntent(.createItem)
             }
@@ -341,7 +341,8 @@ struct ListScreen: View {
             showError(
                 .localizedError(
                     title: "Error \(completed ? "completing" : "un-completing") items", error: error
-                ))
+                )
+            )
         }
     }
 
@@ -586,7 +587,7 @@ struct ListScreen: View {
                     navigator.categoryId = nil
                 }
             }
-            .onChange(of: navigator.itemId, initial: true) { _, newValue in
+            .onChange(of: navigator.itemId, initial: true) { _, _ in
                 // TODO: Decide how to highlight item
             }
             .onChange(of: lists, initial: true) { _, newLists in

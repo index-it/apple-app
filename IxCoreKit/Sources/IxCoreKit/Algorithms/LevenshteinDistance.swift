@@ -1,5 +1,5 @@
 //
-//  SwiftyLevenshtein.swift
+//  LevenshteinDistance.swift
 //  Levenshtein distance algorithm written in Swift 4. Both a slow and highly optimized version are included.
 //
 //  Created by Mark Hamilton on 3/31/16.
@@ -27,13 +27,13 @@
 
 import Foundation
 
-// Minimize 3
-fileprivate func min3(a: Int, b: Int, c: Int) -> Int {
-    return min( min(a, c), min(b, c))
+/// Minimize 3
+private func min3(a: Int, b: Int, c: Int) -> Int {
+    return min(min(a, c), min(b, c))
 }
 
 // In case they ever let subscripts throw
-//public extension String {
+// public extension String {
 //
 //    internal enum SubscriptError: ErrorType {
 //
@@ -62,121 +62,88 @@ fileprivate func min3(a: Int, b: Int, c: Int) -> Int {
 //
 //    }
 //
-//}
+// }
 
-fileprivate extension String {
-    
+private extension String {
     subscript(index: Int) -> Character {
         return self[self.index(startIndex, offsetBy: index)]
     }
-    
+
     subscript(range: Range<Int>) -> String {
-        
-        let char0 = self.index(startIndex, offsetBy: range.lowerBound)
-        
-        let charN = self.index(startIndex, offsetBy: range.upperBound)
-        
-        return String(self[char0..<charN])
-        
+        let char0 = index(startIndex, offsetBy: range.lowerBound)
+
+        let charN = index(startIndex, offsetBy: range.upperBound)
+
+        return String(self[char0 ..< charN])
     }
-    
 }
 
-fileprivate struct Array2D {
-    
+private struct Array2D {
     var columns: Int
     var rows: Int
     var matrix: [Int]
-    
-    
+
     init(columns: Int, rows: Int) {
-        
         self.columns = columns
-        
+
         self.rows = rows
-        
-        matrix = Array(repeating:0, count:columns*rows)
-        
+
+        matrix = Array(repeating: 0, count: columns * rows)
     }
-    
+
     subscript(column: Int, row: Int) -> Int {
-        
         get {
-            
             return matrix[columns * row + column]
-            
         }
-        
+
         set {
-            
             matrix[columns * row + column] = newValue
-            
         }
-        
     }
-    
+
     func columnCount() -> Int {
-        
-        return self.columns
-        
+        return columns
     }
-    
+
     func rowCount() -> Int {
-        
-        return self.rows
-        
+        return rows
     }
 }
 
 public func levenshtein(sourceString: String, target targetString: String) -> Int {
-    
     let source = Array(sourceString.unicodeScalars)
     let target = Array(targetString.unicodeScalars)
-    
+
     let (sourceLength, targetLength) = (source.count, target.count)
-    
+
     var distance = Array2D(columns: sourceLength + 1, rows: targetLength + 1)
-    
-    for x in 1...sourceLength {
-        
+
+    for x in 1 ... sourceLength {
         distance[x, 0] = x
-        
     }
-    
-    for y in 1...targetLength {
-        
+
+    for y in 1 ... targetLength {
         distance[0, y] = y
-        
     }
-    
-    for x in 1...sourceLength {
-        
-        for y in 1...targetLength {
-            
+
+    for x in 1 ... sourceLength {
+        for y in 1 ... targetLength {
             if source[x - 1] == target[y - 1] {
-                
                 // no difference
                 distance[x, y] = distance[x - 1, y - 1]
-                
+
             } else {
-                
                 distance[x, y] = min3(
-                    
                     // deletions
                     a: distance[x - 1, y] + 1,
                     // insertions
                     b: distance[x, y - 1] + 1,
                     // substitutions
                     c: distance[x - 1, y - 1] + 1
-                    
                 )
-                
             }
-            
         }
-        
     }
-    
+
     return distance[source.count, target.count]
-    
 }

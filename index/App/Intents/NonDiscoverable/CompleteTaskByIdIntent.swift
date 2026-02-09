@@ -1,13 +1,13 @@
 //
-//  CompleteTaskIntent.swift
+//  CompleteTaskByIdIntent.swift
 //  IxCoreKit
 //
 //  Created by Giulio Pimenoff Verdolin on 05/02/26.
 //
 
 import AppIntents
-import SwiftData
 import IxCoreKit
+import SwiftData
 
 @available(iOS 26.0, *)
 struct CompleteTaskByIdIntent: AppIntent {
@@ -20,9 +20,9 @@ struct CompleteTaskByIdIntent: AppIntent {
 
     @Dependency var modelContainer: ModelContainer
     @Dependency var ixApiClient: IxApiClient
-    
+
     init() {}
-    
+
     init(taskId: String) {
         self.taskId = taskId
     }
@@ -30,15 +30,15 @@ struct CompleteTaskByIdIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<IxTaskEntity> {
         let task = try await ixApiClient.setTaskCompletion(taskId: taskId, completed: true)
-        
+
         let modelContext = modelContainer.mainContext
         try modelContext.transaction {
             try modelContext.delete(model: IxTask.self, where: #Predicate { $0.id == taskId })
             modelContext.insert(task)
         }
-        
+
         try? await IxSystemIntegration.handleNewEntity(IxTaskEntity(task: task))
-        
+
         return .result(value: IxTaskEntity(task: task))
     }
 }

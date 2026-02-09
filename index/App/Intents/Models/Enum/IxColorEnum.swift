@@ -1,13 +1,13 @@
 //
-//  ListColor.swift
+//  IxColorEnum.swift
 //  index
 //
 //  Created by Giulio Pimenoff Verdolin on 09/02/26.
 //
 
 import AppIntents
-import SwiftUI
 import IxCoreKit
+import SwiftUI
 
 enum IxColorEnum: String, Hashable, Identifiable, CaseIterable, AppEnum {
     case darkGreen
@@ -55,7 +55,9 @@ enum IxColorEnum: String, Hashable, Identifiable, CaseIterable, AppEnum {
         .teal: DisplayRepresentation(title: "Teal", image: nil),
     ]
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
     var color: Color {
         switch self {

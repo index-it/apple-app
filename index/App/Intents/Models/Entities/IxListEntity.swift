@@ -12,45 +12,45 @@ import IxCoreKit
 @available(iOS 26.0, *)
 struct IxListEntity: IndexedEntity {
     static let defaultQuery = IxListEntityQuery()
-    
+
     var id: String
-    
+
     @Property(indexingKey: \.displayName)
     var name: String
-    
+
     @Property
     var icon: String
-    
+
     @Property
     var color: String
-    
+
     @Property
     var archived: Bool
-    
+
     @Property
     var isPublic: Bool
-    
+
     static var typeDisplayRepresentation: TypeDisplayRepresentation {
         TypeDisplayRepresentation(
             name: LocalizedStringResource("List", table: "AppIntents", comment: "The type name for the list entity"),
             numericFormat: "\(placeholder: .int) lists"
         )
     }
-    
+
     var displayRepresentation: DisplayRepresentation {
         let image = EmojiHelper.emojiImageData(icon).flatMap { data in
             DisplayRepresentation.Image(data: data, isTemplate: false, displayStyle: .default)
         }
         return DisplayRepresentation(title: "\(name)", image: image)
     }
-    
+
     init(list: IxList) {
-        self.id = list.id
-        self.name = list.name
-        self.icon = list.icon
-        self.color = list.color
-        self.archived = list.archived
-        self.isPublic = list.isPublic
+        id = list.id
+        name = list.name
+        icon = list.icon
+        color = list.color
+        archived = list.archived
+        isPublic = list.isPublic
     }
 }
 

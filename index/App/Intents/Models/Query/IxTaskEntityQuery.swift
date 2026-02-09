@@ -6,14 +6,14 @@
 //
 
 @preconcurrency import AppIntents
-import SwiftData
 import IxCoreKit
+import SwiftData
 
 @available(iOS 26.0, *)
 struct IxTaskEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery, EntityPropertyQuery {
     @Dependency
     var modelContainer: ModelContainer
-    
+
     @MainActor
     func entities(for identifiers: [IxTaskEntity.ID]) async throws -> [IxTaskEntity] {
         let descriptor = FetchDescriptor<IxTask>(
@@ -23,7 +23,7 @@ struct IxTaskEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery,
         )
         return try modelContainer.mainContext.fetch(descriptor).map(IxTaskEntity.init)
     }
-    
+
     @MainActor
     func suggestedEntities() async throws -> [IxTaskEntity] {
         let now = Date.now
@@ -35,7 +35,7 @@ struct IxTaskEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery,
         )
         return try modelContainer.mainContext.fetch(descriptor).map(IxTaskEntity.init)
     }
-    
+
     @MainActor
     func entities(matching: String) async throws -> [IxTaskEntity] {
         let descriptor = FetchDescriptor<IxTask>(
@@ -45,15 +45,15 @@ struct IxTaskEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery,
         )
         return try modelContainer.mainContext.fetch(descriptor).map(IxTaskEntity.init)
     }
-    
+
     @MainActor
     func allEntities() async throws -> [IxTaskEntity] {
         let descriptor = FetchDescriptor<IxTask>()
         return try modelContainer.mainContext.fetch(descriptor).map(IxTaskEntity.init)
     }
-    
+
     typealias ComparatorMappingType = Predicate<IxTaskEntity>
-    
+
     /**
      Declare the entity properties that are available for queries and in the Find intent, along with the comparator the app uses when querying the
      property.
@@ -70,19 +70,19 @@ struct IxTaskEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery,
                 #Predicate<IxTaskEntity> { $0.name != searchValue }
             }
         }
-        
+
         Property(\IxTaskEntity.$description) {
             ContainsComparator { searchValue in
                 #Predicate<IxTaskEntity> { $0.description.localizedStandardContains(searchValue) }
             }
         }
-        
+
         Property(\IxTaskEntity.$completed) {
             EqualToComparator { searchValue in
                 #Predicate<IxTaskEntity> { $0.completed == searchValue }
             }
         }
-        
+
         Property(\IxTaskEntity.$priority) {
             EqualToComparator { searchValue in
                 #Predicate<IxTaskEntity> { $0.priority == searchValue }
@@ -101,7 +101,7 @@ struct IxTaskEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery,
                 }
             }
         }
-        
+
         Property(\IxTaskEntity.$dueDate) {
             EqualToComparator { searchValue in
                 #Predicate<IxTaskEntity> { $0.dueDate == searchValue }
@@ -118,7 +118,7 @@ struct IxTaskEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery,
             }
         }
     }
-    
+
     /// Declare the entity properties available as sort criteria in the Find intent.
     static let sortingOptions = SortingOptions {
         SortableBy(\IxTaskEntity.$name)
@@ -126,7 +126,7 @@ struct IxTaskEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery,
         SortableBy(\IxTaskEntity.$dueDate)
         SortableBy(\IxTaskEntity.$completed)
     }
-    
+
     /// The text that people see in the Shortcuts app, describing what this intent does.
     static var findIntentDescription: IntentDescription? {
         IntentDescription(
@@ -136,7 +136,7 @@ struct IxTaskEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery,
             resultValueName: "Tasks"
         )
     }
-    
+
     func entities(
         matching comparators: [Predicate<IxTaskEntity>],
         mode: ComparatorMode,
@@ -146,24 +146,24 @@ struct IxTaskEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery,
         var matchedTasks = try await MainActor.run {
             var fetchDescriptor = FetchDescriptor<IxTask>()
             fetchDescriptor.fetchLimit = limit
-            
+
             return try modelContainer.mainContext
                 .fetch(fetchDescriptor)
                 .map(IxTaskEntity.init)
                 .compactMap { task in
                     var includeAsResult = mode == .and ? true : false
                     let earlyBreakCondition = includeAsResult
-                    
+
                     for comparator in comparators {
                         guard includeAsResult == earlyBreakCondition else { break }
                         includeAsResult = try comparator.evaluate(task)
                     }
-                    
+
                     return includeAsResult ? task : nil
                 }
         }
-        
-        /**
+
+        /* 
          Apply the requested sort. `EntityQuerySort` specifies the value to sort by using a `PartialKeyPath`. This key path builds a
          `KeyPathComparator` to use default sorting implementations for the value that the key path provides. For example, this approach uses
          `SortComparator.localizedStandard` when sorting key paths with a `String` value.
@@ -182,7 +182,7 @@ struct IxTaskEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery,
                 break
             }
         }
-        
+
         return matchedTasks
     }
 }

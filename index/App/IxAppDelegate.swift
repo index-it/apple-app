@@ -19,27 +19,27 @@ private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Ix
 class IxAppDelegate: NSObject, UIApplicationDelegate {
     private let ixApiClient = IxApiClient(authChangeCallback: { _ in })
 
-    // Application initialization
+    /// Application initialization
     func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         FirebaseApp.configure()
         RevenueCatHelper.configure()
-        
+
         Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
-        
+
         setupNotificationCategoriesAndActions()
-        
+
         return true
     }
 }
 
 extension IxAppDelegate: MessagingDelegate {
-    // Since we use SwiftUI we need to manually update the apns token for Firebase messaging
+    /// Since we use SwiftUI we need to manually update the apns token for Firebase messaging
     func application(_: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         Messaging.messaging().apnsToken = deviceToken
     }
 
-    // Send new firebase token to Index backend
+    /// Send new firebase token to Index backend
     func messaging(_: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         guard let token = fcmToken else { return }
 
@@ -70,7 +70,7 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
         return try await ixApiClient.getTask(taskId: taskId)
     }
 
-    // called when user taps on notification or one of its actions
+    /// called when user taps on notification or one of its actions
     func userNotificationCenter(
         _: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
@@ -89,7 +89,7 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
                 }
             )
             taskFetchDescriptor.fetchLimit = 1
-            
+
             switch response.actionIdentifier {
             case IxNotificationIdentifiers.taskCompleteAction:
                 Task {
@@ -189,7 +189,7 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
                     userInfo: [:]
                 )
             default:
-                break;
+                break
             }
         } else {
             // do nothing
@@ -198,7 +198,7 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
         completionHandler()
     }
 
-    // decide what to show when a notification is received and app is in FOREGROUND
+    /// decide what to show when a notification is received and app is in FOREGROUND
     func userNotificationCenter(
         _: UNUserNotificationCenter,
         willPresent _: UNNotification,

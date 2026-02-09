@@ -10,8 +10,10 @@ import Foundation
 enum IxTab: Int, CaseIterable, Identifiable, Hashable {
     case tasks = 0
     case lists = 1
-    
-    var id: Int { rawValue }
+
+    var id: Int {
+        rawValue
+    }
 }
 
 enum IxNavRoute: Hashable {
@@ -26,30 +28,32 @@ enum IxNavRoute: Hashable {
 @Observable
 class IxNavigator {
     // MARK: Tabs w/state
+
     var tab: IxTab = .lists
-    
+
     var taskCreatePresented = false
-    var taskId: String? = nil
-    
+    var taskId: String?
+
     var itemCreatePresented = false
-    var categoryId: String? = nil
-    var itemId: String? = nil
-    
+    var categoryId: String?
+    var itemId: String?
+
     // MARK: NavigationStack routes
+
     var path: [IxNavRoute] = []
 
     func push(_ navRoute: IxNavRoute) {
         path.append(navRoute)
     }
-    
+
     func pop() {
         _ = path.popLast()
     }
-    
+
     func clear() {
         path.removeAll()
     }
-    
+
     func navigateToTab(_ tab: IxTab) {
         self.tab = tab
         // reset tabs state

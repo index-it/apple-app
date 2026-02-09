@@ -39,16 +39,14 @@ public enum EmojiHelper {
 
     public static func randomEmoji() -> String {
         let ascii = emojiRanges[Int(drand48() * Double(emojiRanges.count))]
-        let emoji = UnicodeScalar(ascii)?.description ?? "🎨"
-        return emoji
+        return UnicodeScalar(ascii)?.description ?? "🎨"
     }
 
     public static func randomEmojiForPickerInitial() -> String {
         let ascii = emojiRangesForPickerInitialEmoji[Int(drand48() * Double(emojiRangesForPickerInitialEmoji.count))]
-        let emoji = UnicodeScalar(ascii)?.description ?? "🎨"
-        return emoji
+        return UnicodeScalar(ascii)?.description ?? "🎨"
     }
-    
+
     public static func emojiImageData(_ emoji: String, size: CGFloat = 64) -> Data? {
         let font = UIFont.systemFont(ofSize: size)
         let attributes: [NSAttributedString.Key: Any] = [.font: font]

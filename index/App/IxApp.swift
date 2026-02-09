@@ -5,6 +5,7 @@
 //  Created by Giulio Pimenoff Verdolin on 19/09/24.
 //
 
+import AppIntents
 import FirebaseCore
 import FirebaseMessaging
 import GoogleSignIn
@@ -13,7 +14,6 @@ import os
 import RevenueCat
 import SwiftData
 import SwiftUI
-import AppIntents
 
 private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "AppEntrypoint")
 
@@ -84,13 +84,13 @@ struct IxApp: App {
         let websocketEventHandler = IxWebsocketEventHandler(ixApiClient: ixApiClient, modelContext: modelContainer.mainContext)
         let websocketClient = IxWebsocketClient(ixWebsocketEventHandler: websocketEventHandler)
         ixWebsocketClient = websocketClient
-        
+
         AppDependencyManager.shared.add(dependency: modelContainer)
         AppDependencyManager.shared.add(dependency: ixApiClient)
-        
+
         IxShorcuts.updateAppShortcutParameters()
     }
-    
+
     func onBackendAuthStatusChange(_ authStatus: AuthStatus) {
         switch authStatus {
         case .loading:
@@ -213,7 +213,7 @@ struct IxApp: App {
                     if GIDSignIn.sharedInstance.handle(url) {
                         return
                     }
-                    
+
                     UniversalLinksHelper.handleUniversalLink(url, navigator: ixNavigator)
                 }
                 .environment(\.openURL, OpenURLAction { url in

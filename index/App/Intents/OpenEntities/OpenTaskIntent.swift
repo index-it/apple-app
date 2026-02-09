@@ -8,8 +8,8 @@
 import AppIntents
 import IxCoreKit
 
-/// Note: there is also a protocol TargetContentProvidingIntent that let's you handle the navigation part in SwiftUI
-/// I prefer using universal links for now
+// Note: there is also a protocol TargetContentProvidingIntent that let's you handle the navigation part in SwiftUI
+// I prefer using universal links for now
 
 @available(iOS 26.0, *)
 struct OpenTaskIntent: OpenIntent, URLRepresentableIntent {

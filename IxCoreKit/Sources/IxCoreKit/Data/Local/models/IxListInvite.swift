@@ -32,17 +32,6 @@ public struct IxListInvite: Encodable, Decodable, Equatable, Sendable, Sanitizab
         createdAt = networkListInvite.createdAt
     }
 
-    public static func == (lhs: IxListInvite, rhs: IxListInvite) -> Bool {
-        return lhs.id == rhs.id &&
-            lhs.token == rhs.token &&
-            lhs.listId == rhs.listId &&
-            lhs.editor == rhs.editor &&
-            lhs.maxUsages == rhs.maxUsages &&
-            lhs.description == rhs.description &&
-            lhs.expiresAt == rhs.expiresAt &&
-            lhs.createdAt == rhs.createdAt
-    }
-
     public static func empty() -> IxListInvite {
         return IxListInvite(
             id: "",

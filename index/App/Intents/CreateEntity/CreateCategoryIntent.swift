@@ -6,13 +6,13 @@
 //
 
 import AppIntents
-import SwiftData
 import IxCoreKit
+import SwiftData
 
 @available(iOS 26.0, *)
 struct CreateCategoryIntent: AppIntent {
     static let title: LocalizedStringResource = "Create category"
-    
+
     static var parameterSummary: some ParameterSummary {
         Summary("Add a \(\.$name) category to \(\.$list).") {
             \.$color
@@ -22,13 +22,13 @@ struct CreateCategoryIntent: AppIntent {
 
     @Parameter(title: "Name")
     var name: String
-    
+
     @Parameter(title: "List", description: "The list to which the category is added")
     var list: IxListEntity
-    
+
     @Parameter(title: "Color", description: "The color for the list")
     var color: IxColorEnum?
-    
+
     @Parameter(title: "Items", description: "Items to add to the category")
     var items: [String]?
 
@@ -44,14 +44,14 @@ struct CreateCategoryIntent: AppIntent {
         )
 
         let modelContext = modelContainer.mainContext
-        
+
         try modelContext.transaction {
             modelContext.insert(category)
         }
-        
+
         let entity = IxListCategoryEntity(category: category)
         try? await IxSystemIntegration.handleNewEntity(entity)
-        
+
         var newItems: [IxListItem] = []
         if let items = items, !items.isEmpty {
             for itemName in items {
@@ -64,13 +64,13 @@ struct CreateCategoryIntent: AppIntent {
                 )
                 newItems.append(newItem)
             }
-           
+
             try modelContext.transaction {
                 for newItem in newItems {
                     modelContext.insert(newItem)
                 }
             }
-            
+
             try? await IxSystemIntegration.handleNewEntities(newItems.map(IxListItemEntity.init))
         }
 
@@ -80,7 +80,7 @@ struct CreateCategoryIntent: AppIntent {
             full: "Added category \(category.name) to \(list.name)\(newItems.isEmpty ? "" : " with \(newItems.count) items").",
             supporting: "I added a \(category.name) category to \(list.name)."
         )
-        
+
         return .result(
             value: entity,
             dialog: dialog,

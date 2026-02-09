@@ -59,8 +59,8 @@ private struct AlertPresentationWindowContext: ViewModifier {
     }
 }
 
-// this works for alerts somehow
-// it doesn't work for other stuff, I have a PassThroughWindow for that
+/// this works for alerts somehow
+/// it doesn't work for other stuff, I have a PassThroughWindow for that
 private final class AlertPassThroughWindow: UIWindow {
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         guard let hitView = super.hitTest(point, with: event) else { return nil }

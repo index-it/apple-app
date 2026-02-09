@@ -16,7 +16,7 @@ struct ListSharingSheet: View {
     @State private var addUserEditor = false
     @State private var selectedUser: IxListSingleUserAccessInfo? = nil
     @State private var showUserActions = false
-    
+
     @Binding private var inviteEditorConfig: EditorConfig<IxListInvite>
     @Binding private var inviteUrl: URL?
 
@@ -43,7 +43,7 @@ struct ListSharingSheet: View {
     private var onUserInvite: (String, Bool) -> Void
     private var onEditUserPermissions: (String, Bool) -> Void
     private var onUserRevoke: (String) -> Void
-    
+
     @State private var shareUrl: URL?
 
     init(
@@ -128,7 +128,7 @@ struct ListSharingSheet: View {
                             inviteEditorConfig.reset()
                             navPath.append(.createInvite)
                         }
-                        
+
                         Button("Share public link", systemImage: "globe") {
                             let hasPro = user?.has_pro == true
 
@@ -136,7 +136,7 @@ struct ListSharingSheet: View {
                                 if !isPublic {
                                     isPublic = true
                                 }
-                                
+
                                 shareUrl = URL(string: IxUniversalLinks.list(listId))!
                             } else {
                                 showPaywall()
@@ -146,7 +146,7 @@ struct ListSharingSheet: View {
                         Label("Share", systemImage: "square.and.arrow.up")
                     }
                 }
-                
+
                 if !activeInvites.isEmpty {
                     ToolbarItem(placement: .cancellationAction) {
                         Button {
@@ -161,7 +161,7 @@ struct ListSharingSheet: View {
                 "Invite created",
                 isPresented: Binding(
                     get: { inviteUrl != nil },
-                    set: { newValue in inviteUrl = nil }
+                    set: { _ in inviteUrl = nil }
                 ),
                 actions: {
                     Button {
@@ -170,7 +170,7 @@ struct ListSharingSheet: View {
                     } label: {
                         Label("Copy", systemImage: "document.on.document")
                     }
-                    
+
                     Button {
                         shareUrl = inviteUrl
                     } label: {
@@ -204,7 +204,7 @@ struct ListSharingSheet: View {
                 }
             }
     }
-    
+
     var ShareSheetContent: some View {
         VStack {
             Form {
@@ -295,7 +295,7 @@ struct ListSharingSheet: View {
             }
         }
     }
-    
+
     var InviteFormSheet: some View {
         VStack {
             Form {
@@ -304,26 +304,26 @@ struct ListSharingSheet: View {
                 } header: {
                     Text("Permissions")
                 }
-                
+
                 Section {
                     Toggle("Set max usage count", isOn: Binding(
-                        get: {inviteEditorConfig.entity.maxUsages != nil },
+                        get: { inviteEditorConfig.entity.maxUsages != nil },
                         set: { limitUsages in inviteEditorConfig.entity.maxUsages = (limitUsages ? 1 : nil) }
                     ))
-                    
+
                     if inviteEditorConfig.entity.maxUsages != nil {
                         Stepper(
                             "Max usages: \(inviteEditorConfig.entity.maxUsages ?? 1)",
                             value: $inviteEditorConfig.entity.maxUsages ?? 1,
-                            in: IxValidations.ListInvite.minMaxUsages...IxValidations.ListInvite.maxMaxUsages
+                            in: IxValidations.ListInvite.minMaxUsages ... IxValidations.ListInvite.maxMaxUsages
                         )
                     }
-                    
+
                     Toggle("Set expiration date", isOn: Binding(
-                        get: {inviteEditorConfig.entity.expiresAt != nil },
+                        get: { inviteEditorConfig.entity.expiresAt != nil },
                         set: { setExpiration in inviteEditorConfig.entity.expiresAt = (setExpiration ? Date.now.addingTimeInterval(DateHelper.oneDaySeconds) : nil) }
                     ))
-                    
+
                     if inviteEditorConfig.entity.expiresAt != nil {
                         DatePicker(
                             selection: $inviteEditorConfig.entity.expiresAt ?? Date.now.addingTimeInterval(DateHelper.oneDaySeconds),
@@ -335,14 +335,14 @@ struct ListSharingSheet: View {
                 } header: {
                     Text("Restrict usage")
                 }
-                
+
                 Section {
                     TextField("Description", text: $inviteEditorConfig.entity.description ?? "")
                 } footer: {
                     Text("Optional description to remember the purpose of this invite")
                 }
             }.frame(maxHeight: 420)
-            
+
             Button {
                 onCreateInvite()
                 navPath.removeLast()
@@ -353,7 +353,6 @@ struct ListSharingSheet: View {
                     }
                     Label("Create invite", systemImage: "link.badge.plus")
                 }.frame(maxWidth: .infinity)
-
             }
             .buttonStyle(.glassProminent)
             .controlSize(.large)
@@ -365,7 +364,7 @@ struct ListSharingSheet: View {
         .navigationTitle("Create invite link")
         .navigationBarTitleDisplayMode(.inline)
     }
-    
+
     var ActiveInvitesSheet: some View {
         List {
             Section {
@@ -373,7 +372,7 @@ struct ListSharingSheet: View {
                     HStack(alignment: .center) {
                         VStack(alignment: .leading) {
                             Text(invite.description ?? "No description provided")
-                            
+
                             Text(
                                 invite.expiresAt.map {
                                     "Expires at \(DateHelper.Formatters.dateTime.string(from: $0))"
@@ -382,7 +381,7 @@ struct ListSharingSheet: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         }
-                        
+
                         Spacer()
                         Text(
                             invite.maxUsages.map {
@@ -438,7 +437,6 @@ struct ListSharingSheet: View {
                 HStack {
                     Label("Send invite", systemImage: "paperplane")
                 }.frame(maxWidth: .infinity)
-                
             }
             .buttonStyle(.glassProminent)
             .controlSize(.large)
@@ -459,7 +457,7 @@ struct ListSharingSheet: View {
 #Preview {
     @Previewable @State var inviteEditorConfig = EditorConfig<IxListInvite>()
     @Previewable @State var inviteUrl: URL? = nil
-    
+
     ListSharingSheet(
         showSheet: .constant(true),
         showUserInvitationSuccessAlert: .constant(false),
@@ -475,7 +473,7 @@ struct ListSharingSheet: View {
         activeInvites: .constant([
             IxListInvite(id: "1", token: nil, listId: "1", editor: true, maxUsages: 2, description: "Some description", expiresAt: .now, createdAt: 0),
             IxListInvite(id: "2", token: nil, listId: "1", editor: false, maxUsages: 5, description: nil, expiresAt: .now, createdAt: 0),
-            IxListInvite(id: "3", token: nil, listId: "1", editor: false, maxUsages: nil, description: "A really really really long description yay", expiresAt: nil, createdAt: 0)
+            IxListInvite(id: "3", token: nil, listId: "1", editor: false, maxUsages: nil, description: "A really really really long description yay", expiresAt: nil, createdAt: 0),
         ])
     ) { _ in
     } onCreateInvite: {

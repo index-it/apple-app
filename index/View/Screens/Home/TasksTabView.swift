@@ -19,7 +19,7 @@ struct TasksTabView: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
 
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
-    
+
     // MARK: Date
 
     // we take the utc date and convert it to local date using calendar with the local timezone
@@ -54,12 +54,12 @@ struct TasksTabView: View {
 
     private func saveTask(_ task: IxTask) async throws {
         let id = task.id
-        
+
         try context.transaction {
             try context.delete(model: IxTask.self, where: #Predicate { $0.id == id })
             context.insert(task)
         }
-        
+
         try? await IxSystemIntegration.handleNewEntity(IxTaskEntity(task: task))
     }
 
@@ -81,13 +81,13 @@ struct TasksTabView: View {
                     context.insert(ixTask)
                 }
             }
-            
+
             try? await IxSystemIntegration.handleNewEntities(tasks.map(IxTaskEntity.init))
         } catch {
             showError(.localizedError(title: "Error loading tasks", error: error))
         }
     }
-    
+
     func fetchTaskConnectedItems() async {
         do {
             let (items, categories, lists) = try await ixApiClient.getTasksConnectedItemsData()
@@ -169,7 +169,7 @@ struct TasksTabView: View {
             } else {
                 editorConfig.isPresented = false
             }
-            
+
             Task {
                 await IxSystemIntegration.donateIntent(.createTask)
             }
@@ -368,10 +368,10 @@ struct TasksTabView: View {
                     await fetchTasks(completion: false)
                 }
             }
-            
+
             Task {
                 let shouldSync = await SyncRegister.shared.hasExpired(SyncResource.tasksConnectedItems)
-                
+
                 if shouldSync {
                     await fetchTaskConnectedItems()
                 }
@@ -383,7 +383,7 @@ struct TasksTabView: View {
                 navigator.taskCreatePresented = false
             }
         }
-        .onChange(of: navigator.taskId, initial: true) { _, newValue in
+        .onChange(of: navigator.taskId, initial: true) { _, _ in
             // TODO: Decide how to highlight selected task
             // we can also move this onChange to a subview like the TasksList view or smth if needed
         }
@@ -419,7 +419,6 @@ struct TasksTabView: View {
                 task.dueDate = todayDate
                 editorConfig.present(entity: task)
             }
-            
 
             ForEach([1, 2, 3, 4, 5, 6], id: \.self) { offset in
                 let date = calendar.date(byAdding: .day, value: offset, to: todayDate)!
@@ -488,7 +487,6 @@ struct TasksTabView: View {
         }
     }
 
-    @ViewBuilder
     private func tasksListSectionHeader(
         title: String,
         subtitle: String?,
@@ -510,7 +508,6 @@ struct TasksTabView: View {
         .onTapGesture(perform: onTap)
     }
 
-    @ViewBuilder
     private func tasksListContent(
         dateFilter: Date?,
         noDateFilter: Bool,

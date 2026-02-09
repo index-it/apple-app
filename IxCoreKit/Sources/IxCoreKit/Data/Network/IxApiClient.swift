@@ -16,7 +16,7 @@ public final class IxApiClient: Sendable {
     private let cookieStorage: HTTPCookieStorage
     private let authChangeCallback: @Sendable (AuthStatus) -> Void
 
-    // Create a single URLSession instance to reuse
+    /// Create a single URLSession instance to reuse
     private let urlSession: URLSession
 
     public init(
@@ -493,8 +493,7 @@ public final class IxApiClient: Sendable {
 
         switch res.statusCode {
         case 200:
-            let lists = try Self.decoder().decode([NetworkList].self, from: data).map { networList in IxList(networkList: networList) }
-            return lists
+            return try Self.decoder().decode([NetworkList].self, from: data).map { networList in IxList(networkList: networList) }
         case 401:
             handleAuthenticationStatus(.unauthenticated)
             throw IxApiClientError.unauthenticated
@@ -1222,7 +1221,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     /// Move list items between lists
     ///
     /// ### Throws:
@@ -1332,7 +1331,7 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
-    
+
     @Sendable public func getTasksConnectedItemsData(completed: Bool? = false) async throws -> (items: [IxListItem], categories: [IxListCategory], lists: [IxList]) {
         var urlComponents = URLComponents(string: "\(Self.baseUrl)/tasks/connected-items")!
         var queryItems = [URLQueryItem]()
@@ -1353,8 +1352,8 @@ public final class IxApiClient: Sendable {
             let itemsData = try Self.decoder().decode(NetworkTaskConnectedItems.self, from: data)
             return (
                 itemsData.items.map { IxListItem(networkListItem: $0) },
-                itemsData.categories.map { IxListCategory(networkListCategory: $0)},
-                itemsData.lists.map { IxList(networkList: $0)}
+                itemsData.categories.map { IxListCategory(networkListCategory: $0) },
+                itemsData.lists.map { IxList(networkList: $0) }
             )
         default:
             throw IxApiClientError.unknown

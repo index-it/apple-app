@@ -27,7 +27,7 @@ public extension EKRecurrenceRule {
                          setPositions: parser.setPositions,
                          end: parser.end)
     }
-    
+
     func lastRRuleString() -> String? {
         return description.split(separator: "RRULE").last?.trimmingCharacters(in: .whitespaces)
     }
@@ -84,7 +84,7 @@ struct RecurrenceParser {
         return nil
     }
 
-    // BYDAY => days
+    /// BYDAY => days
     var days: [EKRecurrenceDayOfWeek]? {
         guard let bydays: [NSString] = processRegexp("BYDAY=([\\w,]*)") else {
             return nil
@@ -123,27 +123,27 @@ struct RecurrenceParser {
         return days
     }
 
-    // BYMONTHDAY => monthDays
+    /// BYMONTHDAY => monthDays
     var monthDays: [NSNumber]? {
         return processRegexp("BYMONTHDAY=([\\d,-]*)")
     }
 
-    // BYMONTH => months
+    /// BYMONTH => months
     var months: [NSNumber]? {
         return processRegexp("BYMONTH=([\\d,]*)")
     }
 
-    // BYWEEKNO => weeksOfTheYear
+    /// BYWEEKNO => weeksOfTheYear
     var weeksOfTheYear: [NSNumber]? {
         return processRegexp("BYWEEKNO=([\\d,-]*)")
     }
 
-    // BYYEARDAY => daysOfTheYear
+    /// BYYEARDAY => daysOfTheYear
     var daysOfTheYear: [NSNumber]? {
         return processRegexp("BYYEARDAY=([\\d,-]*)")
     }
 
-    // BYSETPOS => setPositions
+    /// BYSETPOS => setPositions
     var setPositions: [NSNumber]? {
         return processRegexp("BYSETPOS=([\\d,-]*)")
     }

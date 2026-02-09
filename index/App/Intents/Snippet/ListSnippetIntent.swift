@@ -7,19 +7,19 @@
 
 import AppIntents
 import IxCoreKit
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ListSnippetIntent: SnippetIntent {
     static let title: LocalizedStringResource = "List Snippet"
 
     @Parameter var list: IxListEntity
     @Dependency var modelContainer: ModelContainer
-    
+
     init(list: IxListEntity) {
         self.list = list
     }
-    
+
     init() {}
 
     @MainActor
@@ -29,12 +29,12 @@ struct ListSnippetIntent: SnippetIntent {
             predicate: #Predicate { item in item.listId == listId && !item.completed }
         )
         let items = (try? modelContainer.mainContext.fetch(itemsDescriptor)) ?? []
-        
+
         let categoriesDescriptor = FetchDescriptor<IxListCategory>(
             predicate: #Predicate { category in category.listId == listId }
         )
         let categories = (try? modelContainer.mainContext.fetch(categoriesDescriptor)) ?? []
-        
+
         return .result(
             view: ListSnippetIntentView(list: list, categories: categories, items: items)
         )
@@ -45,11 +45,11 @@ struct ListSnippetIntentView: View {
     let list: IxListEntity
     let categories: [IxListCategory]
     let items: [IxListItem]
-    
+
     var body: some View {
         VStack(alignment: .leading) {
             headerView
-            
+
             if items.isEmpty {
                 emptyView()
             } else {
@@ -78,7 +78,6 @@ struct ListSnippetIntentView: View {
         }
     }
 
-    @ViewBuilder
     private func emptyView() -> some View {
         VStack {
             Spacer()
@@ -89,20 +88,19 @@ struct ListSnippetIntentView: View {
         }
     }
 
-    @ViewBuilder
     private func listContentView() -> some View {
         VStack(alignment: .leading, spacing: 16) {
             let nonCategorizedItems = items.filter { $0.categoryId == nil }
             if !nonCategorizedItems.isEmpty {
                 itemsList(nonCategorizedItems)
             }
-            
+
             ForEach(categories, id: \.id) { category in
                 let filteredItems = items.filter { $0.categoryId == category.id }
-                
+
                 itemsList(filteredItems, of: category)
             }
-            
+
             Spacer()
         }
     }
@@ -123,7 +121,7 @@ struct ListSnippetIntentView: View {
             } else {
                 ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                     itemRow(item)
-                    
+
                     if index != items.count - 1 {
                         Divider()
                             .padding(.leading, 32)
@@ -143,12 +141,12 @@ struct ListSnippetIntentView: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
-                
+
                 VStack(alignment: .leading) {
                     Text(item.name)
                         .lineLimit(1)
                         .font(.footnote)
-                    
+
                     if let note = item.note {
                         Text(note)
                             .lineLimit(2)
@@ -170,5 +168,5 @@ struct ListSnippetIntentView: View {
         categories: categories,
         items: [.mock(name: "Buy Gocciole"), .mock(name: "Wax skis", categoryId: categories.first!.id)]
     )
-        .padding()
+    .padding()
 }

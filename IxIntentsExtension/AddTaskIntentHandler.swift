@@ -12,19 +12,18 @@ import SwiftData
 class AddTaskIntentHandler: INExtension, INAddTasksIntentHandling {
     func resolveTaskTitles(for intent: INAddTasksIntent) async -> [INSpeakableStringResolutionResult] {
         if let taskTitles = intent.taskTitles {
-            return taskTitles.map { INSpeakableStringResolutionResult.success(with: $0)}
+            return taskTitles.map { INSpeakableStringResolutionResult.success(with: $0) }
         } else {
             return [INSpeakableStringResolutionResult.needsValue()]
         }
     }
-    
-    
+
     func handle(intent: INAddTasksIntent) async -> INAddTasksIntentResponse {
         guard let taskTitles = intent.taskTitles else {
             return INAddTasksIntentResponse(code: .failureRequiringAppLaunch, userActivity: nil)
         }
         let taskNames = taskTitles.map { $0.spokenPhrase }
-        
+
         let dueDate = intent.temporalEventTrigger?.dateComponentsRange.startDateComponents.flatMap {
             DateHelper.utcDate(from: $0)
         }
@@ -32,9 +31,9 @@ class AddTaskIntentHandler: INExtension, INAddTasksIntentHandling {
         let reminderTimeOffset = intent.temporalEventTrigger?.dateComponentsRange.startDateComponents.flatMap {
             DateHelper.getUtcReminderTimeOffset(from: $0)
         }
-        
+
         let ixApiClient = IxApiClient { _ in }
-        
+
         var tasksCreated: [IxTask] = []
         for taskName in taskNames {
             do {
@@ -48,13 +47,13 @@ class AddTaskIntentHandler: INExtension, INAddTasksIntentHandling {
                     priority: nil,
                     itemId: nil
                 )
-                
+
                 tasksCreated.append(task)
             } catch {
                 return INAddTasksIntentResponse(code: .failureRequiringAppLaunch, userActivity: nil)
             }
         }
-        
+
         await MainActor.run {
             let modelContext = ModelContainerProvider.shared.mainContext
             try? modelContext.transaction {
@@ -63,9 +62,9 @@ class AddTaskIntentHandler: INExtension, INAddTasksIntentHandling {
                 }
             }
         }
-        
+
         try? await IxSystemIntegration.handleNewEntities(tasksCreated.map(IxTaskEntity.init))
- 
+
         let response = INAddTasksIntentResponse(code: .success, userActivity: nil)
         response.addedTasks = tasksCreated.map {
             INTask(

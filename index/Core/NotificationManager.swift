@@ -19,7 +19,7 @@ class NotificationManager: ObservableObject {
             let authorized = try await UNUserNotificationCenter.current().requestAuthorization(options: authOptions)
             if authorized {
                 UIApplication.shared.registerForRemoteNotifications()
-                
+
                 permitted = true
                 return true
             } else {
@@ -35,7 +35,7 @@ class NotificationManager: ObservableObject {
 
     func checkForPermissions() async {
         let status = await UNUserNotificationCenter.current().notificationSettings()
-        
+
         switch status.authorizationStatus {
         case .authorized:
             permitted = true

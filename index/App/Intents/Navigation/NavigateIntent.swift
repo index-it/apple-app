@@ -13,7 +13,7 @@ struct NavigateIntent: AppIntent {
     static let title: LocalizedStringResource = "Navigate to Section"
 
     static let supportedModes: IntentModes = .foreground
-    
+
     static var parameterSummary: some ParameterSummary {
         Summary("Navigate to \(\.$navigationOption)")
     }
@@ -23,14 +23,14 @@ struct NavigateIntent: AppIntent {
         requestValueDialog: "Which section?"
     )
     var navigationOption: NavigationOptionEnum
-    
+
     init(navigationOption: NavigationOptionEnum) {
         self.navigationOption = navigationOption
     }
-    
+
     init() {}
 
-    public func perform() async throws -> some IntentResult & OpensIntent {
+    func perform() async throws -> some IntentResult & OpensIntent {
         .result(opensIntent: OpenURLIntent(navigationOption.url))
     }
 }

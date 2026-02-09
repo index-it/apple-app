@@ -10,7 +10,7 @@ import IxCoreKit
 import SwiftUI
 import WidgetKit
 
-//struct QuickAddTaskControlWidget: ControlWidget {
+// struct QuickAddTaskControlWidget: ControlWidget {
 //    var body: some ControlWidgetConfiguration {
 //        StaticControlConfiguration(
 //            kind: IxKinds.quickAddTaskControlCenterWidget
@@ -28,9 +28,9 @@ import WidgetKit
 //        .displayName("Create Task")
 //        .description("Quickly create a new task.")
 //    }
-//}
+// }
 //
-//struct QuickAddItemControlWidget: ControlWidget {
+// struct QuickAddItemControlWidget: ControlWidget {
 //    var body: some ControlWidgetConfiguration {
 //        StaticControlConfiguration(
 //            kind: IxKinds.quickAddItemControlCenterWidget
@@ -48,4 +48,4 @@ import WidgetKit
 //        .displayName("Index It")
 //        .description("Quickly add a new item to a list.")
 //    }
-//}
+// }

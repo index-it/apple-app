@@ -6,19 +6,19 @@
 //
 
 @preconcurrency import AppIntents
-import SwiftData
 import IxCoreKit
+import SwiftData
 
 @available(iOS 26.0, *)
 struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery, EntityPropertyQuery {
     @Dependency
     var modelContainer: ModelContainer
-    
+
     @IntentParameterDependency<CreateItemIntent>(
         \.$list
     )
     var createItemIntent
-    
+
     @IntentParameterDependency<EditItemIntent>(
         \.$list
     )
@@ -45,7 +45,7 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
             return try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
         } else {
             let currentTimeMillis = Date.now.currentTimeMillis()
-            
+
             let descriptor = FetchDescriptor<IxListCategory>(
                 predicate: #Predicate { category in
                     currentTimeMillis - category.createdAt < 2_592_000_000
@@ -63,11 +63,11 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
     @MainActor
     func entities(matching: String) async throws -> [IxListCategoryEntity] {
         let listId = createItemIntent?.list.id ?? editItemIntent?.list.id
-        
+
         let descriptor = FetchDescriptor<IxListCategory>(
             predicate: #Predicate { category in
                 (listId == nil || (listId != nil && category.listId == listId!)) &&
-                category.name.localizedStandardContains(matching)
+                    category.name.localizedStandardContains(matching)
             }
         )
         return try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
@@ -84,7 +84,7 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
         } else {
             FetchDescriptor<IxListCategory>()
         }
-        
+
         return try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
     }
 
@@ -132,7 +132,7 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
         var matchedCategories = try await MainActor.run {
             var fetchDescriptor = FetchDescriptor<IxListCategory>()
             fetchDescriptor.fetchLimit = limit
-            
+
             return try modelContainer.mainContext
                 .fetch(fetchDescriptor)
                 .map(IxListCategoryEntity.init)
@@ -149,7 +149,7 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
                 }
         }
 
-        /**
+        /* 
          Apply the requested sort. `EntityQuerySort` specifies the value to sort by using a `PartialKeyPath`. This key path builds a
          `KeyPathComparator` to use default sorting implementations for the value that the key path provides. For example, this approach uses
          `SortComparator.localizedStandard` when sorting key paths with a `String` value.

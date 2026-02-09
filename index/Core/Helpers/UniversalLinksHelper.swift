@@ -21,7 +21,7 @@ enum UniversalLinksHelper {
         // Extract the path components, ignoring the domain for Universal Links
         let pathComponents = url.pathComponents.filter { $0 != "/" && !$0.isEmpty }
         guard pathComponents.count >= 1 else { return }
-        
+
         let urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)
 
         let section = pathComponents[0]
@@ -29,19 +29,20 @@ enum UniversalLinksHelper {
         switch section {
         case IxUniversalLinks.Sections.lists:
             navigator.navigateToTab(.lists)
-            
+
             if let listId = pathComponents[safe: 1] {
                 if let categoryId = urlComponents?
                     .queryItems?
                     .first(where: { $0.name == "categoryId" && $0.value != "nil" })?
-                    .value {
-                    
+                    .value
+                {
                     navigator.push(.listRoute(listId: listId))
                     navigator.categoryId = categoryId
                 } else if let itemId = urlComponents?
                     .queryItems?
                     .first(where: { $0.name == "itemId" && $0.value != "nil" })?
-                    .value {
+                    .value
+                {
                     navigator.push(.listRoute(listId: listId))
                     navigator.itemId = itemId
                 } else {

@@ -4,9 +4,9 @@ import SwiftUI
 
 private let log = Logger(subsystem: IxSubsystems.APP, category: "ToastStateService")
 
-// if we ever want to support multiple toasts (stacked on top of each other)
-// this is a good one
-// https://github.com/MatHeartGaming/coolStuff_with_SwiftUI/blob/main/AnimatedToasts/AnimatedToasts
+/// if we ever want to support multiple toasts (stacked on top of each other)
+/// this is a good one
+/// https://github.com/MatHeartGaming/coolStuff_with_SwiftUI/blob/main/AnimatedToasts/AnimatedToasts
 public final class ToastStateService: ObservableObject {
     @Published var info: ToastInfo?
     @Published var placement: ToastPlacement = .bottom

@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import SwiftUI
 import Intents
+import SwiftUI
 
 @MainActor
 class SiriManager: ObservableObject {
@@ -23,15 +23,15 @@ class SiriManager: ObservableObject {
             }
         }
     }
-    
+
     func checkForPermissions() {
         let status = INPreferences.siriAuthorizationStatus()
-        
+
         switch status {
         case .authorized:
-            self.permitted = true
+            permitted = true
         default:
-            self.permitted = false
+            permitted = false
         }
     }
 }

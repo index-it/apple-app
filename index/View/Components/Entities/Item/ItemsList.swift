@@ -74,7 +74,9 @@ struct ItemsList: View {
 
         let categoryId = category?.id
 
-        var filterPredicate = #Predicate<IxListItem> { _ in true }
+        var filterPredicate = #Predicate<IxListItem> {
+            _ in true
+        }
 
         if !showCompleted {
             filterPredicate = #Predicate<IxListItem> { item in

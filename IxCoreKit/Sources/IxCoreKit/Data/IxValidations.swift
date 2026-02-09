@@ -3,11 +3,11 @@ public enum IxValidations {
         public static let minNameLength = 1
         public static let maxNameLength = 100
     }
-    
+
     public enum ListInvite {
         public static let minDescriptionLength = 1
         public static let maxDescriptionLength = 100
-        
+
         public static let minMaxUsages = 1
         public static let maxMaxUsages = 10000
     }

@@ -6,13 +6,13 @@
 //
 
 import AppIntents
-import SwiftData
 import IxCoreKit
+import SwiftData
 
 @available(iOS 26.0, *)
 struct DeleteListIntent: AppIntent {
     static let title: LocalizedStringResource = "Delete List"
-    
+
     static var parameterSummary: some ParameterSummary {
         Summary("Delete\(\.$list).")
     }
@@ -32,9 +32,9 @@ struct DeleteListIntent: AppIntent {
             between: [.cancel, archive, delete],
             dialog: "Do you want to archive or delete \(list.name)?"
         )
-        
+
         let listId = list.id
-        
+
         switch resultChoice {
         case archive:
             let newList = try await ixApiClient.editList(
@@ -45,15 +45,15 @@ struct DeleteListIntent: AppIntent {
                 archived: true,
                 is_public: list.isPublic
             )
-            
+
             let modelContext = modelContainer.mainContext
             try modelContext.transaction {
                 try modelContext.delete(model: IxList.self, where: #Predicate { $0.id == listId })
                 modelContext.insert(newList)
             }
-            
+
             try? await IxSystemIntegration.handleNewEntity(IxListEntity(list: newList))
-            
+
             return .result(
                 dialog: "\(list.name) archived."
             )
@@ -61,7 +61,7 @@ struct DeleteListIntent: AppIntent {
             try? await ixApiClient.deleteList(id: listId)
             try? modelContainer.mainContext.delete(model: IxList.self, where: #Predicate { $0.id == listId })
             try? await IxSystemIntegration.handleEntityDeletion(listId, of: IxListEntity.self)
-            
+
             return .result(
                 dialog: "\(list.name) deleted."
             )

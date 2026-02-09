@@ -1,14 +1,14 @@
 //
-//  SearchStatus.swift
+//  TaskPriority.swift
 //  IxCoreKit
 //
 //  Created by Giulio Pimenoff Verdolin on 06/02/26.
 //
 
-//import AppIntents
+// import AppIntents
 //
 //
-//enum TaskPriority: Int, AppEnum {
+// enum TaskPriority: Int, AppEnum {
 //    case none = 0
 //    case veryLow = 1
 //    case low = 2
@@ -24,4 +24,4 @@
 //        .medium: "Medium",
 //        .high: "High",
 //    ]
-//}
+// }
