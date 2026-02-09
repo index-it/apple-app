@@ -17,6 +17,9 @@ struct IxListItemEntity: IndexedEntity {
     @Property
     var listId: String
     
+    @Property
+    var categoryId: String?
+    
     @Property(indexingKey: \.title)
     var name: String
     
@@ -46,6 +49,7 @@ struct IxListItemEntity: IndexedEntity {
     init(item: IxListItem) {
         self.id = item.id
         self.listId = item.listId
+        self.categoryId = item.categoryId
         self.name = item.name
         self.completed = item.completed
         self.link = item.link.flatMap { URL(string: $0) }
@@ -53,10 +57,10 @@ struct IxListItemEntity: IndexedEntity {
     }
 }
 
-// cannot add listId to the interpolation yet
-//@available(iOS 26.0, *)
-//extension IxListItemEntity: URLRepresentableEntity {
-//    static var urlRepresentation: URLRepresentation {
-//        "https://web.index-it.app/lists/\(.listId)/items/\(.id)"
-//    }
-//}
+@available(iOS 26.0, *)
+extension IxListItemEntity: URLRepresentableEntity {
+    static var urlRepresentation: URLRepresentation {
+        "https://web.index-it.app/lists/\(\.$listId)?categoryId=\(\.$categoryId)"
+    }
+}
+

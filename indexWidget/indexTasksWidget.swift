@@ -5,6 +5,7 @@
 //  Created by Giulio Pimenoff Verdolin on 15/03/25.
 //
 
+import AppIntents
 import IxCoreKit
 import SwiftData
 import SwiftUI
@@ -37,10 +38,13 @@ struct TodayTasksWidgetView: View {
 
     @Environment(\.widgetFamily) var widgetFamily
     @Environment(\.openURL) var openUrl
-
+    
     var body: some View {
         tasksView
             .containerBackground(.background, for: .widget)
+            .task {
+                await IxWidgetDependencies.setup()
+            }
     }
 
     @ViewBuilder
@@ -167,7 +171,7 @@ struct TodayTasksWidgetView: View {
 
     @ViewBuilder
     var createTaskButtonView: some View {
-        Button(intent: OpenCreateTaskIntent()) {
+        Button(intent: NavigateIntent(navigationOption: NavigationOptionEnum.createTask)) {
             Label("Create", systemImage: "plus")
                 .labelStyle(.iconOnly)
         }
@@ -177,7 +181,7 @@ struct TodayTasksWidgetView: View {
     func tasksListView(_ tasks: ArraySlice<IxTask>) -> some View {
         ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
             HStack {
-                Button(intent: CompleteTaskIntent(task: IxTaskEntity(task: task))) {
+                Button(intent: CompleteTaskByIdIntent(taskId: task.id)) {
                     Label("Complete", systemImage: task.completed ? "inset.filled.circle" : "circle")
                         .labelStyle(.iconOnly)
                         .font(.title3)

@@ -105,6 +105,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				indexTasksWidget.swift,
+				IxWidgetDependencies.swift,
 			);
 			target = 093287D82C9C811200A0717E /* index */;
 		};
@@ -114,29 +115,25 @@
 				App/Intents/CreateEntity/CreateCategoryIntent.swift,
 				App/Intents/CreateEntity/CreateItemIntent.swift,
 				App/Intents/CreateEntity/CreateListIntent.swift,
-				App/Intents/CreateEntity/CreateTaskIntent.swift,
-				App/Intents/EditIntent/CompleteTaskIntent.swift,
-				App/Intents/Entities/IxListCategoryEntity.swift,
-				App/Intents/Entities/IxListEntity.swift,
-				App/Intents/Entities/IxListItemEntity.swift,
-				App/Intents/Entities/IxTaskEntity.swift,
-				App/Intents/Enum/TaskPriority.swift,
-				App/Intents/Navigation/OpenCreateItemIntent.swift,
-				App/Intents/Navigation/OpenCreateTaskIntent.swift,
-				App/Intents/Navigation/OpenListsIntent.swift,
-				App/Intents/Navigation/OpenTasksIntent.swift,
-				App/Intents/OpenEntities/OpenListCategoryIntent.swift,
+				App/Intents/Models/Entities/IxListCategoryEntity.swift,
+				App/Intents/Models/Entities/IxListEntity.swift,
+				App/Intents/Models/Entities/IxListItemEntity.swift,
+				App/Intents/Models/Entities/IxTaskEntity.swift,
+				App/Intents/Models/Enum/IxColorEnum.swift,
+				App/Intents/Models/Enum/NavigationOptionEnum.swift,
+				App/Intents/Models/Enum/TaskPriority.swift,
+				App/Intents/Models/Query/IxListCategoryEntityQuery.swift,
+				App/Intents/Models/Query/IxListEntityQuery.swift,
+				App/Intents/Models/Query/IxListItemEntityQuery.swift,
+				App/Intents/Models/Query/IxTaskEntityQuery.swift,
+				App/Intents/Navigation/NavigateIntent.swift,
+				App/Intents/NonDiscoverable/CompleteTaskByIdIntent.swift,
+				App/Intents/OpenEntities/OpenCategoryIntent.swift,
+				App/Intents/OpenEntities/OpenItemIntent.swift,
 				App/Intents/OpenEntities/OpenListIntent.swift,
-				App/Intents/OpenEntities/OpenListItemIntent.swift,
 				App/Intents/OpenEntities/OpenTaskIntent.swift,
-				App/Intents/Query/IxListCategoryEntityQuery.swift,
-				App/Intents/Query/IxListEntityQuery.swift,
-				App/Intents/Query/IxListItemEntityQuery.swift,
-				App/Intents/Query/IxTaskEntityQuery.swift,
 				App/IxSystemIntegration.swift,
-				Navigation/HomeTab.swift,
-				Navigation/NavigationManager.swift,
-				Navigation/NavigationRoute.swift,
+				Navigation/IxNavigator.swift,
 				View/Components/ColorPicker.swift,
 				View/Components/ColorSelector.swift,
 				View/Components/Entities/Category/CategoryEditor.swift,
@@ -173,26 +170,25 @@
 				App/Intents/CreateEntity/CreateCategoryIntent.swift,
 				App/Intents/CreateEntity/CreateItemIntent.swift,
 				App/Intents/CreateEntity/CreateListIntent.swift,
-				App/Intents/CreateEntity/CreateTaskIntent.swift,
-				App/Intents/EditIntent/CompleteTaskIntent.swift,
-				App/Intents/Entities/IxListCategoryEntity.swift,
-				App/Intents/Entities/IxListEntity.swift,
-				App/Intents/Entities/IxListItemEntity.swift,
-				App/Intents/Entities/IxTaskEntity.swift,
-				App/Intents/Enum/TaskPriority.swift,
-				App/Intents/Navigation/OpenCreateItemIntent.swift,
-				App/Intents/Navigation/OpenCreateTaskIntent.swift,
-				App/Intents/Navigation/OpenListsIntent.swift,
-				App/Intents/Navigation/OpenTasksIntent.swift,
-				App/Intents/OpenEntities/OpenListCategoryIntent.swift,
+				App/Intents/Models/Entities/IxListCategoryEntity.swift,
+				App/Intents/Models/Entities/IxListEntity.swift,
+				App/Intents/Models/Entities/IxListItemEntity.swift,
+				App/Intents/Models/Entities/IxTaskEntity.swift,
+				App/Intents/Models/Enum/IxColorEnum.swift,
+				App/Intents/Models/Enum/NavigationOptionEnum.swift,
+				App/Intents/Models/Enum/TaskPriority.swift,
+				App/Intents/Models/Query/IxListCategoryEntityQuery.swift,
+				App/Intents/Models/Query/IxListEntityQuery.swift,
+				App/Intents/Models/Query/IxListItemEntityQuery.swift,
+				App/Intents/Models/Query/IxTaskEntityQuery.swift,
+				App/Intents/Navigation/NavigateIntent.swift,
+				App/Intents/NonDiscoverable/CompleteTaskByIdIntent.swift,
+				App/Intents/OpenEntities/OpenCategoryIntent.swift,
+				App/Intents/OpenEntities/OpenItemIntent.swift,
 				App/Intents/OpenEntities/OpenListIntent.swift,
-				App/Intents/OpenEntities/OpenListItemIntent.swift,
 				App/Intents/OpenEntities/OpenTaskIntent.swift,
-				App/Intents/Query/IxListCategoryEntityQuery.swift,
-				App/Intents/Query/IxListEntityQuery.swift,
-				App/Intents/Query/IxListItemEntityQuery.swift,
-				App/Intents/Query/IxTaskEntityQuery.swift,
 				App/IxSystemIntegration.swift,
+				Navigation/IxNavigator.swift,
 			);
 			target = 092FE7C12D7F3C8200F38388 /* indexWidgetExtension */;
 		};
@@ -200,15 +196,16 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/Intents/CreateEntity/CreateItemIntent.swift,
-				App/Intents/Entities/IxListCategoryEntity.swift,
-				App/Intents/Entities/IxListEntity.swift,
-				App/Intents/Entities/IxListItemEntity.swift,
-				App/Intents/Entities/IxTaskEntity.swift,
-				App/Intents/Query/IxListCategoryEntityQuery.swift,
-				App/Intents/Query/IxListEntityQuery.swift,
-				App/Intents/Query/IxListItemEntityQuery.swift,
-				App/Intents/Query/IxTaskEntityQuery.swift,
+				App/Intents/Models/Entities/IxListCategoryEntity.swift,
+				App/Intents/Models/Entities/IxListEntity.swift,
+				App/Intents/Models/Entities/IxListItemEntity.swift,
+				App/Intents/Models/Entities/IxTaskEntity.swift,
+				App/Intents/Models/Query/IxListCategoryEntityQuery.swift,
+				App/Intents/Models/Query/IxListEntityQuery.swift,
+				App/Intents/Models/Query/IxListItemEntityQuery.swift,
+				App/Intents/Models/Query/IxTaskEntityQuery.swift,
 				App/IxSystemIntegration.swift,
+				Navigation/IxNavigator.swift,
 			);
 			target = 098A24742F3934B900A7B613 /* IxIntentsExtension */;
 		};
@@ -606,7 +603,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = indexWidget/indexWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = indexWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = indexWidget;
@@ -617,7 +614,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.7;
+				MARKETING_VERSION = 1.0.8;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.index-it.index.indexWidget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -635,7 +632,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = indexWidget/indexWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = indexWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = indexWidget;
@@ -646,7 +643,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.7;
+				MARKETING_VERSION = 1.0.8;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.index-it.index.indexWidget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -873,7 +870,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = IxIntentsExtension/IxIntentsExtensionDebug.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 9;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IxIntentsExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = IxIntentsExtension;
@@ -884,7 +881,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.8;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.index-it.index.IxIntentsExtension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -903,7 +900,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = IxIntentsExtension/IxIntentsExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 9;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IxIntentsExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = IxIntentsExtension;
@@ -914,7 +911,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.8;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.index-it.index.IxIntentsExtension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -934,7 +931,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = indexShareExtension/indexShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = indexShareExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = indexShareExtension;
@@ -945,7 +942,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.7;
+				MARKETING_VERSION = 1.0.8;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.index-it.index.indexShareExtension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -961,7 +958,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = indexShareExtension/indexShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = indexShareExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = indexShareExtension;
@@ -972,7 +969,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.7;
+				MARKETING_VERSION = 1.0.8;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.index-it.index.indexShareExtension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

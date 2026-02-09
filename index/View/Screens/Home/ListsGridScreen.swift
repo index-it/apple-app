@@ -11,10 +11,10 @@ import SwiftData
 import SwiftUI
 
 struct ListsGridScreen: View {
+    @Environment(IxNavigator.self) private var navigator
     @Environment(\.showPaywall) private var showPaywall
     @Environment(\.modelContext) private var context
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
-    @EnvironmentObject private var navigationManager: NavigationManager
     @Environment(\.showError) private var showError
 
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
@@ -57,6 +57,7 @@ struct ListsGridScreen: View {
     // MARK: Quick add sheet
 
     @State private var showQuickAddSheet: Bool = false
+    @State private var quickAddSheetMultiMode: Bool = false
 
     init(archived: Bool) {
         self.archived = archived
@@ -303,17 +304,18 @@ struct ListsGridScreen: View {
                 view.floatingActionButton(
                     "plus",
                     action: {
-                        navigationManager.showQuickAddItemView()
+                        showQuickAddSheet = true
                     },
                     longPressAction: {
-                        navigationManager.showQuickAddItemView(multi: true)
+                        quickAddSheetMultiMode = true
+                        showQuickAddSheet = true
                     }
                 )
             })
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        navigationManager.push(.settings)
+                        navigator.push(.settings)
                     } label: {
                         Label("Settings", systemImage: "gearshape")
                     }
@@ -381,7 +383,7 @@ struct ListsGridScreen: View {
 
                         if !archived {
                             Button {
-                                navigationManager.push(.archivedLists)
+                                navigator.push(.archivedLists)
                             } label: {
                                 Label("Archived lists", systemImage: "archivebox")
                             }
@@ -465,11 +467,12 @@ struct ListsGridScreen: View {
                     }
                 }.presentationDetents([.large])
             }
-            .sheet(isPresented: $navigationManager.quickAddItemViewPresented) {
+            .sheet(isPresented: $showQuickAddSheet) {
                 QuickAddItemView(
-                    multi: navigationManager.quickAddItemViewMulti,
+                    multi: quickAddSheetMultiMode,
                     onCancel: {
-                        navigationManager.quickAddItemViewPresented = false
+                        showQuickAddSheet = false
+                        quickAddSheetMultiMode = false
                     }
                 )
             }
@@ -522,6 +525,12 @@ struct ListsGridScreen: View {
                     }
                 }
             }
+            .onChange(of: navigator.itemCreatePresented, initial: true) { _, newValue in
+                if newValue {
+                    showQuickAddSheet = true
+                    navigator.itemCreatePresented = false
+                }
+            }
             .onChange(of: isAddingList) {
                 if isAddingList {
                     newListEmoji = EmojiHelper.randomEmojiForPickerInitial()
@@ -544,7 +553,7 @@ struct ListsGridScreen: View {
                 isAddingList = true
             },
             onListCardTap: { list in
-                navigationManager.push(.listRoute(listId: list.id, categoryId: nil))
+                navigator.push(.listRoute(listId: list.id))
             },
             onShare: { list in
                 selectedList = list

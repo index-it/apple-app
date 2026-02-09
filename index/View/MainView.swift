@@ -10,12 +10,14 @@ import SwiftData
 import SwiftUI
 
 struct MainView: View {
-    @EnvironmentObject var navigationManager: NavigationManager
+    @Environment(IxNavigator.self) var navigator
 
     let authStatus: AuthStatus
 
     var body: some View {
-        NavigationStack(path: $navigationManager.path) {
+        @Bindable var navigator = navigator
+        
+        NavigationStack(path: $navigator.path) {
             Group {
                 switch authStatus {
                 case .loading:
@@ -25,12 +27,12 @@ struct MainView: View {
                 case .authenticated:
                     HomeScreen()
                 }
-            }.navigationDestination(for: NavigationRoute.self) { destination in
+            }.navigationDestination(for: IxNavRoute.self) { destination in
                 switch destination {
                 case .archivedLists:
                     ListsGridScreen(archived: true)
-                case let .listRoute(listId: listId, categoryId: categoryId):
-                    ListScreen(listId: listId, categoryId: categoryId)
+                case let .listRoute(listId: listId):
+                    ListScreen(listId: listId)
                 case .settings:
                     SettingsView()
                 case .accountSettings:

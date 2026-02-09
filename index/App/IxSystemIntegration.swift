@@ -27,13 +27,14 @@ enum IxSystemIntegration {
     
     static func clearEntities() async throws {
         try await CSSearchableIndex.default().deleteAllSearchableItems()
+        WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
     }
     
     static func handleNewEntities<T: IndexedEntity>(_ entities: [T]) async throws {
         try await CSSearchableIndex.default().deleteAppEntities(identifiedBy: entities.map(\.id), ofType: T.self)
         try await CSSearchableIndex.default().indexAppEntities(entities)
         
-        if T.self == IxTaskEntity.self {
+        if T.self is IxTaskEntity.Type {
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
         }
     }

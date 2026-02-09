@@ -12,7 +12,7 @@ import WidgetKit
 struct indexWidgetBundle: WidgetBundle {
     var body: some Widget {
         TodayTasksWidget()
-        QuickAddItemControlWidget()
-        QuickAddTaskControlWidget()
+//        QuickAddItemControlWidget()
+//        QuickAddTaskControlWidget()
     }
 }

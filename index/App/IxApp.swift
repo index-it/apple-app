@@ -52,7 +52,7 @@ struct IxApp: App {
     @StateObject private var authenticationHelper: AuthenticationHelper
     @AppStorage(AppStorageKeys.loggedInUser, store: UserDefaults(suiteName: IxIdentifiers.APP_GROUP)!) private var user: User?
 
-    @StateObject private var navigationManager = NavigationManager()
+    @State private var ixNavigator = IxNavigator()
     @StateObject private var authNavigationManager = AuthNavigationManager()
     @StateObject var notificationManager = NotificationManager()
     @StateObject var siriManager = SiriManager()
@@ -87,6 +87,8 @@ struct IxApp: App {
         
         AppDependencyManager.shared.add(dependency: modelContainer)
         AppDependencyManager.shared.add(dependency: ixApiClient)
+        
+        IxShorcuts.updateAppShortcutParameters()
     }
     
     func onBackendAuthStatusChange(_ authStatus: AuthStatus) {
@@ -195,7 +197,7 @@ struct IxApp: App {
                     }
                 }
                 .environmentObject(authNavigationManager)
-                .environmentObject(navigationManager)
+                .environment(ixNavigator)
                 .environmentObject(notificationManager)
                 .environmentObject(siriManager)
                 .environmentObject(errorService)
@@ -208,13 +210,11 @@ struct IxApp: App {
                 .installToast(service: toastService)
                 .paywallCover(service: paywallService)
                 .onOpenURL { url in
-//                    if GIDSignIn.sharedInstance.handle(url) {
-//                        return
-//                    }
+                    if GIDSignIn.sharedInstance.handle(url) {
+                        return
+                    }
                     
-                    print("OPENING URL \(url)")
-
-                    UniversalLinksHelper.handleUniversalLink(url, navigationManager: navigationManager)
+                    UniversalLinksHelper.handleUniversalLink(url, navigator: ixNavigator)
                 }
                 .environment(\.openURL, OpenURLAction { url in
                     self.urlToPresentInSafariView = url
@@ -227,7 +227,7 @@ struct IxApp: App {
                     }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: .navigateToTasks)) { _ in
-                    navigationManager.navigateToTab(.tasks)
+                    ixNavigator.navigateToTab(.tasks)
                 }
         }
     }

@@ -41,3 +41,10 @@ struct IxListCategoryEntity: IndexedEntity {
         self.color = category.color
     }
 }
+
+@available(iOS 26.0, *)
+extension IxListCategoryEntity: URLRepresentableEntity {
+    static var urlRepresentation: URLRepresentation {
+        "https://web.index-it.app/lists/\(\.$listId)?categoryId=\(.id)"
+    }
+}

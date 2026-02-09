@@ -10,37 +10,35 @@ import SwiftData
 import IxCoreKit
 
 @available(iOS 26.0, *)
-struct CompleteTaskIntent: AppIntent {
-    static let title: LocalizedStringResource = "Complete a task"
+struct CompleteTaskByIdIntent: AppIntent {
+    static let title: LocalizedStringResource = "Complete a task via its id"
+    static var isDiscoverable: Bool = false
+    static var supportedModes: IntentModes = .background
 
-    static var parameterSummary: some ParameterSummary {
-        Summary("Complete \(\.$task)")
-    }
-
-    @Parameter var task: IxTaskEntity
+    @Parameter(title: "Task id")
+    var taskId: String
 
     @Dependency var modelContainer: ModelContainer
     @Dependency var ixApiClient: IxApiClient
     
     init() {}
-    init(task: IxTaskEntity) {
-        self.task = task
+    
+    init(taskId: String) {
+        self.taskId = taskId
     }
 
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<IxTaskEntity> {
-        let task = try await ixApiClient.setTaskCompletion(taskId: task.id, completed: true)
-        let taskId = task.id
-
-        let modelContext = modelContainer.mainContext
+        let task = try await ixApiClient.setTaskCompletion(taskId: taskId, completed: true)
         
+        let modelContext = modelContainer.mainContext
         try modelContext.transaction {
             try modelContext.delete(model: IxTask.self, where: #Predicate { $0.id == taskId })
             modelContext.insert(task)
         }
-
-        WidgetHelper.reloadTasksWidget()
-
+        
+        try? await IxSystemIntegration.handleNewEntity(IxTaskEntity(task: task))
+        
         return .result(value: IxTaskEntity(task: task))
     }
 }

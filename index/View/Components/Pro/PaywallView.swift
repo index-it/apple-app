@@ -11,7 +11,6 @@ import SwiftUI
 
 struct PaywallView: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
-    @EnvironmentObject private var navigationManager: NavigationManager
     @Environment(\.showError) private var showError
 
     private struct ProFeatureShowcase {

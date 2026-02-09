@@ -9,9 +9,9 @@ import IxCoreKit
 import SwiftUI
 
 struct AccountSettingsView: View {
+    @Environment(IxNavigator.self) private var navigator
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @Environment(\.showError) private var showError
-    @EnvironmentObject private var navigationManager: NavigationManager
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) private var dismiss
@@ -113,7 +113,7 @@ struct AccountSettingsView: View {
                 .confirmationDialog("Logout", isPresented: $showLogoutDialog) {
                     Button("Logout", role: .destructive) {
                         dismiss()
-                        navigationManager.clear()
+                        navigator.clear()
                         Task {
                             await logout()
                         }

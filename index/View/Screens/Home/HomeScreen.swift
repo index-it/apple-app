@@ -9,18 +9,29 @@ import IxCoreKit
 import SwiftUI
 
 struct HomeScreen: View {
-    @EnvironmentObject var navigationManager: NavigationManager
+    @Environment(IxNavigator.self) var navigator
     @EnvironmentObject var notificationManager: NotificationManager
     @EnvironmentObject var siriManager: SiriManager
     @AppStorage(AppStorageKeys.onboardingShowed) private var onboardingShowed: Bool = false
+    
+    func onOnboardingEnded() {
+        onboardingShowed = true
+        
+        Task {
+            let _ = await notificationManager.requestPermissions()
+            siriManager.requestPermissions()
+        }
+    }
 
     var body: some View {
-        TabView(selection: $navigationManager.selectedHomeTab) {
-            Tab("Your tasks", systemImage: "rectangle.grid.1x2.fill", value: HomeTab.tasks) {
+        @Bindable var navigator = navigator
+        
+        TabView(selection: $navigator.tab) {
+            Tab("Your tasks", systemImage: "rectangle.grid.1x2.fill", value: IxTab.tasks) {
                 TasksTabView()
             }
 
-            Tab("Your lists", systemImage: "square.grid.2x2.fill", value: HomeTab.lists) {
+            Tab("Your lists", systemImage: "square.grid.2x2.fill", value: IxTab.lists) {
                 NavigationView {
                     ListsGridScreen(archived: false)
                 }
@@ -32,22 +43,12 @@ struct HomeScreen: View {
                     !onboardingShowed
                 },
                 set: { _ in
-                    onboardingShowed = true
-
-                    Task {
-                        let _ = await notificationManager.requestPermissions()
-                        siriManager.requestPermissions()
-                    }
+                    onOnboardingEnded()
                 }
             )
         ) {
             OnboardingView {
-                onboardingShowed = true
-
-                Task {
-                    let _ = await notificationManager.requestPermissions()
-                    siriManager.requestPermissions()
-                }
+                onOnboardingEnded()
             }
         }
     }

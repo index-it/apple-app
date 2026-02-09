@@ -11,13 +11,13 @@ import SwiftUI
 import WidgetKit
 
 struct ListScreen: View {
+    @Environment(IxNavigator.self) private var navigator
     @Environment(\.showPaywall) private var showPaywall
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
     @Environment(\.showError) private var showError
     @Environment(\.showToast) private var showToast
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
-    @EnvironmentObject private var navigationManager: NavigationManager
 
     private var listId: String
 
@@ -79,15 +79,14 @@ struct ListScreen: View {
 
         return selectedCategoryColor.toColor()
     }
-
-    init(listId: String, categoryId: String?) {
+    
+    init(listId: String) {
         self.listId = listId
 
         _selectedCategoryId = AppStorage(
-            wrappedValue: categoryId ?? "", AppStorageKeys.Categories.selectedCategory(listId)
+            wrappedValue: "", AppStorageKeys.Categories.selectedCategory(listId)
         )
         
-
         // MARK: AppStorage init
 
         _showCompletedItems = AppStorage(
@@ -141,7 +140,7 @@ struct ListScreen: View {
         )
         _items = Query(listItemsDescriptor)
     }
-
+  
     // MARK: - Local storage savers
 
     func saveList(_ list: IxList) async throws {
@@ -462,7 +461,8 @@ struct ListScreen: View {
             taskEditorConfig.isPresented = false
 
             showToast("Task created", systemImage: "checkmark.circle", tint: .green, placement: .top) {
-                navigationManager.navigateToTab(.tasks)
+                navigator.navigateToTab(.tasks)
+                navigator.taskId = task.id
             }
         } catch IxApiClientError.proRequired(_) {
             showPaywall()
@@ -576,9 +576,18 @@ struct ListScreen: View {
                     }
                 }
             }
+            .onChange(of: navigator.categoryId, initial: true) { _, newValue in
+                if let newValue {
+                    selectedCategoryId = newValue
+                    navigator.categoryId = nil
+                }
+            }
+            .onChange(of: navigator.itemId, initial: true) { _, newValue in
+                // TODO: Decide how to highlight item
+            }
             .onChange(of: lists, initial: true) { _, newLists in
                 guard let newList = newLists.first else {
-                    navigationManager.pop()
+                    navigator.pop()
                     return
                 }
 

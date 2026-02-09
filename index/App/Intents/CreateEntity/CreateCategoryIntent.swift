@@ -18,15 +18,15 @@ struct CreateCategoryIntent: AppIntent {
     }
 
     @Parameter var list: IxListEntity
-    @Parameter(title: "Name")
-    var name: String
+    @Parameter(title: "Name") var name: String
+    @Parameter(title: "Color") var color: IxColorEnum?
 
     @Dependency var modelContainer: ModelContainer
     @Dependency var ixApiClient: IxApiClient
 
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<IxListCategoryEntity> {
-        let category = try await ixApiClient.createCategory(listId: list.id, name: name, color: nil)
+        let category = try await ixApiClient.createCategory(listId: list.id, name: name, color: color?.color.hexString)
 
         let modelContext = modelContainer.mainContext
         

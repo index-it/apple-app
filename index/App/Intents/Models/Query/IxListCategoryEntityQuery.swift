@@ -14,10 +14,10 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
     @Dependency
     var modelContainer: ModelContainer
     
-    @IntentParameterDependency<CreateItemIntent>(
-        \.$list
-    )
-    var createItemIntent
+//    @IntentParameterDependency<CreateItemIntent>(
+//        \.$list
+//    )
+//    var createItemIntent
 
     @MainActor
     func entities(for identifiers: [IxListCategoryEntity.ID]) async throws -> [IxListCategoryEntity] {
@@ -31,38 +31,57 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
 
     @MainActor
     func suggestedEntities() async throws -> [IxListCategoryEntity] {
-        if let createItemIntent = createItemIntent {
-            let listId = createItemIntent.list.id
-            let descriptor = FetchDescriptor<IxListCategory>(
-                predicate: #Predicate { category in
-                    category.listId == listId
-                }
-            )
-            return try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
-        } else {
-            let currentTimeMillis = Date.now.currentTimeMillis()
-            
-            let descriptor = FetchDescriptor<IxListCategory>(
-                predicate: #Predicate { category in
-                    currentTimeMillis - category.createdAt < 2_592_000_000
-                }
-            )
-            let categories = try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
-            if categories.isEmpty {
-                return try modelContainer.mainContext.fetch(FetchDescriptor<IxListCategory>()).map(IxListCategoryEntity.init)
-            } else {
-                return categories
+//        if let createItemIntent = createItemIntent {
+//            let listId = createItemIntent.list.id
+//            let descriptor = FetchDescriptor<IxListCategory>(
+//                predicate: #Predicate { category in
+//                    category.listId == listId
+//                }
+//            )
+//            return try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
+//        } else {
+//            let currentTimeMillis = Date.now.currentTimeMillis()
+//            
+//            let descriptor = FetchDescriptor<IxListCategory>(
+//                predicate: #Predicate { category in
+//                    currentTimeMillis - category.createdAt < 2_592_000_000
+//                }
+//            )
+//            let categories = try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
+//            if categories.isEmpty {
+//                return try modelContainer.mainContext.fetch(FetchDescriptor<IxListCategory>()).map(IxListCategoryEntity.init)
+//            } else {
+//                return categories
+//            }
+//        }
+        let currentTimeMillis = Date.now.currentTimeMillis()
+        
+        let descriptor = FetchDescriptor<IxListCategory>(
+            predicate: #Predicate { category in
+                currentTimeMillis - category.createdAt < 2_592_000_000
             }
+        )
+        let categories = try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
+        if categories.isEmpty {
+            return try modelContainer.mainContext.fetch(FetchDescriptor<IxListCategory>()).map(IxListCategoryEntity.init)
+        } else {
+            return categories
         }
     }
 
     @MainActor
     func entities(matching: String) async throws -> [IxListCategoryEntity] {
-        let listId = createItemIntent?.list.id
-        
+//        let listId = createItemIntent?.list.id
+//        
+//        let descriptor = FetchDescriptor<IxListCategory>(
+//            predicate: #Predicate { category in
+//                (listId == nil || (listId != nil && category.listId == listId!)) &&
+//                category.name.localizedStandardContains(matching)
+//            }
+//        )
+//        return try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
         let descriptor = FetchDescriptor<IxListCategory>(
             predicate: #Predicate { category in
-                (listId == nil || (listId != nil && category.listId == listId!)) &&
                 category.name.localizedStandardContains(matching)
             }
         )
@@ -71,15 +90,18 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
 
     @MainActor
     func allEntities() async throws -> [IxListCategoryEntity] {
-        let descriptor = if let listId = createItemIntent?.list.id {
-            FetchDescriptor<IxListCategory>(
-                predicate: #Predicate { category in
-                    category.listId == listId
-                }
-            )
-        } else {
-            FetchDescriptor<IxListCategory>()
-        }
+//        let descriptor = if let listId = createItemIntent?.list.id {
+//            FetchDescriptor<IxListCategory>(
+//                predicate: #Predicate { category in
+//                    category.listId == listId
+//                }
+//            )
+//        } else {
+//            FetchDescriptor<IxListCategory>()
+//        }
+//        
+//        return try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
+        let descriptor = FetchDescriptor<IxListCategory>()
         
         return try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
     }

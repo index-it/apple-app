@@ -11,12 +11,12 @@ import SwiftUI
 import WidgetKit
 
 struct TasksTabView: View {
+    @Environment(IxNavigator.self) private var navigator
     @Environment(\.modelContext) private var context
     @Environment(\.showPaywall) private var showPaywall
     @Environment(\.showError) private var showError
     @Environment(\.showToast) private var showToast
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
-    @EnvironmentObject private var navigationManager: NavigationManager
 
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
     
@@ -373,11 +373,15 @@ struct TasksTabView: View {
                 }
             }
         }
-        .onChange(of: navigationManager.quickAddTaskViewPresented, initial: true) { _, newValue in
+        .onChange(of: navigator.taskCreatePresented, initial: true) { _, newValue in
             if newValue {
-                editorConfig.present(multi: navigationManager.quickAddTaskViewMulti)
-                navigationManager.quickAddTaskViewPresented = false
+                editorConfig.present(multi: false)
+                navigator.taskCreatePresented = false
             }
+        }
+        .onChange(of: navigator.taskId, initial: true) { _, newValue in
+            // TODO: Decide how to highlight selected task
+            // we can also move this onChange to a subview like the TasksList view or smth if needed
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name.NSCalendarDayChanged).receive(on: DispatchQueue.main)) { _ in
             todayDate = DateHelper.localCalendar().startOfDay(for: Date.now)
@@ -547,7 +551,7 @@ struct TasksTabView: View {
     var ToolbarContentView: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             Button {
-                navigationManager.push(.settings)
+                navigator.push(.settings)
             } label: {
                 Label("Settings", systemImage: "gearshape")
             }

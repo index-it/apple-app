@@ -2,15 +2,51 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>ParameterVocabularies</key>
+	<array>
+		<dict>
+			<key>ParameterNames</key>
+			<array>
+				<string>INCreateNoteIntent.groupName</string>
+			</array>
+			<key>ParameterVocabulary</key>
+			<array>
+				<dict>
+					<key>VocabularyItemIdentifier</key>
+					<string>list</string>
+					<key>VocabularyItemSynonyms</key>
+					<array>
+						<dict>
+							<key>VocabularyItemExamples</key>
+							<array>
+								<string>Create a note in my Furniture list called Sun shaped lamp in Index</string>
+							</array>
+							<key>VocabularyItemPhrase</key>
+							<string>List</string>
+						</dict>
+					</array>
+				</dict>
+			</array>
+		</dict>
+	</array>
 	<key>IntentPhrases</key>
 	<array>
+		<dict>
+			<key>IntentName</key>
+			<string>INCreateNoteIntent</string>
+			<key>IntentExamples</key>
+			<array>
+				<string>Make a note in my Furniture folder called Sun shaped lamp on Index</string>
+				<string>Create a note in my Apps folder called Playlist app saying An app that creates playlists using song tags on Index</string>
+			</array>
+		</dict>
 		<dict>
 			<key>IntentName</key>
 			<string>INAddTasksIntent</string>
 			<key>IntentExamples</key>
 			<array>
-				<string>Remind me to wax my skis tomorrow</string>
-				<string>Create a task every Sunday called Reflect on the week</string>
+				<string>Remind me to wax my skis tomorrow in Index</string>
+				<string>Create a task every Sunday called Reflect on the week in Index</string>
 			</array>
 		</dict>
 	</array>

@@ -81,7 +81,7 @@ public enum DateHelper {
     }
     
     public static func getUtcReminderTimeOffset(from localDateComponents: DateComponents) -> Int64? {
-        guard let hours = localDateComponents.hour, let minutes = localDateComponents.minute else {
+        if localDateComponents.hour == nil || localDateComponents.minute == nil {
             return nil
         }
         

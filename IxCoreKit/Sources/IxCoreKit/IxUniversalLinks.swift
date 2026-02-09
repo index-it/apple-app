@@ -42,11 +42,11 @@ public enum IxUniversalLinks {
     }
 
     public static func category(listId: String, _ categoryId: String) -> String {
-        "https://\(host)/\(Sections.lists)/\(listId)/categories/\(categoryId)"
+        "https://\(host)/\(Sections.lists)/\(listId)?categoryId=\(categoryId)"
     }
 
     public static func item(listId: String, _ itemId: String) -> String {
-        "https://\(host)/\(Sections.lists)/\(listId)/items/\(itemId)"
+        "https://\(host)/\(Sections.lists)/\(listId)?itemId=\(itemId)"
     }
 
     public static var tasks: String {

@@ -10,12 +10,12 @@ import RevenueCat
 import SwiftUI
 
 struct SettingsView: View {
+    @Environment(IxNavigator.self) private var navigator
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
     @Environment(\.showPaywall) private var showPaywall
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @Environment(\.showError) private var showError
-    @EnvironmentObject private var navigationManager: NavigationManager
 
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
 
@@ -63,7 +63,7 @@ struct SettingsView: View {
 
                     Section {
                         Button {
-                            navigationManager.push(.accountSettings)
+                            navigator.push(.accountSettings)
                         } label: {
                             HStack {
                                 Label("Account", systemImage: "person.fill")
@@ -79,7 +79,7 @@ struct SettingsView: View {
 
                         if let user = user, user.has_pro {
                             Button {
-                                navigationManager.push(.proSettings)
+                                navigator.push(.proSettings)
                             } label: {
                                 HStack {
                                     Label("Pro", systemImage: "crown.fill")
@@ -109,7 +109,7 @@ struct SettingsView: View {
                         }.tint(.primary)
 
                         Button {
-                            navigationManager.push(.about)
+                            navigator.push(.about)
                         } label: {
                             HStack {
                                 Label("About & Feedback", systemImage: "heart.fill")

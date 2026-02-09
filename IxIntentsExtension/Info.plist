@@ -5,6 +5,7 @@
 	<key>INIntentsSupported</key>
 	<array>
 		<string>INAddTasksIntent</string>
+		<string>INCreateNoteIntent</string>
 	</array>
 	<key>NSExtension</key>
 	<dict>

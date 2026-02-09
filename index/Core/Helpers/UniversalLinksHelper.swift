@@ -12,45 +12,60 @@ import os
 private let log = Logger(subsystem: IxSubsystems.APP, category: "UniversalLinksHelper")
 
 enum UniversalLinksHelper {
-    static func handleUniversalLink(_ url: URL, navigationManager: NavigationManager) {
+    static func handleUniversalLink(_ url: URL, navigator: IxNavigator) {
         if url.host() != "web.index-it.app" {
-            navigationManager.navigateToTab(.tasks)
+            navigator.navigateToTab(.lists)
             return
         }
 
         // Extract the path components, ignoring the domain for Universal Links
         let pathComponents = url.pathComponents.filter { $0 != "/" && !$0.isEmpty }
         guard pathComponents.count >= 1 else { return }
+        
+        let urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)
 
         let section = pathComponents[0]
 
         switch section {
         case IxUniversalLinks.Sections.lists:
-            navigationManager.navigateToTab(.lists)
-            
-            print("NAV TO LISTS")
+            navigator.navigateToTab(.lists)
             
             if let listId = pathComponents[safe: 1] {
-                print("LIST ID IS: \(listId)")
-                if let categoriesSection = pathComponents[safe: 2],
-                   categoriesSection == IxUniversalLinks.Sections.categories,
-                   let categoryId = pathComponents[safe: 3] {
-                    navigationManager.push(.listRoute(listId: listId, categoryId: categoryId))
+                if let categoryId = urlComponents?
+                    .queryItems?
+                    .first(where: { $0.name == "categoryId" && $0.value != "nil" })?
+                    .value {
+                    
+                    navigator.push(.listRoute(listId: listId))
+                    navigator.categoryId = categoryId
+                } else if let itemId = urlComponents?
+                    .queryItems?
+                    .first(where: { $0.name == "itemId" && $0.value != "nil" })?
+                    .value {
+                    navigator.push(.listRoute(listId: listId))
+                    navigator.itemId = itemId
                 } else {
-                    navigationManager.push(.listRoute(listId: listId, categoryId: nil))
+                    navigator.push(.listRoute(listId: listId))
                 }
             }
         case IxUniversalLinks.Sections.tasks:
-            navigationManager.navigateToTab(.tasks)
+            if let taskId = pathComponents[safe: 1] {
+                navigator.navigateToTab(.tasks)
+                navigator.taskId = taskId
+            } else {
+                navigator.navigateToTab(.tasks)
+            }
         case IxUniversalLinks.Sections.settings:
-            navigationManager.push(.settings)
+            navigator.push(.settings)
         case IxUniversalLinks.Sections.quickAdd:
             guard let entity = pathComponents[safe: 1] else { return }
             switch entity {
             case IxUniversalLinks.QuickAddEntity.task.rawValue:
-                navigationManager.showQuickAddTaskView()
+                navigator.navigateToTab(.tasks)
+                navigator.taskCreatePresented = true
             case IxUniversalLinks.QuickAddEntity.item.rawValue:
-                navigationManager.showQuickAddItemView()
+                navigator.navigateToTab(.lists)
+                navigator.itemCreatePresented = true
             default:
                 log.warning("Received universal link for quick add for unknown entity: \(entity)")
             }
