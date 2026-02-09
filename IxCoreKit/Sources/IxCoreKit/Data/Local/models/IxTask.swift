@@ -102,6 +102,27 @@ public final class IxTask: Sanitizable, Validatable, EmptyInitializable {
         )
     }
     
+    public static func empty(
+        dueDate: Date? = nil
+    ) -> IxTask {
+        return IxTask(
+            id: "",
+            userId: "",
+            itemId: nil,
+            name: "",
+            description: nil,
+            subtasks: [],
+            dueDate: dueDate,
+            rrule: nil,
+            completed: false,
+            priority: nil,
+            reminders: [],
+            createdAt: Date().currentTimeMillis(),
+            editedAt: nil,
+            completedAt: nil
+        )
+    }
+    
     public var validationRes: Result<Void, ValidationError> {
         if name.isEmpty {
             return .failure(.init("Task name cannot be empty"))

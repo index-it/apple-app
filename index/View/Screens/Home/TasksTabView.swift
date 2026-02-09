@@ -266,7 +266,7 @@ struct TasksTabView: View {
                 .floatingActionButton(
                     "plus",
                     action: {
-                        editorConfig.present()
+                        editorConfig.present(entity: .empty(dueDate: Date.now))
                     },
                     longPressAction: {
                         editorConfig.present(multi: true)
