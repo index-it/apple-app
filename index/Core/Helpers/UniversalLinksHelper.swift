@@ -9,7 +9,7 @@ import Foundation
 import IxCoreKit
 import os
 
-private let log = Logger(subsystem: IxSubsystems.APP, category: "UniversalLinksHelper")
+private let log = Logger.systemIntegrationLogger
 
 enum UniversalLinksHelper {
     static func handleUniversalLink(_ url: URL, navigator: IxNavigator) {

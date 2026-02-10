@@ -15,7 +15,7 @@ import RevenueCat
 import SwiftData
 import SwiftUI
 
-private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "AppEntrypoint")
+private let log = Logger.appLogger
 
 ///
 /// ## Authentication

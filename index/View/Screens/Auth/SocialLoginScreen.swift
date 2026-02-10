@@ -13,7 +13,7 @@ import IxCoreKit
 import os
 import SwiftUI
 
-private let log = Logger(subsystem: IxSubsystems.APP, category: "SocialLoginScreen")
+private let log = Logger.uiLogger
 
 struct SocialLoginScreen: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient

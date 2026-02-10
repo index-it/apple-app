@@ -13,7 +13,7 @@ import RevenueCat
 import SwiftData
 import SwiftUI
 
-private let log = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "IxAppDelegate")
+private let log = Logger.appLogger
 
 /// Responsible for initializing third party services
 class IxAppDelegate: NSObject, UIApplicationDelegate {

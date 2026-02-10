@@ -67,9 +67,7 @@ struct EditListIntent: AppIntent {
 
         let modelContext = modelContainer.mainContext
 
-        let listId = list.id
         try modelContext.transaction {
-            try modelContext.delete(model: IxList.self, where: #Predicate { list in list.id == listId })
             modelContext.insert(list)
         }
 

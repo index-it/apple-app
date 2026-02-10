@@ -55,9 +55,7 @@ struct CreateTaskIntent: AppIntent {
 
         let modelContext = modelContainer.mainContext
 
-        let taskId = task.id
         try modelContext.transaction {
-            try modelContext.delete(model: IxTask.self, where: #Predicate { $0.id == taskId })
             modelContext.insert(task)
         }
 

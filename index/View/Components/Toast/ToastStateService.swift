@@ -2,7 +2,7 @@ import IxCoreKit
 import OSLog
 import SwiftUI
 
-private let log = Logger(subsystem: IxSubsystems.APP, category: "ToastStateService")
+private let log = Logger.uiLogger
 
 /// if we ever want to support multiple toasts (stacked on top of each other)
 /// this is a good one

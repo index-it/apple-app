@@ -54,7 +54,7 @@ struct ItemEditor: View {
 
                     Section {
                         Picker("Category", selection: $config.entity.categoryId) {
-                            Text("No category").tag("")
+                            Text("No category").tag(nil as String?)
 
                             ForEach(categories, id: \.id) { category in
                                 Text(category.name).tag(category.id)

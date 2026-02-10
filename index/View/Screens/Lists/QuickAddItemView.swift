@@ -10,7 +10,7 @@ import OSLog
 import SwiftData
 import SwiftUI
 
-private let log = Logger(subsystem: IxSubsystems.APP, category: "QuickAddItemView")
+private let log = Logger.uiLogger
 
 struct QuickAddItemView: View {
     @Environment(\.showPaywall) private var showPaywall

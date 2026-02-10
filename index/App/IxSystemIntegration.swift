@@ -12,7 +12,7 @@ import OSLog
 import SwiftData
 import WidgetKit
 
-private let log = Logger(subsystem: IxSubsystems.APP, category: "IxSystemIntegration")
+private let log = Logger.systemIntegrationLogger
 
 enum IxDonatableIntent {
     case openTasks

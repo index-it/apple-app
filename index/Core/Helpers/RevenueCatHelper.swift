@@ -10,7 +10,7 @@ import IxCoreKit
 import os
 import RevenueCat
 
-private let log = Logger(subsystem: IxSubsystems.APP, category: "RevenueCatHelper")
+private let log = Logger.revenueCatLogger
 
 public enum RevenueCatHelper {
     private static let apiKey = "appl_nPoYUABJDUWtNxeVeGCrIxTnPJA"

@@ -9,7 +9,7 @@ import Foundation
 import IxCoreKit
 import os
 
-private let log = Logger(subsystem: IxSubsystems.APP, category: "ErrorStateService")
+private let log = Logger.appLogger
 
 public final class ErrorStateService: ObservableObject {
     @Published public private(set) var alerts: [ErrorAlert] = []

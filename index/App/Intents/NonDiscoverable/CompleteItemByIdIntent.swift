@@ -36,7 +36,6 @@ struct CompleteItemByIdIntent: AppIntent {
 
         let modelContext = modelContainer.mainContext
         try modelContext.transaction {
-            try modelContext.delete(model: IxListItem.self, where: #Predicate { $0.id == itemId })
             modelContext.insert(item)
         }
 

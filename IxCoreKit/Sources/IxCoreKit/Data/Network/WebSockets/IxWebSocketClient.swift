@@ -10,7 +10,7 @@ import Foundation
 import os
 import SwiftUI
 
-private let log = Logger(subsystem: IxSubsystems.CORE_KIT, category: "IxWebsocketClient")
+private let log = Logger.websocketLogger
 
 public actor IxWebsocketClient {
     private static let wsURL = URL(string: "wss://api.index-it.app/ws")!

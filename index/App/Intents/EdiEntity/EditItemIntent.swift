@@ -76,7 +76,6 @@ struct EditItemIntent: AppIntent {
         guard let updatedItem else { throw IxIntentError.unknown }
 
         try modelContext.transaction {
-            try modelContext.delete(model: IxListItem.self, where: #Predicate { $0.id == itemId })
             modelContext.insert(updatedItem)
         }
 

@@ -73,9 +73,7 @@ struct ListsGridScreen: View {
     }
 
     private func saveList(_ list: IxList) async throws {
-        let listId = list.id
         try context.transaction {
-            try context.delete(model: IxList.self, where: #Predicate { $0.id == listId })
             context.insert(list)
         }
 

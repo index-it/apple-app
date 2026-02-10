@@ -8,7 +8,7 @@
 import Foundation
 import os
 
-private let log = Logger(subsystem: IxSubsystems.CORE_KIT, category: "IxApiClient")
+private let log = Logger.networkLogger
 
 public final class IxApiClient: Sendable {
     private static let baseUrl = URL(string: "https://api.index-it.app")!

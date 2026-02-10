@@ -53,10 +53,7 @@ struct TasksTabView: View {
     @AppStorage(AppStorageKeys.Tasks.sortOrder) private var sortOrder = AppStorageKeys.Defaults.tasksSortOrder
 
     private func saveTask(_ task: IxTask) async throws {
-        let id = task.id
-
         try context.transaction {
-            try context.delete(model: IxTask.self, where: #Predicate { $0.id == id })
             context.insert(task)
         }
 

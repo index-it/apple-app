@@ -58,7 +58,6 @@ struct EditCategoryIntent: AppIntent {
         )
 
         try modelContext.transaction {
-            try modelContext.delete(model: IxListCategory.self, where: #Predicate { $0.id == categoryId })
             modelContext.insert(category)
         }
 

@@ -9,7 +9,7 @@ import os
 import SwiftData
 import SwiftUI
 
-private let log = Logger(subsystem: IxSubsystems.CORE_KIT, category: "DataGeneration")
+private let log = Logger.dataLogger
 
 public enum DataGeneration {
     public static let previewListId = UUID().uuidString

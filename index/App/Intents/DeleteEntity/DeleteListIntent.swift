@@ -48,7 +48,6 @@ struct DeleteListIntent: AppIntent {
 
             let modelContext = modelContainer.mainContext
             try modelContext.transaction {
-                try modelContext.delete(model: IxList.self, where: #Predicate { $0.id == listId })
                 modelContext.insert(newList)
             }
 
