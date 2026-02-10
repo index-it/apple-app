@@ -91,8 +91,7 @@ struct ListCard: View {
                         LinearGradient(
                             gradient: Gradient(colors: [
                                 DynamicColor(hexString: list.color).lighter(amount: 0.07).toColor(),
-                                DynamicColor(hexString: list.color).toColor(),
-
+                                DynamicColor(hexString: list.color).darkened(amount: 0.03).toColor()
                             ]),
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing

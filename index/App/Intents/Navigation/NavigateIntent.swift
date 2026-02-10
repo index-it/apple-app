@@ -9,7 +9,16 @@ import AppIntents
 import IxCoreKit
 
 @available(iOS 18.0, *)
-struct NavigateIntent: AppIntent {
+struct NavigateIntent: AppIntent, PredictableIntent {
+    static var predictionConfiguration: some IntentPredictionConfiguration {
+        IntentPrediction(parameters: \.$navigationOption) { navigationOption in
+            DisplayRepresentation(
+                title: "Navigate to \(navigationOption)",
+                synonyms: ["Open \(navigationOption)"]
+            )
+        }
+    }
+    
     static let title: LocalizedStringResource = "Navigate to Section"
 
     static let supportedModes: IntentModes = .foreground

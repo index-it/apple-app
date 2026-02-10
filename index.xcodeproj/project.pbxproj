@@ -30,6 +30,7 @@
 		09CBAF5D2F393804009F1AD3 /* IxCoreKit in Frameworks */ = {isa = PBXBuildFile; productRef = 09CBAF5C2F393804009F1AD3 /* IxCoreKit */; };
 		09D9117F2DCB63730087D915 /* IxCoreKit in Frameworks */ = {isa = PBXBuildFile; productRef = 09D9117E2DCB63730087D915 /* IxCoreKit */; };
 		09D911812DCB63770087D915 /* IxCoreKit in Frameworks */ = {isa = PBXBuildFile; productRef = 09D911802DCB63770087D915 /* IxCoreKit */; };
+		09DA1F7D2F3BB76100F4EE9B /* DynamicColor in Frameworks */ = {isa = PBXBuildFile; productRef = 09DA1F7C2F3BB76100F4EE9B /* DynamicColor */; };
 		09DC44A72F1EE3D7003A7185 /* MCEmojiPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 09DC44A62F1EE3D7003A7185 /* MCEmojiPicker */; };
 		09F48F452D7E623D00CA50AC /* indexShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 09F48F3B2D7E623D00CA50AC /* indexShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -104,8 +105,10 @@
 		096C02182F09E2C500425185 /* Exceptions for "indexWidget" folder in "index" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				indexTasksWidget.swift,
 				IxWidgetDependencies.swift,
+				Timeline/TimelineEntryRelevance.swift,
+				Timeline/TodayTasksTimeline.swift,
+				Widgets/TodayTasksWidget.swift,
 			);
 			target = 093287D82C9C811200A0717E /* index */;
 		};
@@ -189,6 +192,9 @@
 				App/Intents/Snippet/TaskSnippetIntent.swift,
 				App/IxSystemIntegration.swift,
 				Navigation/IxNavigator.swift,
+				View/Modifier/IfModifier.swift,
+				View/State/EditorConfig.swift,
+				View/State/EditorMode.swift,
 			);
 			target = 092FE7C12D7F3C8200F38388 /* indexWidgetExtension */;
 		};
@@ -273,6 +279,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				09DA1F7D2F3BB76100F4EE9B /* DynamicColor in Frameworks */,
 				09D911812DCB63770087D915 /* IxCoreKit in Frameworks */,
 				092FE7C62D7F3C8200F38388 /* SwiftUI.framework in Frameworks */,
 				092FE7C42D7F3C8200F38388 /* WidgetKit.framework in Frameworks */,
@@ -378,6 +385,7 @@
 			name = indexWidgetExtension;
 			packageProductDependencies = (
 				09D911802DCB63770087D915 /* IxCoreKit */,
+				09DA1F7C2F3BB76100F4EE9B /* DynamicColor */,
 			);
 			productName = indexWidgetExtension;
 			productReference = 092FE7C22D7F3C8200F38388 /* indexWidgetExtension.appex */;
@@ -1187,6 +1195,11 @@
 		09D911802DCB63770087D915 /* IxCoreKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = IxCoreKit;
+		};
+		09DA1F7C2F3BB76100F4EE9B /* DynamicColor */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0932EB392CEB6BBF00321EEE /* XCRemoteSwiftPackageReference "DynamicColor" */;
+			productName = DynamicColor;
 		};
 		09DC44A62F1EE3D7003A7185 /* MCEmojiPicker */ = {
 			isa = XCSwiftPackageProductDependency;

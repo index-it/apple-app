@@ -199,25 +199,24 @@ public struct IxTaskReminder: Codable, Hashable {
     public var daysBefore: Int64
 
     /// The time offset in milliseconds from the start of the day (00:00) at which the reminder should trigger.
-    ///
-    /// This is stored in UTC and adjusted via `localTimezoneOffset` to determine the local time.
     public var timeOffset: Int64
 
     public init(daysBefore: Int64, timeOffset: Int64) {
         self.daysBefore = daysBefore
         self.timeOffset = timeOffset
     }
-
-    public init(daysBefore: Int64, localTimezoneOffset: Int64) {
-        self.daysBefore = daysBefore
-        timeOffset = DateHelper.startOfDayOffsetFromLocalToUtc(offset: localTimezoneOffset)
+    
+    public func asDate(taskDueDate: Date) -> Date {
+        let calendar = DateHelper.calendar()
+        let reminderDate = calendar.date(byAdding: .day, value: Int(daysBefore), to: taskDueDate) ?? Date.now
+        return calendar.startOfDay(for: reminderDate).addingTimeInterval(Double(timeOffset) / 1000)
     }
 
     /// Returns a formatted string representing the reminder time (e.g., "8:00 AM") in the user's locale.
     /// - Returns: A short time string based on the local time of the reminder.
     public func hourAndMinuteString() -> String {
         // Convert milliseconds to seconds and add to start of the day
-        let targetDate = DateHelper.startOfDay().addingTimeInterval(Double(timeOffset) / 1000)
+        let targetDate = asDate(taskDueDate: .now)
 
         let formatter = DateFormatter()
         formatter.timeStyle = .short

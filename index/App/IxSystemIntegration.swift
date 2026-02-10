@@ -61,7 +61,7 @@ enum IxSystemIntegration {
 
     static func clearEntities() async throws {
         try await CSSearchableIndex.default().deleteAllSearchableItems()
-        WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     static func handleNewEntities<T: IndexedEntity>(_ entities: [T]) async throws {
@@ -69,7 +69,10 @@ enum IxSystemIntegration {
         try await CSSearchableIndex.default().indexAppEntities(entities)
 
         if T.self is IxTaskEntity.Type {
-            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.todayTasksWidget)
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.nextTaskWidget)
+        } else if T.self is IxListEntity.Type {
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.listsWidget)
         }
     }
 
@@ -81,7 +84,11 @@ enum IxSystemIntegration {
         try await CSSearchableIndex.default().deleteAppEntities(identifiedBy: [id], ofType: T.self)
 
         if T.self == IxTaskEntity.self {
-            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.todayTasksWidget)
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.nextTaskWidget)
+        } else if T.self is IxListEntity.Type {
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.listsWidget)
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.listWidget)
         }
     }
 }

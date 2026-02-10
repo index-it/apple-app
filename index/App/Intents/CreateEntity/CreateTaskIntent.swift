@@ -10,7 +10,16 @@ import IxCoreKit
 import SwiftData
 
 @available(iOS 26.0, *)
-struct CreateTaskIntent: AppIntent {
+struct CreateTaskIntent: AppIntent, PredictableIntent {
+    static var predictionConfiguration: some IntentPredictionConfiguration {
+        IntentPrediction(parameters: \.$name) { name in
+            DisplayRepresentation(
+                title: "Add task \(name)",
+                synonyms: ["Create task \(name)"]
+            )
+        }
+    }
+    
     static let title: LocalizedStringResource = "Create task"
 
     static var parameterSummary: some ParameterSummary {

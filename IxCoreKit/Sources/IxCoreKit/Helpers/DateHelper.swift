@@ -41,7 +41,7 @@ public enum DateHelper {
 
     /// Returns a calendar instance that uses the UTC timezone
     public static func calendar() -> Calendar {
-        var calendar = Calendar.current
+        var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "UTC")!
         return calendar
     }

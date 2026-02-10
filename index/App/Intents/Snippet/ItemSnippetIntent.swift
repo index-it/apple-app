@@ -61,6 +61,7 @@ struct ItemSnippetIntentView: View {
             }
         }
         .padding(.top)
+        .padding(.horizontal)
     }
 }
 

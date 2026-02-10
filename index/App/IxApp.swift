@@ -112,7 +112,6 @@ struct IxApp: App {
                     log.error("Failed to clear database data: \(error)")
                 }
             }
-
             Task.detached {
                 log.info("Disconnecting websocket")
                 async let disconnectResult: () = ixWebsocketClient.disconnect()

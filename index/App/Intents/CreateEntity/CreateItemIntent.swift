@@ -10,7 +10,16 @@ import IxCoreKit
 import SwiftData
 
 @available(iOS 26.0, *)
-struct CreateItemIntent: AppIntent {
+struct CreateItemIntent: AppIntent, PredictableIntent {
+    static var predictionConfiguration: some IntentPredictionConfiguration {
+        IntentPrediction(parameters: (\.$name, \.$list)) { name, list in
+            DisplayRepresentation(
+                title: "Add \(name) to \(list)",
+                synonyms: ["Create item \(name) in \(list)"]
+            )
+        }
+    }
+    
     static let title: LocalizedStringResource = "Create item"
 
     static var parameterSummary: some ParameterSummary {

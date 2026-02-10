@@ -1,0 +1,51 @@
+//
+//  indexWidgetControl.swift
+//  indexWidget
+//
+//  Created by Giulio Pimenoff Verdolin on 10/03/25.
+//
+
+import AppIntents
+import IxCoreKit
+import SwiftUI
+import WidgetKit
+
+ struct QuickAddTaskControlWidget: ControlWidget {
+    var body: some ControlWidgetConfiguration {
+        StaticControlConfiguration(
+            kind: IxKinds.quickAddTaskControlCenterWidget
+        ) {
+            ControlWidgetButton(
+                action: NavigateIntent(navigationOption: .createTask),
+                label: {
+                    VStack {
+                        Image(systemName: "calendar.badge.plus")
+                        Text("Create Task")
+                    }
+                }
+            )
+        }
+        .displayName("Create Task")
+        .description("Quickly create a new task.")
+    }
+ }
+
+struct QuickAddItemControlWidget: ControlWidget {
+    var body: some ControlWidgetConfiguration {
+        StaticControlConfiguration(
+            kind: IxKinds.quickAddItemControlCenterWidget
+        ) {
+            ControlWidgetButton(
+                action: NavigateIntent(navigationOption: .createItem),
+                label: {
+                    VStack {
+                        Image(systemName: "note.text.badge.plus")
+                        Text("Index It")
+                    }
+                }
+            )
+        }
+        .displayName("Index It")
+        .description("Quickly add a new item to a list.")
+    }
+}

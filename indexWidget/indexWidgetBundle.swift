@@ -11,8 +11,11 @@ import WidgetKit
 @main
 struct indexWidgetBundle: WidgetBundle {
     var body: some Widget {
+        AddItemWidget()
+        AddTaskWidget()
+        ListsWidget()
         TodayTasksWidget()
-//        QuickAddItemControlWidget()
-//        QuickAddTaskControlWidget()
+        QuickAddItemControlWidget()
+        QuickAddTaskControlWidget()
     }
 }

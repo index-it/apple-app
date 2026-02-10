@@ -9,6 +9,6 @@ import WidgetKit
 
 public actor WidgetHelper {
     public static func reloadTasksWidget() {
-        WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.tasksWidget)
+        WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.todayTasksWidget)
     }
 }

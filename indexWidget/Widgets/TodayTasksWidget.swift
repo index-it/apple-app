@@ -12,33 +12,39 @@ import SwiftUI
 import WidgetKit
 
 struct TodayTasksWidget: Widget {
-    let kind: String = IxKinds.tasksWidget
-
+    let kind: String = IxKinds.todayTasksWidget
+    
     var body: some WidgetConfiguration {
         StaticConfiguration(
             kind: kind,
             provider: TodayTasksProvider()
         ) { entry in
             TodayTasksWidgetView(entry: entry)
-                .widgetURL(URL(string: "https://web.index-it.app/tasks")!)
+                .widgetURL(URL(string: IxUniversalLinks.tasks)!)
         }
         .configurationDisplayName("Today's Tasks")
         .description("Shows your tasks due today")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
+        .supportedFamilies(
+            [
+                .systemSmall,
+                .systemMedium,
+                .systemLarge,
+                .systemExtraLarge,
+                .accessoryCircular,
+                .accessoryInline,
+                .accessoryRectangular
+            ]
+        )
     }
 }
 
-struct TodayTasksEntry: TimelineEntry {
-    let date: Date
-    let tasks: [IxTask]
-}
+
 
 struct TodayTasksWidgetView: View {
     var entry: TodayTasksProvider.Entry
-
+    
     @Environment(\.widgetFamily) var widgetFamily
-    @Environment(\.openURL) var openUrl
-
+    
     var body: some View {
         tasksView
             .containerBackground(.background, for: .widget)
@@ -46,10 +52,16 @@ struct TodayTasksWidgetView: View {
                 await IxWidgetDependencies.setup()
             }
     }
-
+    
     @ViewBuilder
     var tasksView: some View {
         switch widgetFamily {
+        case .accessoryCircular:
+            accessoryCircularView
+        case .accessoryInline:
+            accessoryInlineView
+        case .accessoryRectangular:
+            accessoryRectangularView
         case .systemSmall:
             systemSmallView
         case .systemMedium:
@@ -57,23 +69,85 @@ struct TodayTasksWidgetView: View {
         case .systemLarge:
             systemLargeView
         default:
-            systemSmallView
+            systemLargeView
         }
     }
-
+    
+    var accessoryCircularView: some View {
+        ZStack {
+            // https://developer.apple.com/documentation/widgetkit/displaying-the-right-widget-background
+            AccessoryWidgetBackground()
+            
+            if entry.tasks.isEmpty {
+                Text("No\nTasks")
+                    .font(.caption2)
+                    .multilineTextAlignment(.center)
+            } else {
+                VStack {
+                    Text("\(entry.tasks.count)")
+                        .fontWeight(.semibold)
+                    Text("Tasks")
+                }
+            }
+        }
+    }
+    
+    var accessoryInlineView: some View {
+        if entry.tasks.isEmpty {
+            Text("No Tasks Due Today")
+        } else if entry.tasks.count == 1, let task = entry.tasks.first {
+            Text(task.name)
+        } else {
+            Text("\(entry.tasks.count) Tasks Today")
+        }
+    }
+    
+    var accessoryRectangularView: some View {
+        VStack(alignment: .leading) {
+            if entry.tasks.isEmpty {
+                Text("Today")
+                    .fontWeight(.bold)
+                Text("No Tasks")
+            } else {
+                if entry.tasks.count < 3 {
+                    Text("Today")
+                        .fontWeight(.bold)
+                }
+                
+                ForEach(entry.tasks.prefix(3), id: \.id) { task in
+                    HStack(spacing: 6) {
+                        Button(intent: CompleteTaskByIdIntent(taskId: task.id)) {
+                            Image(systemName: task.completed ? "inset.filled.circle" : "circle")
+                                .font(.body)
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        
+                        Text(task.name)
+                            .lineLimit(1)
+                            .font(.caption)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth:. infinity)
+    }
+    
     var systemSmallView: some View {
         VStack(alignment: .leading) {
             HStack {
                 Text("Today")
                     .fontWeight(.semibold)
                     .foregroundStyle(Color.accentColor)
+                    .widgetAccentable()
                 Spacer()
                 Text("\(entry.tasks.count)")
                     .font(.title2)
                     .fontWeight(.semibold)
                     .contentTransition(.numericText())
+                    .widgetAccentable()
             }
-
+            
             if entry.tasks.isEmpty {
                 Text("No Tasks")
                     .foregroundStyle(.secondary)
@@ -81,29 +155,31 @@ struct TodayTasksWidgetView: View {
             } else {
                 tasksListView(entry.tasks.prefix(3))
             }
-
+            
             Spacer()
         }
     }
-
+    
     var systemMediumView: some View {
         HStack {
             VStack {
                 createTaskButtonView
-
+                
                 Spacer()
-
+                
                 VStack(alignment: .leading) {
                     Text("\(entry.tasks.count)")
                         .font(.title)
                         .fontWeight(.semibold)
                         .contentTransition(.numericText())
+                        .widgetAccentable()
                     Text("Today")
                         .fontWeight(.semibold)
                         .foregroundStyle(Color.accentColor)
+                        .widgetAccentable()
                 }
             }
-
+            
             if entry.tasks.isEmpty {
                 HStack {
                     Spacer()
@@ -115,15 +191,15 @@ struct TodayTasksWidgetView: View {
                 Spacer(minLength: 16)
                 VStack(alignment: .leading) {
                     tasksListView(entry.tasks.prefix(4))
-
+                    
                     Spacer()
                 }
             }
-
+            
             Spacer()
         }
     }
-
+    
     var systemLargeView: some View {
         VStack(alignment: .leading) {
             HStack {
@@ -132,18 +208,20 @@ struct TodayTasksWidgetView: View {
                         .font(.title)
                         .fontWeight(.semibold)
                         .contentTransition(.numericText())
+                        .widgetAccentable()
                     Text("Today")
                         .fontWeight(.semibold)
                         .foregroundStyle(Color.accentColor)
+                        .widgetAccentable()
                 }
-
+                
                 Spacer()
-
+                
                 createTaskButtonView
             }
-
+            
             Divider()
-
+            
             if entry.tasks.isEmpty {
                 VStack {
                     Spacer()
@@ -154,25 +232,25 @@ struct TodayTasksWidgetView: View {
                 }
             } else {
                 Spacer(minLength: 10)
-
+                
                 VStack(alignment: .leading) {
                     tasksListView(entry.tasks.prefix(7))
-
+                    
                     Spacer()
                 }
             }
-
+            
             Spacer()
         }
     }
-
+    
     var createTaskButtonView: some View {
         Button(intent: NavigateIntent(navigationOption: NavigationOptionEnum.createTask)) {
             Label("Create", systemImage: "plus")
                 .labelStyle(.iconOnly)
         }
     }
-
+    
     func tasksListView(_ tasks: ArraySlice<IxTask>) -> some View {
         ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
             HStack {
@@ -182,14 +260,14 @@ struct TodayTasksWidgetView: View {
                         .font(.title3)
                         .foregroundStyle(.secondary)
                 }.buttonStyle(.plain)
-
+                
                 Text(task.name)
                     .lineLimit(1)
                     .font(.footnote)
-
+                
                 Spacer()
             }
-
+            
             if index != tasks.count - 1 {
                 Divider()
                     .padding(.leading, 32)
@@ -198,83 +276,47 @@ struct TodayTasksWidgetView: View {
     }
 }
 
-struct TodayTasksProvider: TimelineProvider {
-    func placeholder(in _: Context) -> TodayTasksEntry {
-        TodayTasksEntry(date: Date(), tasks: [])
-    }
-
-    func getSnapshot(in _: Context, completion: @escaping (TodayTasksEntry) -> Void) {
-        // Get sample data for preview
-        let entry = TodayTasksEntry(
-            date: Date.now,
-            tasks: [
-                IxTask(id: "1", userId: "1", itemId: nil, name: "Buy Gocciole", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
-                IxTask(id: "2", userId: "1", itemId: nil, name: "Clean windsurf", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
-            ]
-        )
-        completion(entry)
-    }
-
-    func getTimeline(in _: Context, completion: @escaping (Timeline<TodayTasksEntry>) -> Void) {
-        Task { @MainActor in
-            var tasks: [IxTask] = []
-
-            let modelContext = ModelContext(ModelContainerProvider.shared)
-
-            // Create a predicate for today's tasks
-            let calendar = DateHelper.localCalendar()
-            let now = Date.now
-
-            let predicate = #Predicate<IxTask> {
-                !$0.completed
-            }
-
-            let descriptor = FetchDescriptor<IxTask>(predicate: predicate, sortBy: [SortDescriptor(\IxTask.priority)])
-
-            do {
-                tasks = try modelContext.fetch(descriptor)
-            } catch {
-                print("Failed to fetch tasks: \(error)")
-            }
-
-            // Create the timeline entry with fetched tasks
-            let entry = TodayTasksEntry(
-                date: Date(),
-                tasks: tasks.filter {
-                    $0.dueDate != nil && calendar.compare($0.dueDate!, to: now, toGranularity: .day).rawValue <= 0
-                }
-            )
-
-            // Update every hour or when the widget refreshes
-            let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!
-            let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
-
-            completion(timeline)
-        }
-    }
-}
 
 struct TodayTasksWidget_Previews: PreviewProvider {
-    static var tasks = [
-        IxTask(id: "1", userId: "1", itemId: nil, name: "Buy Gocciole", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
+
+    static let tasks: [IxTask] = [
+        IxTask(
+            id: "1",
+            userId: "1",
+            itemId: nil,
+            name: "Buy Gocciole",
+            description: nil,
+            subtasks: [],
+            dueDate: .now,
+            rrule: nil,
+            completed: false,
+            priority: nil,
+            reminders: [],
+            createdAt: Date.now.currentTimeMillis(),
+            completedAt: nil
+        )
     ]
+
+    static let entry = TodayTasksEntry(
+        date: .now,
+        relevance: nil,
+        tasks: tasks
+    )
+
+    static let families: [WidgetFamily] = [
+        .systemSmall,
+        .systemMedium,
+        .systemLarge,
+        .systemExtraLarge,
+        .accessoryInline,
+        .accessoryCircular,
+        .accessoryRectangular
+    ]
+
     static var previews: some View {
-        TodayTasksWidgetView(entry: TodayTasksEntry(
-            date: Date(),
-            tasks: tasks
-        ))
-        .previewContext(WidgetPreviewContext(family: .systemSmall))
-
-        TodayTasksWidgetView(entry: TodayTasksEntry(
-            date: Date(),
-            tasks: tasks
-        ))
-        .previewContext(WidgetPreviewContext(family: .systemMedium))
-
-        TodayTasksWidgetView(entry: TodayTasksEntry(
-            date: Date(),
-            tasks: tasks
-        ))
-        .previewContext(WidgetPreviewContext(family: .systemLarge))
+        ForEach(families, id: \.self) { family in
+            TodayTasksWidgetView(entry: entry)
+                .previewContext(WidgetPreviewContext(family: family))
+        }
     }
 }

@@ -12,7 +12,15 @@ import IxCoreKit
 // I prefer using universal links for now
 
 @available(iOS 26.0, *)
-struct OpenListIntent: OpenIntent, URLRepresentableIntent {
+struct OpenListIntent: OpenIntent, URLRepresentableIntent, PredictableIntent {
+    static var predictionConfiguration: some IntentPredictionConfiguration {
+        IntentPrediction(parameters: \.$target) { list in
+            DisplayRepresentation(
+                title: "Open list \(list)"
+            )
+        }
+    }
+    
     static let title: LocalizedStringResource = "Open List"
 
     @Parameter(title: "List", requestValueDialog: "Which list?")
