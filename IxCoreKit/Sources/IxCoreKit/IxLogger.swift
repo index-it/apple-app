@@ -17,4 +17,6 @@ public extension Logger {
     static let uiLogger = Logger(subsystem: IxSubsystems.APP, category: "UI")
     static let intentLogger = Logger(subsystem: IxSubsystems.APP, category: "Intents")
     static let revenueCatLogger = Logger(subsystem: IxSubsystems.APP, category: "RevenueCat")
+    
+    static let widgetLogger = Logger(subsystem: IxSubsystems.WIDGET, category: "Widgets")
 }

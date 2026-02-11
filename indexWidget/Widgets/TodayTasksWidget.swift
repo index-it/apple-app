@@ -93,12 +93,16 @@ struct TodayTasksWidgetView: View {
     }
     
     var accessoryInlineView: some View {
-        if entry.tasks.isEmpty {
-            Text("No Tasks Due Today")
-        } else if entry.tasks.count == 1, let task = entry.tasks.first {
-            Text(task.name)
-        } else {
-            Text("\(entry.tasks.count) Tasks Today")
+        HStack {
+            Image(systemName: "list.bullet")
+            
+            if entry.tasks.isEmpty {
+                Text("No Tasks Due Today")
+            } else if entry.tasks.count == 1, let task = entry.tasks.first {
+                Text(task.name)
+            } else {
+                Text("\(entry.tasks.count) Tasks Today")
+            }
         }
     }
     
@@ -195,8 +199,6 @@ struct TodayTasksWidgetView: View {
                     Spacer()
                 }
             }
-            
-            Spacer()
         }
     }
     
@@ -239,8 +241,6 @@ struct TodayTasksWidgetView: View {
                     Spacer()
                 }
             }
-            
-            Spacer()
         }
     }
     
@@ -292,7 +292,7 @@ struct TodayTasksWidget_Previews: PreviewProvider {
             completed: false,
             priority: nil,
             reminders: [],
-            createdAt: Date.now.currentTimeMillis(),
+            createdAt: Date.now.timeMillis(),
             completedAt: nil
         )
     ]

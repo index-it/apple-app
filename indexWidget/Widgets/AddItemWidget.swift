@@ -17,7 +17,7 @@ struct AddItemWidget: Widget {
         StaticConfiguration(
             kind: kind,
             provider: DummyTimelineProvider()
-        ) { entry in
+        ) { _ in
             AddItemWidgetView()
                 .widgetURL(URL(string: IxUniversalLinks.quickAdd(.item))!)
         }
@@ -34,6 +34,21 @@ struct AddItemWidgetView: View {
             AccessoryWidgetBackground()
             
             Image(systemName: "note.text.badge.plus")
+                .font(.title2)
+        }
+        .containerBackground(.clear, for: .widget)
+    }
+}
+
+struct AddItemWidget_Previews: PreviewProvider {
+    static let families: [WidgetFamily] = [
+        .accessoryCircular
+    ]
+
+    static var previews: some View {
+        ForEach(families, id: \.self) { family in
+            AddItemWidgetView()
+                .previewContext(WidgetPreviewContext(family: family))
         }
     }
 }

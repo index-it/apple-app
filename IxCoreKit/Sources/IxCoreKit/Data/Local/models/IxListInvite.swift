@@ -41,7 +41,7 @@ public struct IxListInvite: Encodable, Decodable, Equatable, Sendable, Sanitizab
             maxUsages: 1,
             description: nil,
             expiresAt: nil,
-            createdAt: Date.now.currentTimeMillis()
+            createdAt: Date.now.timeMillis()
         )
     }
 

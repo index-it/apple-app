@@ -57,6 +57,11 @@ struct IxListEntityQuery: EntityQuery, EntityStringQuery, EnumerableEntityQuery,
         let descriptor = FetchDescriptor<IxList>()
         return try modelContainer.mainContext.fetch(descriptor).map(IxListEntity.init)
     }
+    
+    @MainActor
+    func defaultResult() async -> IxListEntity? {
+        return try? await suggestedEntities().first
+    }
 
     typealias ComparatorMappingType = Predicate<IxListEntity>
 

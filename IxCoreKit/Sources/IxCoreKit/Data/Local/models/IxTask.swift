@@ -96,7 +96,7 @@ public final class IxTask: Sanitizable, Validatable, EmptyInitializable {
             completed: false,
             priority: nil,
             reminders: [],
-            createdAt: Date().currentTimeMillis(),
+            createdAt: Date().timeMillis(),
             editedAt: nil,
             completedAt: nil
         )
@@ -117,7 +117,7 @@ public final class IxTask: Sanitizable, Validatable, EmptyInitializable {
             completed: false,
             priority: nil,
             reminders: [],
-            createdAt: Date().currentTimeMillis(),
+            createdAt: Date().timeMillis(),
             editedAt: nil,
             completedAt: nil
         )
@@ -177,7 +177,7 @@ public final class IxTask: Sanitizable, Validatable, EmptyInitializable {
             completed: completed,
             priority: priority,
             reminders: [],
-            createdAt: Date.now.currentTimeMillis(),
+            createdAt: Date.now.timeMillis(),
             editedAt: nil,
             completedAt: nil
         )

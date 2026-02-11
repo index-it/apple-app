@@ -11,6 +11,7 @@ public enum IxKinds {
     public static let listsWidget = "app.index-it.index.listsWidget"
     
     public static let todayTasksWidget = "app.index-it.index.todayTasksWidget"
+    public static let todayTasksProgressWidget = "app.index-it.index.todayTasksProgressWidget"
     public static let nextTaskWidget = "app.index-it.index.nextTaskWidget"
     public static let openAddTaskWidget = "app.index-it.index.openAddTaskWidget"
 

@@ -41,8 +41,8 @@ public enum IxUniversalLinks {
         "https://\(host)/\(Sections.lists)/\(listId)/categories"
     }
 
-    public static func category(listId: String, _ categoryId: String) -> String {
-        "https://\(host)/\(Sections.lists)/\(listId)?categoryId=\(categoryId)"
+    public static func category(listId: String, _ categoryId: String?) -> String {
+        "https://\(host)/\(Sections.lists)/\(listId)?categoryId=\(categoryId ?? "nil")"
     }
 
     public static func item(listId: String, _ itemId: String) -> String {

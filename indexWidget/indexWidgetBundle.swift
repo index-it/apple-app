@@ -14,7 +14,10 @@ struct indexWidgetBundle: WidgetBundle {
         AddItemWidget()
         AddTaskWidget()
         ListsWidget()
+        ListWidget()
+        NextTaskWidget()
         TodayTasksWidget()
+        TodayTasksProgressWidget()
         QuickAddItemControlWidget()
         QuickAddTaskControlWidget()
     }

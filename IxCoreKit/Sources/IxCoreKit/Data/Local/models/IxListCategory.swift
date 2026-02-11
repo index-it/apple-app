@@ -51,7 +51,7 @@ public final class IxListCategory: Sanitizable, Validatable, EmptyInitializable 
             list_id: listId,
             name: name,
             color: color,
-            created_at: Date.now.currentTimeMillis(),
+            created_at: Date.now.timeMillis(),
             edited_at: nil
         )
     }
@@ -63,7 +63,7 @@ public final class IxListCategory: Sanitizable, Validatable, EmptyInitializable 
             list_id: "",
             name: "",
             color: nil,
-            created_at: Date.now.currentTimeMillis(),
+            created_at: Date.now.timeMillis(),
             edited_at: nil
         )
     }

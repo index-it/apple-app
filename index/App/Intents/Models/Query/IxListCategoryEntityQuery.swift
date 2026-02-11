@@ -23,6 +23,11 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
         \.$list
     )
     var editItemIntent
+    
+    @IntentParameterDependency<ListConfigurationWidgetIntent>(
+        \.$list
+    )
+    var widgetListIntent
 
     @MainActor
     func entities(for identifiers: [IxListCategoryEntity.ID]) async throws -> [IxListCategoryEntity] {
@@ -36,7 +41,7 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
 
     @MainActor
     func suggestedEntities() async throws -> [IxListCategoryEntity] {
-        if let listId = createItemIntent?.list.id ?? editItemIntent?.list.id {
+        if let listId = createItemIntent?.list.id ?? editItemIntent?.list.id ?? widgetListIntent?.list.id {
             let descriptor = FetchDescriptor<IxListCategory>(
                 predicate: #Predicate { category in
                     category.listId == listId
@@ -44,7 +49,7 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
             )
             return try modelContainer.mainContext.fetch(descriptor).map(IxListCategoryEntity.init)
         } else {
-            let currentTimeMillis = Date.now.currentTimeMillis()
+            let currentTimeMillis = Date.now.timeMillis()
 
             let descriptor = FetchDescriptor<IxListCategory>(
                 predicate: #Predicate { category in
@@ -62,7 +67,7 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
 
     @MainActor
     func entities(matching: String) async throws -> [IxListCategoryEntity] {
-        let listId = createItemIntent?.list.id ?? editItemIntent?.list.id
+        let listId = createItemIntent?.list.id ?? editItemIntent?.list.id ?? widgetListIntent?.list.id
 
         let descriptor = FetchDescriptor<IxListCategory>(
             predicate: #Predicate { category in
@@ -75,7 +80,7 @@ struct IxListCategoryEntityQuery: EntityQuery, EntityStringQuery, EnumerableEnti
 
     @MainActor
     func allEntities() async throws -> [IxListCategoryEntity] {
-        let descriptor = if let listId = createItemIntent?.list.id ?? editItemIntent?.list.id {
+        let descriptor = if let listId = createItemIntent?.list.id ?? editItemIntent?.list.id ?? widgetListIntent?.list.id {
             FetchDescriptor<IxListCategory>(
                 predicate: #Predicate { category in
                     category.listId == listId

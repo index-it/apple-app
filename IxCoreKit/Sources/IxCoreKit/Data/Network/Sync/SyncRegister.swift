@@ -38,7 +38,7 @@ public actor SyncRegister {
      */
     public func hasExpired(_ resource: String, threshold: Int64 = 120_000) -> Bool {
         let ts = get(resource)
-        let now = Date.now.currentTimeMillis()
+        let now = Date.now.timeMillis()
 
         if ts == nil || (now - (ts ?? 0) > threshold) {
             save(resource, now)

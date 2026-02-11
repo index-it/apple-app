@@ -27,8 +27,8 @@ struct TodayTasksProvider: TimelineProvider {
             date: Date.now,
             relevance: nil,
             tasks: [
-                IxTask(id: "1", userId: "1", itemId: nil, name: "Buy Gocciole", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
-                IxTask(id: "2", userId: "1", itemId: nil, name: "Clean windsurf", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.currentTimeMillis(), completedAt: nil),
+                IxTask(id: "1", userId: "1", itemId: nil, name: "Buy Gocciole", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.timeMillis(), completedAt: nil),
+                IxTask(id: "2", userId: "1", itemId: nil, name: "Clean windsurf", description: nil, subtasks: [], dueDate: Date.now, rrule: nil, completed: false, priority: nil, reminders: [], createdAt: Date.now.timeMillis(), completedAt: nil),
             ]
         )
         completion(entry)
@@ -48,7 +48,7 @@ struct TodayTasksProvider: TimelineProvider {
                 !$0.completed
             }
             
-            let descriptor = FetchDescriptor<IxTask>(predicate: predicate, sortBy: [SortDescriptor(\IxTask.priority)])
+            let descriptor = FetchDescriptor<IxTask>(predicate: predicate, sortBy: [SortDescriptor(\IxTask.priority, order: .reverse)])
             
             do {
                 tasks = try modelContext.fetch(descriptor)

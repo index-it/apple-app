@@ -17,7 +17,7 @@ struct AddTaskWidget: Widget {
         StaticConfiguration(
             kind: kind,
             provider: DummyTimelineProvider()
-        ) { entry in
+        ) { _ in
             AddTaskWidgetView()
                 .widgetURL(URL(string: IxUniversalLinks.quickAdd(.task))!)
         }
@@ -34,6 +34,8 @@ struct AddTaskWidgetView: View {
             AccessoryWidgetBackground()
             
             Image(systemName: "calendar.badge.plus")
+                .font(.title2)
         }
+        .containerBackground(.clear, for: .widget)
     }
 }

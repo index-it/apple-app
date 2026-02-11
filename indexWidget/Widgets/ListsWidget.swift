@@ -93,7 +93,7 @@ struct ListsWidgetView: View {
             Text("No Lists")
                 .foregroundStyle(.secondary)
         } else {
-            let lists = entry.lists.prefix(4)
+            let lists = entry.lists.prefix(cols * rows)
             let spacing: CGFloat = 8
 
             GeometryReader { geometry in

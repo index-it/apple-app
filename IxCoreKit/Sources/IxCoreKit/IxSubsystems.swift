@@ -8,4 +8,5 @@
 public enum IxSubsystems {
     public static let CORE_KIT = "app.index-it.IxCoreKit"
     public static let APP = "app.index-it.index"
+    public static let WIDGET = "app.index-it.index.indexWidget"
 }

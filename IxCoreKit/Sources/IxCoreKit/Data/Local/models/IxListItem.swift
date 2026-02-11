@@ -70,9 +70,9 @@ public final class IxListItem: Validatable, Sanitizable, EmptyInitializable {
             completed: completed,
             link: link,
             note: note,
-            created_at: Date().currentTimeMillis(),
+            created_at: Date().timeMillis(),
             edited_at: nil,
-            completed_at: completed ? Date().currentTimeMillis() : nil
+            completed_at: completed ? Date().timeMillis() : nil
         )
     }
 
@@ -86,7 +86,7 @@ public final class IxListItem: Validatable, Sanitizable, EmptyInitializable {
             completed: false,
             link: nil,
             note: nil,
-            created_at: Date().currentTimeMillis(),
+            created_at: Date().timeMillis(),
             edited_at: nil,
             completed_at: nil
         )

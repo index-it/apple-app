@@ -95,7 +95,7 @@ public class IxList {
             isPublic: isPublic,
             viewers: [],
             editors: [],
-            createdAt: Date.now.currentTimeMillis(),
+            createdAt: Date.now.timeMillis(),
             editedAt: nil
         )
     }
@@ -111,7 +111,7 @@ public class IxList {
             isPublic: false,
             viewers: [],
             editors: [],
-            createdAt: Date.now.currentTimeMillis(),
+            createdAt: Date.now.timeMillis(),
             editedAt: nil
         )
     }
