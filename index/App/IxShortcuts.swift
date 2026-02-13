@@ -47,7 +47,7 @@ struct IxShorcuts: AppShortcutsProvider {
             phrases: [
                 "Open \(\.$target) in \(.applicationName)",
                 "Open \(\.$target) list in \(.applicationName)",
-                "Open the \(\.$target) list in \(.applicationName)",
+                "Open the \(\.$target) list in \(.applicationName)"
             ],
             shortTitle: "Open List",
             systemImageName: "note.text.badge.plus",

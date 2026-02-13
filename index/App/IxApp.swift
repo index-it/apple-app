@@ -70,16 +70,20 @@ struct IxApp: App {
     init() {
         let modelContainer = ModelContainerProvider.shared
         self.modelContainer = modelContainer
-
+        
         let authHelper = AuthenticationHelper()
         _authenticationHelper = StateObject(wrappedValue: authHelper)
-
+        
         let ixApiClient = IxApiClient { newAuthStatus in
             Task { @MainActor in
                 authHelper.setBackendAuthStatus(newAuthStatus)
             }
         }
         self.ixApiClient = ixApiClient
+        
+        Task {
+            await FCMNotificationTokenManager.shared.setup(ixApiClient: ixApiClient)
+        }
 
         let websocketEventHandler = IxWebsocketEventHandler(ixApiClient: ixApiClient, modelContext: modelContainer.mainContext)
         let websocketClient = IxWebsocketClient(ixWebsocketEventHandler: websocketEventHandler)
@@ -112,15 +116,19 @@ struct IxApp: App {
                     log.error("Failed to clear database data: \(error)")
                 }
             }
+            
             Task.detached {
                 log.info("Disconnecting websocket")
                 async let disconnectResult: () = ixWebsocketClient.disconnect()
                 async let clearRegisterResult: () = SyncRegister.shared.clear()
                 async let revenueCatResult: () = RevenueCatHelper.logout()
                 async let clearAppEntities: () = IxSystemIntegration.clearEntities()
+                async let clearFCMNotificationToken: () = FCMNotificationTokenManager.shared.clearTokenAndAuthStatus()
 
-                _ = await (disconnectResult, clearRegisterResult, revenueCatResult, try? clearAppEntities)
+                _ = await (disconnectResult, clearRegisterResult, revenueCatResult, try? clearAppEntities, clearFCMNotificationToken)
             }
+            
+        
         case let .authenticated(user: networkUser):
             log.debug("network client authenticated - id: \(networkUser.id) - email: \(networkUser.email)")
 
@@ -134,7 +142,7 @@ struct IxApp: App {
             }
 
             Task.detached {
-                async let firebaseTask: () = registerFirebaseToken(ixApiClient: ixApiClient)
+                async let firebaseTask: () = FCMNotificationTokenManager.shared.setAuthenticated(true)
                 async let revenueCatTask: () = RevenueCatHelper.login(userId: networkUser.id)
 
                 await _ = (firebaseTask, revenueCatTask)
@@ -154,15 +162,6 @@ struct IxApp: App {
             log.debug("received user from AppStorage - id: \(user.id) - email: \(user.email)")
             errorService.clear()
             authNavigationManager.clear()
-        }
-    }
-
-    private func registerFirebaseToken(ixApiClient: IxApiClient) async {
-        do {
-            let firebaseMessagingToken = try await Messaging.messaging().token()
-            try await ixApiClient.sendNotificationRegistrationToken(token: firebaseMessagingToken)
-        } catch {
-            log.error("Failed sending firebase messaging token to server: \(error)")
         }
     }
 

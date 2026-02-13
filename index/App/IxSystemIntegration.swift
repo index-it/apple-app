@@ -71,8 +71,12 @@ enum IxSystemIntegration {
         if T.self is IxTaskEntity.Type {
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.todayTasksWidget)
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.nextTaskWidget)
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.todayTasksProgressWidget)
         } else if T.self is IxListEntity.Type {
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.listsWidget)
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.listWidget)
+        } else if T.self is IxListItemEntity.Type || T.self is IxListCategoryEntity.Type {
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.listWidget)
         }
     }
 
@@ -86,8 +90,11 @@ enum IxSystemIntegration {
         if T.self == IxTaskEntity.self {
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.todayTasksWidget)
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.nextTaskWidget)
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.todayTasksProgressWidget)
         } else if T.self is IxListEntity.Type {
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.listsWidget)
+            WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.listWidget)
+        } else if T.self is IxListItemEntity.Type || T.self is IxListCategoryEntity.Type {
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.listWidget)
         }
     }

@@ -203,9 +203,10 @@ struct TasksTabView: View {
 
     func rescheduleToNextDay(task: IxTask) async {
         do {
-            let nextDueDate = task.dueDate
+            let addedOneDay = task.dueDate
                 .flatMap { calendar.date(byAdding: .day, value: 1, to: $0) }
-                ?? Date()
+
+            let nextDueDate = max(addedOneDay ?? Date(), Date())
 
             let task = try await ixApiClient.editTask(
                 taskId: task.id,
@@ -337,20 +338,28 @@ struct TasksTabView: View {
                                         Label("Cancel", systemImage: "xmark")
                                     }
                                 }
-
+                                
                                 ToolbarItem(placement: .confirmationAction) {
                                     Button {
                                         Task {
                                             let rrule = reschedulingRecurrenceState.generateRRule()
                                             editorConfig.entity.rrule = rrule
-
+                                            
                                             await editTask()
                                         }
-
+                                        
                                         isReschedulingTask = false
                                     } label: {
                                         Label("Save", systemImage: "checkmark")
                                     }
+                                }
+                            }
+                            .onAppear {
+                                if let dueDate = editorConfig.entity.dueDate,
+                                   dueDate.compare(Date.now) == .orderedAscending {
+                                    editorConfig.entity.dueDate = Date.now
+                                } else if editorConfig.entity.dueDate == nil {
+                                    editorConfig.entity.dueDate = Date.now
                                 }
                             }
                         }

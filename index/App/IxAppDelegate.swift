@@ -15,6 +15,9 @@ import SwiftUI
 
 private let log = Logger.appLogger
 
+// If we ever really care about App icon shortcuts
+// https://developer.apple.com/documentation/UIKit/add-home-screen-quick-actions
+
 /// Responsible for initializing third party services
 class IxAppDelegate: NSObject, UIApplicationDelegate {
     private let ixApiClient = IxApiClient(authChangeCallback: { _ in })
@@ -44,12 +47,7 @@ extension IxAppDelegate: MessagingDelegate {
         guard let token = fcmToken else { return }
 
         Task {
-            do {
-                _ = try await self.ixApiClient.sendNotificationRegistrationToken(token: token)
-                log.debug("Sent firebase messaging token to the server: \(token)")
-            } catch {
-                log.error("Failed sending firebase messaging token to the server: \(error)")
-            }
+            await FCMNotificationTokenManager.shared.setFcmToken(token)
         }
     }
 }
@@ -76,7 +74,6 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
-        log.debug("Received notification")
         let userInfo = response.notification.request.content.userInfo
 
         if response.notification.request.content.categoryIdentifier == IxNotificationIdentifiers.taskReminderCategory,
@@ -98,6 +95,8 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
                         try modelContainer.mainContext.transaction {
                             modelContainer.mainContext.insert(updatedTask)
                         }
+                        
+                        try? await IxSystemIntegration.handleNewEntity(IxTaskEntity(task: updatedTask))
                     } catch {
                         log.error("Failed updating task: \(error)")
                     }
@@ -137,6 +136,8 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
                         try modelContainer.mainContext.transaction {
                             modelContainer.mainContext.insert(updatedTask)
                         }
+                        
+                        try? await IxSystemIntegration.handleNewEntity(IxTaskEntity(task: updatedTask))
                     } catch {
                         log.error("Failed updating task: \(error)")
                     }
@@ -178,6 +179,8 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
                         try modelContainer.mainContext.transaction {
                             modelContainer.mainContext.insert(updatedTask)
                         }
+                        
+                        try? await IxSystemIntegration.handleNewEntity(IxTaskEntity(task: updatedTask))
                     } catch {
                         log.error("Failed updating task: \(error)")
                     }
@@ -201,7 +204,7 @@ extension IxAppDelegate: UNUserNotificationCenterDelegate {
     /// decide what to show when a notification is received and app is in FOREGROUND
     func userNotificationCenter(
         _: UNUserNotificationCenter,
-        willPresent _: UNNotification,
+        willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
         completionHandler([.sound, .badge, .banner])

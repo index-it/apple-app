@@ -8,6 +8,9 @@
 import SwiftUI
 import WidgetKit
 
+// if we decide to load from network instead of swiftdata
+// https://developer.apple.com/documentation/widgetkit/making-network-requests-in-a-widget-extension
+
 @main
 struct indexWidgetBundle: WidgetBundle {
     var body: some Widget {
