@@ -6,84 +6,224 @@
 //
 
 import IxCoreKit
+import SwiftData
 import SwiftUI
 
 struct ListSharingSheet: View {
+    @Query private var lists: [IxList]
+    @State private var list: IxList? = nil
+    
+    var listId: String
+    var onClose: () -> Void
+    
+    init(listId: String, onClose: @escaping () -> Void) {
+        self.listId = listId
+        self.onClose = onClose
+        
+        var listDescriptor = FetchDescriptor<IxList>(
+            predicate: #Predicate { list in
+                list.id == listId
+            }
+        )
+        listDescriptor.fetchLimit = 1
+        _lists = Query(listDescriptor)
+    }
+    
+    var body: some View {
+        Group {
+            if let list {
+                ListSharingSheetView(list: list)
+            } else {
+                ProgressView()
+            }
+        }
+        .onChange(of: lists, initial: true) { _, newLists in
+            guard let newList = newLists.first else {
+                onClose()
+                return
+            }
+
+            list = newList
+        }
+    }
+}
+
+struct ListSharingSheetView: View {
+    @Environment(\.modelContext) private var context
+    @ForcedEnvironment(\.ixApiClient) private var ixApiClient
+    @Environment(\.showError) private var showError
     @Environment(\.showPaywall) private var showPaywall
     @Environment(\.showToast) private var showToast
+    
+    @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
+    
+    @State private var state = ListSharingState()
+    @Bindable var list: IxList
+   
     @State private var navPath: [ListShareSheetNavigationRoute] = []
     @State private var addUserEmail = ""
     @State private var addUserEditor = false
     @State private var selectedUser: IxListSingleUserAccessInfo? = nil
     @State private var showUserActions = false
-
-    @Binding private var inviteEditorConfig: EditorConfig<IxListInvite>
-    @Binding private var inviteUrl: URL?
+    
+    @State private var shareUrl: URL?
 
     private var isInviteEmailValid: Bool {
         addUserEmail.contains("@") && addUserEmail.contains(".") && addUserEmail.count >= 5
     }
+    
+    private func saveList(_ list: IxList) async throws {
+        try context.transaction {
+            context.insert(list)
+        }
 
-    @AppStorage(AppStorageKeys.loggedInUser) private var user: User?
+        try? await IxSystemIntegration.handleNewEntity(IxListEntity(list: list))
+    }
+    
+    private func fetchUsers() async {
+        do {
+            state.loadingUsers = true
+            defer { state.loadingUsers = false }
+            state.usersWithAccess = try await ixApiClient.getListUsersWithAccess(id: list.id)
+        } catch {
+            showError(.localizedError(title: "Error fetching users", error: error))
+        }
+    }
+    
+    private func fetchInvites() async {
+        do {
+            state.activeInvites = try await ixApiClient.getListInvites(listId: list.id)
+        } catch {
+            showError(.localizedError(title: "Error fetching active invites", error: error))
+        }
+    }
+    
+    private func editListPublic(isPublic: Bool) async {
+        do {
+            state.loadingPublic = true
+            defer { state.loadingPublic = false }
 
-    private var listId: String
-    @State private var isPublic: Bool
-    @Binding private var showSheet: Bool
-    @Binding private var showUserInvitationSuccessAlert: Bool
-    @Binding private var loadingPublic: Bool
-    @Binding private var loadingUsers: Bool
-    @Binding private var loadingUserInvite: Bool
-    @Binding private var loadingUserEditOrDelete: String?
-    @Binding private var usersWithAccess: [IxListSingleUserAccessInfo]
-    @Binding private var activeInvites: [IxListInvite]
+            let updated = try await ixApiClient.editList(
+                id: list.id,
+                name: list.name,
+                icon: list.icon,
+                color: list.color,
+                archived: list.archived,
+                is_public: isPublic
+            )
 
-    private var onPublicChange: (Bool) -> Void
-    private var onCreateInvite: () -> Void
-    private var onDeleteInvite: (String) -> Void
-    private var onUserInvite: (String, Bool) -> Void
-    private var onEditUserPermissions: (String, Bool) -> Void
-    private var onUserRevoke: (String) -> Void
+            try await saveList(updated)
+        } catch {
+            showError(.localizedError(title: "Error updating list", error: error))
+        }
+    }
+    
+    private func inviteUser(email: String, editor: Bool) async {
+        do {
+            state.loadingUserInvite = true
+            defer { state.loadingUserInvite = false }
 
-    @State private var shareUrl: URL?
+            let updated = try await ixApiClient.inviteUserToList(
+                listId: list.id,
+                email: email,
+                editor: editor
+            )
 
-    init(
-        showSheet: Binding<Bool>,
-        showUserInvitationSuccessAlert: Binding<Bool>,
-        loadingPublic: Binding<Bool>,
-        loadingUsers: Binding<Bool>,
-        loadingUserInvite: Binding<Bool>,
-        loadingUserEditOrDelete: Binding<String?>,
-        inviteEditorConfig: Binding<EditorConfig<IxListInvite>>,
-        inviteUrl: Binding<URL?>,
-        listId: String,
-        isPublic: Bool,
-        usersWithAccess: Binding<[IxListSingleUserAccessInfo]>,
-        activeInvites: Binding<[IxListInvite]>,
-        onPublicChange: @escaping (Bool) -> Void,
-        onCreateInvite: @escaping () -> Void,
-        onDeleteInvite: @escaping (String) -> Void,
-        onUserInvite: @escaping (String, Bool) -> Void,
-        onUserEditEditorPermission: @escaping (String, Bool) -> Void,
-        onUserRevokeAccess: @escaping (String) -> Void
-    ) {
-        _showSheet = showSheet
-        _showUserInvitationSuccessAlert = showUserInvitationSuccessAlert
-        _loadingPublic = loadingPublic
-        _loadingUsers = loadingUsers
-        _loadingUserInvite = loadingUserInvite
-        _loadingUserEditOrDelete = loadingUserEditOrDelete
-        _inviteEditorConfig = inviteEditorConfig
-        _inviteUrl = inviteUrl
-        self.listId = listId
-        self.isPublic = isPublic
-        _usersWithAccess = usersWithAccess
-        _activeInvites = activeInvites
-        self.onPublicChange = onPublicChange
-        self.onCreateInvite = onCreateInvite
-        self.onDeleteInvite = onDeleteInvite
-        self.onUserInvite = onUserInvite
-        onEditUserPermissions = onUserEditEditorPermission
-        onUserRevoke = onUserRevokeAccess
+            if let updated {
+                try await saveList(updated)
+            } else {
+                state.showUserInvitationSuccessAlert = true
+            }
+        } catch {
+            showError(.localizedError(title: "Error inviting user", error: error))
+        }
+    }
+    
+    private func editUserPermissions(email: String, editor: Bool) async {
+        do {
+            state.loadingUserEditOrRevokePermissions =
+                state.usersWithAccess.first(where: { $0.email == email })?.userId
+
+            let updated = try await ixApiClient.inviteUserToList(
+                listId: list.id,
+                email: email,
+                editor: editor
+            )
+
+            if let updated {
+                try await saveList(updated)
+            }
+            
+            state.loadingUserEditOrRevokePermissions = nil
+
+            await fetchUsers()
+        } catch {
+            state.loadingUserEditOrRevokePermissions = nil
+            showError(.localizedError(title: "Error changing user permissions", error: error))
+        }
+    }
+    
+    private func revokeUserAccess(userId: String) async {
+        do {
+            state.loadingUserEditOrRevokePermissions = userId
+            state.loadingUserEditOrRevokePermissions = nil
+
+            let updated = try await ixApiClient.revokeListAccessFromUser(
+                listId: list.id,
+                userId: userId
+            )
+
+            try await saveList(updated)
+            state.loadingUserEditOrRevokePermissions = nil
+            await fetchUsers()
+        } catch {
+            state.loadingUserEditOrRevokePermissions = nil
+            showError(.localizedError(title: "Error revoking user access", error: error))
+        }
+    }
+    
+    private func createInvite() async {
+        do {
+            state.inviteEditorConfig.loading = true
+            defer { state.inviteEditorConfig.loading = false }
+
+            let createData = try state.inviteEditorConfig.sanitizeAndValidate()
+
+            let invite = try await ixApiClient.createListInvite(
+                listId: list.id,
+                editor: createData.editor,
+                maxUsages: createData.maxUsages,
+                expiresAt: createData.expiresAt,
+                description: createData.description
+            )
+
+            state.inviteEditorConfig.isPresented = false
+
+            if let token = invite.token,
+               let url = URL(string: IxUniversalLinks.listInvite(token)) {
+                state.inviteUrl = url
+            } else {
+                showError(.customMessage(
+                    title: "Error creating invite",
+                    message: "Unexpected server response."
+                ))
+            }
+        } catch {
+            showError(.localizedError(title: "Error creating invite", error: error))
+        }
+    }
+    
+    private func deleteInvite(_ inviteId: String) async {
+        do {
+            try await ixApiClient.deleteListInvite(
+                listId: list.id,
+                inviteId: inviteId
+            )
+
+            await fetchInvites()
+        } catch {
+            showError(.localizedError(title: "Error deleting invite", error: error))
+        }
     }
 
     var body: some View {
@@ -104,18 +244,27 @@ struct ListSharingSheet: View {
         }
         .alert(
             "Invitation sent",
-            isPresented: $showUserInvitationSuccessAlert
+            isPresented: $state.showUserInvitationSuccessAlert
         ) {
             Button("Ok", role: .cancel) {}
         } message: {
             Text("An invitation email has been sent to \(addUserEmail). He will need to accept the invitation to \(addUserEditor ? "collaborate in " : "view") this list.")
+        }
+        .onAppear {
+            Task {
+                await fetchUsers()
+            }
+            
+            Task {
+                await fetchInvites()
+            }
         }
     }
 
     var ShareSheet: some View {
         ShareSheetContent
             .navigationTitle("Sharing")
-            .navigationSubtitle(loadingUsers ? "Loading users..." : "")
+            .navigationSubtitle(state.loadingUsers ? "Loading users..." : "")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(item: $shareUrl) { shareUrl in
                 ShareSheetView(item: shareUrl)
@@ -125,21 +274,23 @@ struct ListSharingSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Menu {
                         Button("Create invite link", systemImage: "link.badge.plus") {
-                            inviteEditorConfig.reset()
+                            state.inviteEditorConfig.reset()
                             navPath.append(.createInvite)
                         }
 
                         Button("Share public link", systemImage: "globe") {
-                            let hasPro = user?.has_pro == true
-
-                            if hasPro {
-                                if !isPublic {
-                                    isPublic = true
+                            Task { @MainActor in
+                                let hasPro = user?.has_pro == true
+                                
+                                if hasPro {
+                                    if !list.isPublic {
+                                        await editListPublic(isPublic: true)
+                                    }
+                                    
+                                    shareUrl = URL(string: IxUniversalLinks.list(list.id))!
+                                } else {
+                                    showPaywall()
                                 }
-
-                                shareUrl = URL(string: IxUniversalLinks.list(listId))!
-                            } else {
-                                showPaywall()
                             }
                         }
                     } label: {
@@ -147,7 +298,7 @@ struct ListSharingSheet: View {
                     }
                 }
 
-                if !activeInvites.isEmpty {
+                if !state.activeInvites.isEmpty {
                     ToolbarItem(placement: .cancellationAction) {
                         Button {
                             navPath.append(.viewActiveInvites)
@@ -160,19 +311,19 @@ struct ListSharingSheet: View {
             .alert(
                 "Invite created",
                 isPresented: Binding(
-                    get: { inviteUrl != nil },
-                    set: { _ in inviteUrl = nil }
+                    get: { state.inviteUrl != nil },
+                    set: { _ in state.inviteUrl = nil }
                 ),
                 actions: {
                     Button {
-                        UIPasteboard.general.url = inviteUrl
+                        UIPasteboard.general.url = state.inviteUrl
                         showToast("Invite copied", systemImage: "document.on.document")
                     } label: {
                         Label("Copy", systemImage: "document.on.document")
                     }
 
                     Button {
-                        shareUrl = inviteUrl
+                        shareUrl = state.inviteUrl
                     } label: {
                         Label("Share", systemImage: "square.and.arrow.up")
                     }
@@ -185,20 +336,21 @@ struct ListSharingSheet: View {
             .alert("Manage user access", isPresented: $showUserActions) {
                 Button(selectedUser?.editor ?? false ? "Revoke edit permissions" : "Make editor") {
                     if let selectedUser {
-                        onEditUserPermissions(selectedUser.email, !selectedUser.editor)
+                        Task {
+                            await editUserPermissions(email: selectedUser.email, editor: !selectedUser.editor)
+                        }
                     }
                 }
 
                 Button("Revoke access completely", role: .destructive) {
                     if let selectedUser {
-                        onUserRevoke(selectedUser.userId)
+                        Task {
+                            await revokeUserAccess(userId: selectedUser.userId)
+                        }
                     }
                 }
             }
-            .onChange(of: isPublic) { _, new in
-                onPublicChange(new)
-            }
-            .onChange(of: activeInvites) { _, new in
+            .onChange(of: state.activeInvites) { _, new in
                 if new.isEmpty && navPath.last == .viewActiveInvites {
                     navPath.removeLast()
                 }
@@ -209,26 +361,30 @@ struct ListSharingSheet: View {
         VStack {
             Form {
                 Section {
-                    Toggle(isOn: Binding(
-                        get: { isPublic },
-                        set: { newValue in
-                            let hasPro = user?.has_pro == true
-
-                            if hasPro {
-                                isPublic = newValue
-                            } else {
-                                showPaywall()
+                    Toggle(
+                        isOn: Binding(
+                            get: {
+                                list.isPublic
+                            },
+                            set: { newValue in
+                                let hasPro = user?.has_pro == true
+                                
+                                if hasPro {
+                                    Task { await editListPublic(isPublic: newValue) }
+                                } else {
+                                    showPaywall()
+                                }
                             }
-                        }
-                    )) {
+                        )
+                    ) {
                         HStack {
-                            if loadingPublic {
+                            if state.loadingPublic {
                                 ProgressView()
                             }
 
                             Text("Public list")
                         }
-                    }.disabled(loadingPublic)
+                    }.disabled(state.loadingPublic)
 
                 } footer: {
                     Text("By making this list public it will be accessible by anyone, but only you will be able to edit it")
@@ -236,10 +392,10 @@ struct ListSharingSheet: View {
 
                 List {
                     Section {
-                        if usersWithAccess.filter({ $0.editor }).isEmpty {
+                        if state.usersWithAccess.filter({ $0.editor }).isEmpty {
                             Text("No users with edit permissions")
                         } else {
-                            ForEach(usersWithAccess.filter { $0.editor }, id: \.userId) { user in
+                            ForEach(state.usersWithAccess.filter { $0.editor }, id: \.userId) { user in
                                 Button {
                                     selectedUser = user
                                     showUserActions = true
@@ -261,23 +417,23 @@ struct ListSharingSheet: View {
                     }
 
                     Section {
-                        if usersWithAccess.filter({ !$0.editor }).isEmpty {
+                        if state.usersWithAccess.filter({ !$0.editor }).isEmpty {
                             Text("No users with view permissions")
                         } else {
-                            ForEach(usersWithAccess.filter { !$0.editor }, id: \.userId) { user in
+                            ForEach(state.usersWithAccess.filter { !$0.editor }, id: \.userId) { user in
                                 Button {
                                     selectedUser = user
                                     showUserActions = true
                                 } label: {
                                     HStack {
-                                        if loadingUserEditOrDelete == user.userId {
+                                        if state.loadingUserEditOrRevokePermissions == user.userId {
                                             ProgressView()
                                         }
 
                                         NavigationLink(user.email, destination: EmptyView())
                                     }
                                 }.foregroundStyle(Color(uiColor: .label))
-                                    .disabled(loadingUserEditOrDelete == user.userId)
+                                    .disabled(state.loadingUserEditOrRevokePermissions == user.userId)
                             }
                         }
 
@@ -300,33 +456,33 @@ struct ListSharingSheet: View {
         VStack {
             Form {
                 Section {
-                    Toggle("Editor", isOn: $inviteEditorConfig.entity.editor)
+                    Toggle("Editor", isOn: $state.inviteEditorConfig.entity.editor)
                 } header: {
                     Text("Permissions")
                 }
 
                 Section {
                     Toggle("Set max usage count", isOn: Binding(
-                        get: { inviteEditorConfig.entity.maxUsages != nil },
-                        set: { limitUsages in inviteEditorConfig.entity.maxUsages = (limitUsages ? 1 : nil) }
+                        get: { state.inviteEditorConfig.entity.maxUsages != nil },
+                        set: { limitUsages in state.inviteEditorConfig.entity.maxUsages = (limitUsages ? 1 : nil) }
                     ))
 
-                    if inviteEditorConfig.entity.maxUsages != nil {
+                    if state.inviteEditorConfig.entity.maxUsages != nil {
                         Stepper(
-                            "Max usages: \(inviteEditorConfig.entity.maxUsages ?? 1)",
-                            value: $inviteEditorConfig.entity.maxUsages ?? 1,
+                            "Max usages: \(state.inviteEditorConfig.entity.maxUsages ?? 1)",
+                            value: $state.inviteEditorConfig.entity.maxUsages ?? 1,
                             in: IxValidations.ListInvite.minMaxUsages ... IxValidations.ListInvite.maxMaxUsages
                         )
                     }
 
                     Toggle("Set expiration date", isOn: Binding(
-                        get: { inviteEditorConfig.entity.expiresAt != nil },
-                        set: { setExpiration in inviteEditorConfig.entity.expiresAt = (setExpiration ? Date.now.addingTimeInterval(DateHelper.oneDaySeconds) : nil) }
+                        get: { state.inviteEditorConfig.entity.expiresAt != nil },
+                        set: { setExpiration in state.inviteEditorConfig.entity.expiresAt = (setExpiration ? Date.now.addingTimeInterval(DateHelper.oneDaySeconds) : nil) }
                     ))
 
-                    if inviteEditorConfig.entity.expiresAt != nil {
+                    if state.inviteEditorConfig.entity.expiresAt != nil {
                         DatePicker(
-                            selection: $inviteEditorConfig.entity.expiresAt ?? Date.now.addingTimeInterval(DateHelper.oneDaySeconds),
+                            selection: $state.inviteEditorConfig.entity.expiresAt ?? Date.now.addingTimeInterval(DateHelper.oneDaySeconds),
                             in: Date.now.addingTimeInterval(60)...
                         ) {
                             Text("Select date")
@@ -337,18 +493,20 @@ struct ListSharingSheet: View {
                 }
 
                 Section {
-                    TextField("Description", text: $inviteEditorConfig.entity.description ?? "")
+                    TextField("Description", text: $state.inviteEditorConfig.entity.description ?? "")
                 } footer: {
                     Text("Optional description to remember the purpose of this invite")
                 }
             }.frame(maxHeight: 420)
 
             Button {
-                onCreateInvite()
+                Task {
+                    await createInvite()
+                }
                 navPath.removeLast()
             } label: {
                 HStack {
-                    if inviteEditorConfig.loading {
+                    if state.inviteEditorConfig.loading {
                         ProgressView()
                     }
                     Label("Create invite", systemImage: "link.badge.plus")
@@ -357,7 +515,7 @@ struct ListSharingSheet: View {
             .buttonStyle(.glassProminent)
             .controlSize(.large)
             .padding()
-            .disabled(inviteEditorConfig.loading)
+            .disabled(state.inviteEditorConfig.loading)
         }
         .frame(maxHeight: .infinity, alignment: .top)
         .background(Color(UIColor.systemGroupedBackground))
@@ -368,7 +526,7 @@ struct ListSharingSheet: View {
     var ActiveInvitesSheet: some View {
         List {
             Section {
-                ForEach($activeInvites, id: \.id) { $invite in
+                ForEach($state.activeInvites, id: \.id) { $invite in
                     HStack(alignment: .center) {
                         VStack(alignment: .leading) {
                             Text(invite.description ?? "No description provided")
@@ -393,7 +551,9 @@ struct ListSharingSheet: View {
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                         Button(role: .destructive) {
-                            onDeleteInvite(invite.id)
+                            Task {
+                                await deleteInvite(invite.id)
+                            }
                         } label: {
                             Label("Delete", systemImage: "trash.fill")
                                 .labelStyle(.iconOnly)
@@ -431,7 +591,9 @@ struct ListSharingSheet: View {
             }.frame(maxHeight: 270)
 
             Button {
-                onUserInvite(addUserEmail, addUserEditor)
+                Task {
+                    await inviteUser(email: addUserEmail, editor: addUserEditor)
+                }
                 navPath.removeLast()
             } label: {
                 HStack {
@@ -441,7 +603,7 @@ struct ListSharingSheet: View {
             .buttonStyle(.glassProminent)
             .controlSize(.large)
             .padding()
-            .disabled(loadingUserInvite || !isInviteEmailValid)
+            .disabled(state.loadingUserInvite || !isInviteEmailValid)
         }
         .frame(maxHeight: .infinity, alignment: .top)
         .background(Color(UIColor.systemGroupedBackground))
@@ -451,36 +613,5 @@ struct ListSharingSheet: View {
 
     var EditSheet: some View {
         EmptyView()
-    }
-}
-
-#Preview {
-    @Previewable @State var inviteEditorConfig = EditorConfig<IxListInvite>()
-    @Previewable @State var inviteUrl: URL? = nil
-
-    ListSharingSheet(
-        showSheet: .constant(true),
-        showUserInvitationSuccessAlert: .constant(false),
-        loadingPublic: .constant(false),
-        loadingUsers: .constant(false),
-        loadingUserInvite: .constant(false),
-        loadingUserEditOrDelete: .constant(nil),
-        inviteEditorConfig: $inviteEditorConfig,
-        inviteUrl: $inviteUrl,
-        listId: "",
-        isPublic: false,
-        usersWithAccess: .constant([]),
-        activeInvites: .constant([
-            IxListInvite(id: "1", token: nil, listId: "1", editor: true, maxUsages: 2, description: "Some description", expiresAt: .now, createdAt: 0),
-            IxListInvite(id: "2", token: nil, listId: "1", editor: false, maxUsages: 5, description: nil, expiresAt: .now, createdAt: 0),
-            IxListInvite(id: "3", token: nil, listId: "1", editor: false, maxUsages: nil, description: "A really really really long description yay", expiresAt: nil, createdAt: 0),
-        ])
-    ) { _ in
-    } onCreateInvite: {
-        inviteUrl = URL(string: "https://google.com")!
-    } onDeleteInvite: { _ in
-    } onUserInvite: { _, _ in
-    } onUserEditEditorPermission: { _, _ in
-    } onUserRevokeAccess: { _ in
     }
 }

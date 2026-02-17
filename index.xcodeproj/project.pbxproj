@@ -160,6 +160,7 @@
 				View/Screens/Lists/QuickAddItemView.swift,
 				View/State/EditorConfig.swift,
 				View/State/EditorMode.swift,
+				View/State/ListSharingState.swift,
 			);
 			target = 09F48F3A2D7E623D00CA50AC /* indexShareExtension */;
 		};
@@ -202,6 +203,7 @@
 				View/Modifier/IfModifier.swift,
 				View/State/EditorConfig.swift,
 				View/State/EditorMode.swift,
+				View/State/ListSharingState.swift,
 			);
 			target = 092FE7C12D7F3C8200F38388 /* indexWidgetExtension */;
 		};

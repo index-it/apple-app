@@ -33,6 +33,8 @@ struct ListsGridScreen: View {
 
     @State private var selectedList: IxList? = nil
     @State private var isEditingList = false
+    @State private var showShareSheet = false
+    @State private var showLeaveListConfirmation = false
     @State private var showDeleteConfirmationDialog = false
 
     // MARK: Sorting and filtering
@@ -40,20 +42,6 @@ struct ListsGridScreen: View {
     @AppStorage(AppStorageKeys.Lists.sorting) private var sorting = AppStorageKeys.Defaults.listsSorting
     @AppStorage(AppStorageKeys.Lists.sortOrder) private var sortOrder = AppStorageKeys.Defaults.listsSortOrder
     @AppStorage(AppStorageKeys.Lists.filter) private var filter = AppStorageKeys.Defaults.listsFilter
-
-    // MARK: Share sheet
-
-    @State private var selectedListUsersWithAccess: [IxListSingleUserAccessInfo] = []
-    @State private var selectedListActiveInvites: [IxListInvite] = []
-    @State private var showShareSheet = false
-    @State private var showUserInvitationSuccessAlert = false
-    @State private var loadingSelectedListPublic: Bool = false
-    @State private var loadingSelectedListUsers: Bool = false
-    @State private var loadingSelectedListUserInvite: Bool = false
-    @State private var loadingSelectedListUserEditOrRevokePermissions: String? = nil
-    @State private var showLeaveListConfirmation = false
-    @State private var inviteEditorConfig = EditorConfig<IxListInvite>()
-    @State private var inviteUrl: URL? = nil
 
     // MARK: Quick add sheet
 
@@ -141,8 +129,6 @@ struct ListsGridScreen: View {
         }
     }
 
-    // MARK: - LIST SHARING FUNCTIONS
-
     private func leaveList(id: String) async {
         do {
             try await ixApiClient.leaveList(id: id)
@@ -162,144 +148,11 @@ struct ListsGridScreen: View {
         }
     }
 
-    private func editListPublic(isPublic: Bool) async {
-        if let selectedList {
-            do {
-                loadingSelectedListPublic = true
-                let list = try await ixApiClient.editList(id: selectedList.id, name: selectedList.name, icon: selectedList.icon, color: selectedList.color, archived: selectedList.archived, is_public: isPublic)
-
-                loadingSelectedListPublic = false
-
-                try await saveList(list)
-            } catch {
-                loadingSelectedListPublic = false
-
-                showError(.localizedError(title: "Error updating list", error: error))
-            }
-        }
-    }
-
-    private func fetchListUsersWthAccess(listId: String) async {
-        do {
-            loadingSelectedListUsers = true
-            selectedListUsersWithAccess = try await ixApiClient.getListUsersWithAccess(id: listId)
-            loadingSelectedListUsers = false
-        } catch {
-            loadingSelectedListUsers = false
-            showError(.localizedError(title: "Error fetching users", error: error))
-        }
-    }
-
-    private func fetchListActiveInvites(listId: String) async {
-        do {
-            selectedListActiveInvites = try await ixApiClient.getListInvites(listId: listId)
-        } catch {
-            showError(.localizedError(title: "Error fetching active invites", error: error))
-        }
-    }
-
-    private func inviteUser(email: String, editor: Bool) async {
-        if let selectedList {
-            do {
-                loadingSelectedListUserInvite = true
-                let list = try await ixApiClient.inviteUserToList(listId: selectedList.id, email: email, editor: editor)
-
-                if list == nil {
-                    showUserInvitationSuccessAlert = true
-                }
-
-                loadingSelectedListUserInvite = false
-            } catch {
-                loadingSelectedListUserInvite = false
-                showError(.localizedError(title: "Error inviting user", error: error))
-            }
-        }
-    }
-
-    private func editUserPermissions(email: String, editor: Bool) async {
-        if let selectedList {
-            do {
-                loadingSelectedListUserEditOrRevokePermissions = selectedListUsersWithAccess.first(where: { user in
-                    user.email == email
-                })?.userId
-
-                let list = try await ixApiClient.inviteUserToList(listId: selectedList.id, email: email, editor: editor)
-
-                loadingSelectedListUserEditOrRevokePermissions = nil
-
-                if let list {
-                    try await saveList(list)
-                }
-
-                await fetchListUsersWthAccess(listId: selectedList.id)
-            } catch {
-                loadingSelectedListUserEditOrRevokePermissions = nil
-                showError(.localizedError(title: "Error changing user permissions", error: error))
-            }
-        }
-    }
-
-    private func revokeUserAccessFromList(userId: String) async {
-        if let selectedList {
-            do {
-                loadingSelectedListUserEditOrRevokePermissions = userId
-
-                let list = try await ixApiClient.revokeListAccessFromUser(listId: selectedList.id, userId: userId)
-                loadingSelectedListUserEditOrRevokePermissions = nil
-
-                try await saveList(list)
-
-                await fetchListUsersWthAccess(listId: selectedList.id)
-            } catch {
-                loadingSelectedListUserEditOrRevokePermissions = nil
-                showError(.localizedError(title: "Error revoking user access", error: error))
-            }
-        }
-    }
-
-    private func createInvite() async {
-        if let selectedList {
-            do {
-                inviteEditorConfig.loading = true
-                defer { inviteEditorConfig.loading = false }
-                let createData = try inviteEditorConfig.sanitizeAndValidate()
-
-                let invite = try await ixApiClient.createListInvite(
-                    listId: selectedList.id,
-                    editor: createData.editor,
-                    maxUsages: createData.maxUsages,
-                    expiresAt: createData.expiresAt,
-                    description: createData.description
-                )
-
-                inviteEditorConfig.isPresented = false
-                if let token = invite.token, let url = URL(string: IxUniversalLinks.listInvite(token)) {
-                    inviteUrl = url
-                } else {
-                    showError(.customMessage(title: "Error creating invite", message: "This should not happend, the developer is investingating this!"))
-                }
-            } catch {
-                showError(.localizedError(title: "Error creating invite", error: error))
-            }
-        }
-    }
-
-    private func deleteInvite(_ inviteId: String) async {
-        if let selectedList {
-            do {
-                try await ixApiClient.deleteListInvite(listId: selectedList.id, inviteId: inviteId)
-                await fetchListActiveInvites(listId: selectedList.id)
-            } catch {
-                showError(.localizedError(title: "Error deleting invite", error: error))
-            }
-        }
-    }
-
     var body: some View {
         ListsDisplayerView
             .navigationTitle(archived ? "Archived lists" : "Your lists")
             .navigationBarTitleDisplayMode(archived ? .inline : .large)
-            .if(!lists.isEmpty, transform: { view in
+            .if(!lists.isEmpty) { view in
                 view.floatingActionButton(
                     "plus",
                     action: {
@@ -310,7 +163,7 @@ struct ListsGridScreen: View {
                         showQuickAddSheet = true
                     }
                 )
-            })
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -394,43 +247,8 @@ struct ListsGridScreen: View {
                 }
             }
             .sheet(isPresented: $showShareSheet) { [selectedList] in
-                ListSharingSheet(
-                    showSheet: $showShareSheet,
-                    showUserInvitationSuccessAlert: $showUserInvitationSuccessAlert,
-                    loadingPublic: $loadingSelectedListPublic,
-                    loadingUsers: $loadingSelectedListUsers,
-                    loadingUserInvite: $loadingSelectedListUserInvite,
-                    loadingUserEditOrDelete: $loadingSelectedListUserEditOrRevokePermissions,
-                    inviteEditorConfig: $inviteEditorConfig,
-                    inviteUrl: $inviteUrl,
-                    listId: selectedList?.id ?? "",
-                    isPublic: selectedList?.isPublic ?? false,
-                    usersWithAccess: $selectedListUsersWithAccess,
-                    activeInvites: $selectedListActiveInvites
-                ) { isPublic in
-                    Task {
-                        await editListPublic(isPublic: isPublic)
-                    }
-                } onCreateInvite: {
-                    Task {
-                        await createInvite()
-                    }
-                } onDeleteInvite: { inviteId in
-                    Task {
-                        await deleteInvite(inviteId)
-                    }
-                } onUserInvite: { email, editor in
-                    Task {
-                        await inviteUser(email: email, editor: editor)
-                    }
-                } onUserEditEditorPermission: { email, editor in
-                    Task {
-                        await editUserPermissions(email: email, editor: editor)
-                    }
-                } onUserRevokeAccess: { userId in
-                    Task {
-                        await revokeUserAccessFromList(userId: userId)
-                    }
+                ListSharingSheet(listId: selectedList?.id ?? "") {
+                    showShareSheet = false
                 }.presentationDetents([.large])
             }
             .sheet(isPresented: $isAddingList) {
@@ -561,12 +379,6 @@ struct ListsGridScreen: View {
             onShare: { list in
                 selectedList = list
                 if list.userId == user?.id {
-                    Task {
-                        await fetchListUsersWthAccess(listId: list.id)
-                    }
-                    Task {
-                        await fetchListActiveInvites(listId: list.id)
-                    }
                     showShareSheet = true
                 } else {
                     showLeaveListConfirmation = true

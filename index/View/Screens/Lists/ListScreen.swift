@@ -9,6 +9,9 @@ import IxCoreKit
 import SwiftData
 import SwiftUI
 import WidgetKit
+import OSLog
+
+private let log = Logger.uiLogger
 
 struct ListScreen: View {
     @Environment(IxNavigator.self) private var navigator
@@ -25,6 +28,8 @@ struct ListScreen: View {
 
     @Query private var lists: [IxList]
     @State private var list: IxList = .loading()
+    @State private var showShareSheet = false
+    @State private var showExportSheet = false
 
     // MARK: Categories and selected category
 
@@ -462,6 +467,49 @@ struct ListScreen: View {
 
     var body: some View {
         ScreenContent
+            .sheet(isPresented: $showShareSheet) {
+                ListSharingSheet(listId: listId) {
+                    showShareSheet = false
+                }
+            }
+            .sheet(isPresented: $showExportSheet) {
+                ListExportSheet(list: list, categories: categories) { exportConfig in
+                    if let vc = UIApplication.shared
+                        .connectedScenes
+                        .compactMap({ ($0 as? UIWindowScene)?.keyWindow })
+                        .first?
+                        .rootViewController {
+                        
+                        var categoryToItemsMap: [IxListCategory?:[IxListItem]] = [:]
+                        let items = exportConfig.includeCompletedItems ? items : items.filter { item in !item.completed }
+                        if exportConfig.filterByCategory {
+                            let category = categories.first { cat in cat.id == exportConfig.categoryIdFilter }
+                            let items = items.filter { item in
+                                item.categoryId == exportConfig.categoryIdFilter 
+                            }
+                            categoryToItemsMap.updateValue(items, forKey: category)
+                        } else {
+                            let grouped = Dictionary(grouping: items) { item in
+                                item.categoryId
+                            }
+                            
+                            for (categoryId, itemsForCategory) in grouped {
+                                let category = categories.first { $0.id == categoryId }
+                                categoryToItemsMap.updateValue(itemsForCategory, forKey: category)
+                            }
+                        }
+                        
+                        log.debug("calculated items map: \(categoryToItemsMap.count): \(categoryToItemsMap)")
+                        
+                        ExportHelper.exportListToPDF(
+                            list: list,
+                            categoryToItemsMap: categoryToItemsMap,
+                            config: exportConfig,
+                            from: vc
+                        )
+                    }
+                }
+            }
             .sheet(
                 isPresented: $editorConfig.isPresented,
                 content: {
@@ -643,6 +691,20 @@ struct ListScreen: View {
         ToolbarItem(placement: .principal) {
             Text(list.name)
                 .foregroundStyle(contentColor.contrastColor())
+        }
+        
+        ToolbarItem(placement: .topBarTrailing) {
+            Menu {
+                Button("Manage access", systemImage: "person.2.badge.gearshape") {
+                    showShareSheet = true
+                }
+
+                Button("Print", systemImage: "printer") {
+                    showExportSheet = true
+                }
+            } label: {
+                Label("Share", systemImage: "square.and.arrow.up")
+            }
         }
 
         ToolbarItem(placement: .topBarTrailing) {
