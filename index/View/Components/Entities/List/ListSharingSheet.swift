@@ -413,7 +413,7 @@ struct ListSharingSheetView: View {
                     } header: {
                         Text("Editors")
                     } footer: {
-                        Text("Editors are allowed to do anything inside the list but cannot delete it, click to show actions")
+                        Text("Editors are allowed to do anything inside the list but cannot delete it, tap to show actions")
                     }
 
                     Section {
@@ -445,7 +445,7 @@ struct ListSharingSheetView: View {
                     } header: {
                         Text("Viewers")
                     } footer: {
-                        Text("Viewers can only view the contents of the list without modifing anything, click to show actions")
+                        Text("Viewers can only view the contents of the list without modifing anything, tap to show actions")
                     }
                 }
             }

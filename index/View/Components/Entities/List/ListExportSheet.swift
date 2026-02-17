@@ -15,7 +15,7 @@ struct ListExportSheet: View {
     var categories: [IxListCategory]
     var onExport: (ListExportConfig) -> Void
     
-    @State private var format: ListExportFormat = .pdf
+//    @State private var format: ListExportFormat = .pdf
     @State private var filterByCategory = false
     @State private var categoryIdFilter: String? = nil
     @State private var includeCompletedItems = false
@@ -26,14 +26,14 @@ struct ListExportSheet: View {
     var body: some View {
         NavigationView {
             Form {
-                Picker("Export Format", selection: $format) {
-                    ForEach(ListExportFormat.allCases, id: \.self) { format in
-                        Text(format.rawValue).tag(format)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .listRowInsets(.init())
-                .listRowBackground(Color.clear)
+//                Picker("Export Format", selection: $format) {
+//                    ForEach(ListExportFormat.allCases, id: \.self) { format in
+//                        Text(format.rawValue).tag(format)
+//                    }
+//                }
+//                .pickerStyle(.segmented)
+//                .listRowInsets(.init())
+//                .listRowBackground(Color.clear)
                 
                 Section {
                     Toggle(isOn: $includeCompletedItems) {
@@ -80,7 +80,7 @@ struct ListExportSheet: View {
                     Button {
                         onExport(
                             ListExportConfig(
-                                format: format,
+                                format: .pdf,
                                 filterByCategory: filterByCategory,
                                 categoryIdFilter: categoryIdFilter,
                                 includeCompletedItems: includeCompletedItems,

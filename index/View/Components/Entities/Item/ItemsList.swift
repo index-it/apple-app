@@ -14,6 +14,8 @@ struct ItemsList: View {
     private var listColor: Color
     private var category: IxListCategory?
     private var categories: [IxListCategory]
+    
+    @Binding private var multiSelectedItems: Set<IxListItem.ID>
 
     private var showCompleted: Bool
     private var onClearItemFilter: () -> Void
@@ -44,6 +46,7 @@ struct ItemsList: View {
         showCompleted: Bool,
         sorting: ItemsSorting,
         sortOrder: SortOrder,
+        multiSelectedItems: Binding<Set<IxListItem.ID>>,
         onClearItemFilter: @escaping () -> Void,
         onCreateItem: @escaping () -> Void,
         onOpenNotes: @escaping (IxListItem) -> Void,
@@ -62,6 +65,7 @@ struct ItemsList: View {
         self.showCompleted = showCompleted
         self.onClearItemFilter = onClearItemFilter
         self.onCreateItem = onCreateItem
+        self._multiSelectedItems = multiSelectedItems
 
         self.onOpenNotes = onOpenNotes
         self.onOpenLink = onOpenLink
@@ -101,7 +105,7 @@ struct ItemsList: View {
     }
 
     var body: some View {
-        List(items) { item in
+        List(items, selection: $multiSelectedItems) { item in
             ItemRow(
                 item: item,
                 categories: categories,
@@ -113,7 +117,9 @@ struct ItemsList: View {
                 onCreateTask: onCreateTask,
                 onEdit: onEdit,
                 onDelete: onDelete
-            ).swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            )
+            .listRowBackground(Color.systemSecondaryGroupedBackground) // disables single tap selection background color
+            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                 Button(role: .destructive) {
                     onDelete(item)
                 } label: {

@@ -20,11 +20,11 @@ final class IxListPrintRenderer: UIPrintPageRenderer {
     
     private static let horizontalMargin: CGFloat = 24
     private static let verticalMargin: CGFloat = 24
-    private static let spaceAfterListName: CGFloat = 18
-    private static let spaceAfterCategoryName: CGFloat = 8
+    private static let spaceAfterListName: CGFloat = 8
+    private static let spaceAfterCategoryName: CGFloat = 6
     private static let spaceAfterLastItem: CGFloat = 10
-    private static let lineSpacing: CGFloat = 6
     private static let iconSize: CGFloat = 14
+    private static let iconHorizontalSpace: CGFloat = 4
     
     private static let listNameFont = UIFont.boldSystemFont(ofSize: 22)
     private static let categoryNameFont = UIFont.boldSystemFont(ofSize: 16)
@@ -62,10 +62,11 @@ final class IxListPrintRenderer: UIPrintPageRenderer {
         
         var y = printableRect.minY
         
+        let listColor = UIColor(self.list.color.toColor())
+
         if pageIndex == 0 {
             let listName = self.list.name as NSString
             let listNameHeight = self.list.name.height(using: Self.listNameFont, width: printableRect.width * 0.7)
-            let color = UIColor(self.list.color.toColor())
             listName.draw(
                 in: CGRect(
                     x: printableRect.minX,
@@ -75,7 +76,7 @@ final class IxListPrintRenderer: UIPrintPageRenderer {
                 ),
                 withAttributes: [
                     .font: Self.listNameFont,
-                    .foregroundColor: color
+                    .foregroundColor: listColor
                 ]
             )
             
@@ -90,7 +91,7 @@ final class IxListPrintRenderer: UIPrintPageRenderer {
                 withAttributes: [
                     .font: Self.listNameFont,
                     .paragraphStyle: self.rightAligned(),
-                    .foregroundColor: color
+                    .foregroundColor: listColor
                 ]
             )
             
@@ -113,26 +114,60 @@ final class IxListPrintRenderer: UIPrintPageRenderer {
                 let image = UIImage(systemName: icon, withConfiguration: symbolConfig)
                 image?.draw(in: CGRect(x: printableRect.minX, y: y + 2, width: Self.iconSize, height: Self.iconSize))
                 
-                let itemWidth = printableRect.width - Self.iconSize - 8
+                let itemX = printableRect.minX + Self.iconSize + Self.iconHorizontalSpace
+                let itemWidth = printableRect.width - Self.iconSize - Self.iconHorizontalSpace
+
                 let itemHeight = item.name.height(using: Self.itemFont, width: itemWidth)
                 item.name.draw(
-                    in: CGRect(x: printableRect.minX + Self.iconSize + 8, y: y, width: itemWidth, height: itemHeight),
+                    in: CGRect(x: itemX, y: y, width: itemWidth, height: itemHeight),
                     withAttributes: [.font: Self.itemFont]
                 )
-                
-                y += itemHeight + Self.lineSpacing
-                
-                if let note = item.note, config.includeItemNotes {
+
+                y += itemHeight
+
+                if config.includeItemLinks,
+                   let linkString = item.link,
+                   !linkString.isEmpty,
+                   let url = URL(string: linkString) {
+                    var displayText = linkString
+                    if displayText.hasPrefix("https://") {
+                        displayText.removeFirst("https://".count)
+                    } else if displayText.hasPrefix("http://") {
+                        displayText.removeFirst("http://".count)
+                    }
+
+                    let linkHeight = displayText.height(using: Self.noteFont, width: itemWidth)
+                    let linkRect = CGRect(x: itemX, y: y, width: itemWidth, height: linkHeight)
+
+                    displayText.draw(
+                        in: linkRect,
+                        withAttributes: [
+                            .font: Self.noteFont,
+                            .foregroundColor: listColor
+                        ]
+                    )
+
+                    if let context = UIGraphicsGetCurrentContext() {
+                        context.setURL(url as CFURL, for: linkRect)
+                    }
+
+                    y += linkHeight
+                }
+
+                if let note = item.note, config.includeItemNotes, !note.isEmpty {
                     let noteHeight = note.heightLimited(
                         using: Self.noteFont,
                         width: itemWidth,
                         maxLines: config.itemNotesMaxLines
                     )
                     note.draw(
-                        in: CGRect(x: printableRect.minX + Self.iconSize + 8, y: y, width: itemWidth, height: noteHeight),
-                        withAttributes: [.font: Self.noteFont]
+                        in: CGRect(x: itemX, y: y, width: itemWidth, height: noteHeight),
+                        withAttributes: [
+                            .font: Self.noteFont,
+                            .foregroundColor: UIColor.secondaryLabel
+                        ]
                     )
-                    y += noteHeight + Self.lineSpacing
+                    y += noteHeight
                 }
                 
                 let last = (index == items.count - 1) && (mapIndex != categoriesToItems.count - 1)
@@ -149,7 +184,6 @@ extension IxListPrintRenderer {
         itemsPerPage.removeAll()
         
         let printable = printableRect.insetBy(dx: Self.horizontalMargin, dy: Self.verticalMargin)
-        let height = printable.height
         let width = printable.width
         var remainingHeight = printable.height
         var categoryToItemsForPage: [IxListCategory?:[IxListItem]] = [:]
@@ -173,14 +207,33 @@ extension IxListPrintRenderer {
         }
         
         func subtractItem(_ item: IxListItem, last: Bool) {
-            let itemNameH = item.name.height(using: Self.itemFont, width: width - Self.iconSize - 8)
+            let itemWidth = width - Self.iconSize - Self.iconHorizontalSpace
+            let itemNameH = item.name.height(using: Self.itemFont, width: itemWidth)
             remainingHeight -= itemNameH
-            remainingHeight -= Self.lineSpacing
-            if let note = item.note, config.includeItemNotes {
-                remainingHeight -= note.heightLimited(using: Self.noteFont, width: width, maxLines: config.itemNotesMaxLines)
-                remainingHeight -= Self.lineSpacing
+
+            if config.includeItemLinks,
+               let linkString = item.link,
+               !linkString.isEmpty,
+               let _ = URL(string: linkString) {
+                var displayText = linkString
+                if displayText.hasPrefix("https://") {
+                    displayText.removeFirst("https://".count)
+                } else if displayText.hasPrefix("http://") {
+                    displayText.removeFirst("http://".count)
+                }
+
+                let linkHeight = displayText.height(using: Self.noteFont, width: itemWidth)
+                remainingHeight -= linkHeight
             }
-            
+
+            if let note = item.note, config.includeItemNotes, !note.isEmpty {
+                remainingHeight -= note.heightLimited(
+                    using: Self.noteFont,
+                    width: itemWidth,
+                    maxLines: config.itemNotesMaxLines
+                )
+            }
+
             if last {
                 remainingHeight -= Self.spaceAfterLastItem
             }
@@ -208,181 +261,8 @@ extension IxListPrintRenderer {
         }
         
         commitPage()
-        
-        log.debug("Finished calculating paginated items: \(self.itemsPerPage.count) pages: \(self.itemsPerPage)")
     }
     
-//    func drawListName(in rect: CGRect) {
-//        let name = self.list.name as NSString
-//        name.draw(
-//            in: CGRect(
-//                x: rect.minX,
-//                y: rect.minY,
-//                width: rect.width * 0.7,
-//                height: rect.height
-//            ),
-//            withAttributes: [
-//                .font: Self.listNameFont,
-//                .foregroundColor: self.list.color.toColor()
-//            ]
-//        )
-//        
-//        let countString = "\(self.totalItemsCount)" as NSString
-//        countString.draw(
-//            in: CGRect(
-//                x: rect.maxX - 60,
-//                y: rect.minY,
-//                width: 60,
-//                height: rect.height
-//            ),
-//            withAttributes: [
-//                .font: Self.listNameFont,
-//                .paragraphStyle: self.rightAligned(),
-//                .foregroundColor: self.list.color.toColor()
-//            ]
-//        )
-//    }
-    
-//    func drawPage(_ categoriesToItems: [IxListCategory?:[IxListItem]], in rect: CGRect) {
-//        for (category, items) in categoriesToItems {
-//            if let category {
-//                category.name.draw(
-//                    in: rect,
-//                    withAttributes: [.font: Self.categoryNameFont]
-//                )
-//            }
-//            
-//            for item in items {
-//                let icon = item.completed ? "circle.inset.filled" : "circle"
-//                let symbolConfig = UIImage.SymbolConfiguration(pointSize: 14)
-//                let image = UIImage(
-//                    systemName: icon,
-//                    withConfiguration: symbolConfig
-//                )
-//                image?.draw(
-//                    in: CGRect(
-//                        x: rect.minX,
-//                        y: rect.minY + 2,
-//                        width: Self.iconSize,
-//                        height: Self.iconSize
-//                    )
-//                )
-//                
-//                item.name.draw(
-//                    in: CGRect(
-//                        x: rect.minX + Self.iconSize + 8,
-//                        y: rect.minY,
-//                        width: width - Self.iconSize - 8,
-//                        height: titleHeight
-//                    ),
-//                    withAttributes: [.font: itemFont]
-//                )
-//                //
-//                //                if noteHeight > 0,
-//                //                   let note = item.note {
-//                //
-//                //                    note.draw(
-//                //                        in: CGRect(
-//                //                            x: rect.minX + self.iconSize + 8,
-//                //                            y: rect.minY + titleHeight,
-//                //                            width: width - self.iconSize - 8,
-//                //                            height: noteHeight
-//                //                        ),
-//                //                        withAttributes: [.font: noteFont]
-//                //                    )
-//                //                }
-//            }
-//        }
-//    }
-    
-//    func buildItemBlocks(
-//        items: [IxListItem],
-//        width: CGFloat,
-//        itemFont: UIFont,
-//        noteFont: UIFont
-//    ) -> [RenderBlock] {
-//        
-//        var blocks: [RenderBlock] = []
-//        
-//        for item in items {
-//            
-//            let icon = item.completed ? "circle.inset.filled" : "circle"
-//            
-//            var title = item.name
-//            if config.includeItemLinks,
-//               let link = item.link,
-//               !link.isEmpty {
-//                title += " (\(link))"
-//            }
-//            
-//            let titleHeight = title.height(
-//                using: itemFont,
-//                width: width - iconSize - 8
-//            )
-//            
-//            var noteHeight: CGFloat = 0
-//            
-//            if config.includeItemNotes,
-//               let note = item.note,
-//               !note.isEmpty {
-//                
-//                noteHeight = note.heightLimited(
-//                    using: noteFont,
-//                    width: width - iconSize - 8,
-//                    maxLines: config.itemNotesMaxLines
-//                )
-//            }
-//            
-//            let totalHeight = titleHeight + noteHeight + lineSpacing
-//            
-//            blocks.append(
-//                RenderBlock(
-//                    draw: { rect in
-//                        
-//                        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 14)
-//                        let image = UIImage(
-//                            systemName: icon,
-//                            withConfiguration: symbolConfig
-//                        )
-//                        image?.draw(in: CGRect(
-//                            x: rect.minX,
-//                            y: rect.minY + 2,
-//                            width: self.iconSize,
-//                            height: self.iconSize
-//                        ))
-//                        
-//                        title.draw(
-//                            in: CGRect(
-//                                x: rect.minX + self.iconSize + 8,
-//                                y: rect.minY,
-//                                width: width - self.iconSize - 8,
-//                                height: titleHeight
-//                            ),
-//                            withAttributes: [.font: itemFont]
-//                        )
-//                        
-//                        if noteHeight > 0,
-//                           let note = item.note {
-//                            
-//                            note.draw(
-//                                in: CGRect(
-//                                    x: rect.minX + self.iconSize + 8,
-//                                    y: rect.minY + titleHeight,
-//                                    width: width - self.iconSize - 8,
-//                                    height: noteHeight
-//                                ),
-//                                withAttributes: [.font: noteFont]
-//                            )
-//                        }
-//                    },
-//                    height: totalHeight
-//                )
-//            )
-//        }
-//        
-//        return blocks
-//    }
-//    
     func rightAligned() -> NSParagraphStyle {
         let style = NSMutableParagraphStyle()
         style.alignment = .right

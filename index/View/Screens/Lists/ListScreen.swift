@@ -16,6 +16,7 @@ private let log = Logger.uiLogger
 struct ListScreen: View {
     @Environment(IxNavigator.self) private var navigator
     @Environment(\.showPaywall) private var showPaywall
+    @Environment(\.editMode) private var editMode
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
     @Environment(\.showError) private var showError
@@ -50,6 +51,11 @@ struct ListScreen: View {
     private var completedItems: [IxListItem] {
         return items.filter { $0.completed && $0.categoryId == selectedCategory?.id }
     }
+    @State private var multiSelectedItems = Set<IxListItem.ID>()
+    private var anySelectedItemIncompleted: Bool {
+        return items.contains { multiSelectedItems.contains($0.id) && !$0.completed }
+    }
+    @State private var showMultiDeleteItemsAlert = false
 
     // MARK: Selected item
 
@@ -297,6 +303,26 @@ struct ListScreen: View {
             showError(.localizedError(title: "Error editing item", error: error))
         }
     }
+    
+    func moveItems(listId: String, itemIds: [String], toListId: String, toCategoryId: String?) async {
+        do {
+            let movedItems = try await ixApiClient.moveListItems(
+                listId: listId, itemIds: itemIds, moveListId: toListId, moveCategoryId: toCategoryId
+            )
+            
+            try context.transaction {
+                for item in movedItems {
+                    context.insert(item)
+                }
+            }
+            
+            try? await IxSystemIntegration.handleNewEntities(movedItems.map(IxListItemEntity.init))
+
+            showToast("Moved \(itemIds.count) item\(itemIds.count == 1 ? "" : "s")")
+        } catch {
+            showError(.localizedError(title: "Error moving items", error: error))
+        }
+    }
 
     func setItemCompletion(listId: String, itemId: String, completed: Bool) async {
         do {
@@ -324,8 +350,10 @@ struct ListScreen: View {
                     context.insert(item)
                 }
             }
+            
+            try? await IxSystemIntegration.handleNewEntities(items.map(IxListItemEntity.init))
 
-            showToast("Uncompleted all")
+            showToast("\(completed ? "Completed" : "Uncompleted") \(itemIds.count) item\(itemIds.count == 1 ? "" : "s")")
         } catch {
             showError(
                 .localizedError(
@@ -356,6 +384,23 @@ struct ListScreen: View {
             } catch {}
         } catch {
             showError(.localizedError(title: "Error deleting item", error: error))
+        }
+    }
+    
+    func deleteItems(listId: String, itemIds: [String]) async {
+        do {
+            try await ixApiClient.deleteListItems(listId: listId, itemIds: itemIds)
+            try context.transaction {
+                try context.delete(model: IxListItem.self, where: #Predicate { item in
+                    itemIds.contains(item.id)
+                })
+            }
+
+            try? await IxSystemIntegration.handleEntitiesDeletion(itemIds, of: IxListItemEntity.self)
+
+            showToast("Deleted \(itemIds.count) item\(itemIds.count == 1 ? "" : "s")")
+        } catch {
+            showError(.localizedError(title: "Error deleting items", error: error))
         }
     }
 
@@ -474,40 +519,48 @@ struct ListScreen: View {
             }
             .sheet(isPresented: $showExportSheet) {
                 ListExportSheet(list: list, categories: categories) { exportConfig in
-                    if let vc = UIApplication.shared
+                    guard let viewController = UIApplication.shared
                         .connectedScenes
                         .compactMap({ ($0 as? UIWindowScene)?.keyWindow })
                         .first?
-                        .rootViewController {
-                        
-                        var categoryToItemsMap: [IxListCategory?:[IxListItem]] = [:]
-                        let items = exportConfig.includeCompletedItems ? items : items.filter { item in !item.completed }
-                        if exportConfig.filterByCategory {
-                            let category = categories.first { cat in cat.id == exportConfig.categoryIdFilter }
-                            let items = items.filter { item in
-                                item.categoryId == exportConfig.categoryIdFilter 
-                            }
-                            categoryToItemsMap.updateValue(items, forKey: category)
-                        } else {
-                            let grouped = Dictionary(grouping: items) { item in
-                                item.categoryId
-                            }
-                            
-                            for (categoryId, itemsForCategory) in grouped {
-                                let category = categories.first { $0.id == categoryId }
-                                categoryToItemsMap.updateValue(itemsForCategory, forKey: category)
-                            }
+                        .rootViewController else {
+                        showError(.customMessage(title: "Unknown error", message: "Something went terribly wrong, try restarting the app! The developers will be investigating this."))
+                        return
+                    }
+                    
+                    var categoryToItemsMap: [IxListCategory?:[IxListItem]] = [:]
+                    let items = exportConfig.includeCompletedItems ? items.sorted(using: KeyPathComparator(\.completed)) : items.filter { item in !item.completed }
+                    if exportConfig.filterByCategory {
+                        let category = categories.first { cat in cat.id == exportConfig.categoryIdFilter }
+                        let items = items.filter { item in
+                            item.categoryId == exportConfig.categoryIdFilter
+                        }
+                        categoryToItemsMap.updateValue(items, forKey: category)
+                    } else {
+                        let grouped = Dictionary(grouping: items) { item in
+                            item.categoryId
                         }
                         
-                        log.debug("calculated items map: \(categoryToItemsMap.count): \(categoryToItemsMap)")
+                        for (categoryId, itemsForCategory) in grouped {
+                            let category = categories.first { $0.id == categoryId }
+                            categoryToItemsMap.updateValue(itemsForCategory, forKey: category)
+                        }
                         
-                        ExportHelper.exportListToPDF(
-                            list: list,
-                            categoryToItemsMap: categoryToItemsMap,
-                            config: exportConfig,
-                            from: vc
-                        )
+                        let sortedCategoryToItems = categoryToItemsMap.sorted { lhs, rhs in
+                            let lhsId = lhs.key?.id ?? ""   // nil comes first
+                            let rhsId = rhs.key?.id ?? ""
+                            return lhsId < rhsId
+                        }
+
+                        categoryToItemsMap = Dictionary(uniqueKeysWithValues: sortedCategoryToItems)
                     }
+                    
+                    ExportHelper.exportListToPDF(
+                        list: list,
+                        categoryToItemsMap: categoryToItemsMap,
+                        config: exportConfig,
+                        from: viewController
+                    )
                 }
             }
             .sheet(
@@ -590,6 +643,23 @@ struct ListScreen: View {
                     }
                 }
             )
+            .alert(
+                "Confirm deletion",
+                isPresented: $showMultiDeleteItemsAlert
+            ) {
+                Button("Delete", role: .destructive) {
+                    Task {
+                        await deleteItems(listId: listId, itemIds: Array(multiSelectedItems))
+                        editMode?.wrappedValue = .inactive
+                    }
+                }
+
+                Button("Keep", role: .cancel) {
+                    showMultiDeleteItemsAlert = false
+                }
+            } message: {
+                Text("Are you sure you want to delete \(multiSelectedItems.count) item\(multiSelectedItems.count == 1 ? "" : "s")? This action is irreversible!")
+            }
             .navigationTitle(list.name)
             .toolbar {
                 toolbarContent
@@ -640,7 +710,8 @@ struct ListScreen: View {
             categories: categories,
             showCompleted: showCompletedItems,
             sorting: itemSorting,
-            sortOrder: itemsSortOrder
+            sortOrder: itemsSortOrder,
+            multiSelectedItems: $multiSelectedItems
         ) {
             showCompletedItems = false
         } onCreateItem: {
@@ -689,32 +760,96 @@ struct ListScreen: View {
     @ToolbarContentBuilder
     var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .principal) {
-            Text(list.name)
+            Text(
+                editMode?.wrappedValue.isEditing == true
+                ? (multiSelectedItems.isEmpty ? "Select Items" : "\(multiSelectedItems.count) Selected")
+                : list.name
+            )
                 .foregroundStyle(contentColor.contrastColor())
+                .fontWeight(.bold)
         }
         
-        ToolbarItem(placement: .topBarTrailing) {
-            Menu {
-                Button("Manage access", systemImage: "person.2.badge.gearshape") {
-                    showShareSheet = true
-                }
-
-                Button("Print", systemImage: "printer") {
-                    showExportSheet = true
-                }
+        if editMode?.wrappedValue == .active {
+            toolbarEditModeContent
+        } else {
+            toolbarDefaultContent
+        }
+    }
+    
+    @ToolbarContentBuilder
+    var toolbarEditModeContent: some ToolbarContent {
+        ToolbarItem(placement: .confirmationAction) {
+            Button {
+                editMode?.wrappedValue = .inactive
             } label: {
-                Label("Share", systemImage: "square.and.arrow.up")
+                Label("Done", systemImage: "checkmark")
             }
         }
-
+        
+        ToolbarItem(placement: .bottomBar) {
+            Button {
+                
+            } label: {
+                Label("Move", systemImage: "tray.and.arrow.up")
+            }
+            .disabled(multiSelectedItems.isEmpty)
+        }
+        
+        ToolbarItem(placement: .bottomBar) {
+            Button(role: .destructive) {
+                showMultiDeleteItemsAlert = true
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+            .disabled(multiSelectedItems.isEmpty)
+        }
+        
+        ToolbarItem(placement: .bottomBar) {
+            Menu {
+                Section {
+                    if anySelectedItemIncompleted {
+                        Button {
+                            Task {
+                                await setItemsCompletion(listId: listId, itemIds: Array(multiSelectedItems), completed: true)
+                                editMode?.wrappedValue = .inactive
+                            }
+                        } label: {
+                            Label("Complete All", systemImage: "inset.filled.circle")
+                        }
+                    } else {
+                        Button {
+                            Task {
+                                await setItemsCompletion(listId: listId, itemIds: Array(multiSelectedItems), completed: false)
+                                editMode?.wrappedValue = .inactive
+                            }
+                        } label: {
+                            Label("Uncomplete All", systemImage: "circle")
+                        }
+                    }
+                } header: {
+                    Text("\(multiSelectedItems.count) item\(multiSelectedItems.count == 1 ? "" : "s")")
+                }
+            } label: {
+                Label("More", systemImage: "ellipsis")
+            }
+            .disabled(multiSelectedItems.isEmpty)
+        }
+    }
+    
+    @ToolbarContentBuilder
+    var toolbarDefaultContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Section {
+                    Button("Select Items", systemImage: "checkmark.circle") {
+                        editMode?.wrappedValue = .active
+                    }
+                    
                     if !completedItems.isEmpty {
                         Menu {
                             Button(
                                 "Uncomplete all",
-                                systemImage: "checkmark.arrow.trianglehead.counterclockwise",
+                                systemImage: "arrow.trianglehead.counterclockwise",
                                 role: .destructive
                             ) {
                                 Task {
@@ -810,9 +945,19 @@ struct ListScreen: View {
                         }
                     }
                 }
+                
+                Section {
+                    Button("Share", systemImage: "square.and.arrow.up") {
+                        showShareSheet = true
+                    }
+
+                    Button("Export", systemImage: "printer") {
+                        showExportSheet = true
+                    }
+                }
 
             } label: {
-                Label("Options", systemImage: "ellipsis.circle")
+                Label("Options", systemImage: "ellipsis")
                     .labelStyle(.iconOnly)
             }
         }
@@ -848,7 +993,7 @@ struct ListScreen: View {
                     entity: item
                 )
             } label: {
-                Label("Create item", systemImage: "plus.circle.fill")
+                Label("Create item", systemImage: "plus")
                     .fontWeight(.semibold)
             }
             .supportsLongPress {

@@ -182,7 +182,7 @@ struct ListsGridScreen: View {
                                 isAddingList = true
                             }
                         } label: {
-                            Image(systemName: "plus.circle")
+                            Image(systemName: "text.pad.header.badge.plus")
                         }
                     }
                 }
@@ -241,7 +241,7 @@ struct ListsGridScreen: View {
                             }
                         }
                     } label: {
-                        Label("Options", systemImage: "ellipsis.circle")
+                        Label("Options", systemImage: "ellipsis")
                             .labelStyle(.iconOnly)
                     }
                 }

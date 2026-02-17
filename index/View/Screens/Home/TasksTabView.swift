@@ -278,14 +278,14 @@ struct TasksTabView: View {
                     isPresented: $showDeleteConfirmationDialog
                 ) {
                     if let selectedTask = selectedTask {
-                        Button(selectedTask.rrule == nil ? "Delete" : "Delete single", role: .destructive) {
+                        Button(selectedTask.rrule == nil ? "Delete" : "Delete This Task Only", role: .destructive) {
                             Task {
                                 await deleteTask(id: selectedTask.id, all: selectedTask.rrule == nil ? nil : false)
                             }
                         }
 
                         if selectedTask.rrule != nil {
-                            Button("Delete all", role: .destructive) {
+                            Button("Delete All Future Tasks", role: .destructive) {
                                 Task {
                                     await deleteTask(id: selectedTask.id, all: true)
                                 }
@@ -581,14 +581,14 @@ struct TasksTabView: View {
                     isPresented: $showDeleteCompletedConfirmationDialog
                 ) {
                     if let selectedTask = selectedTask {
-                        Button(selectedTask.rrule == nil ? "Delete" : "Delete single", role: .destructive) {
+                        Button(selectedTask.rrule == nil ? "Delete" : "Delete This Task Only", role: .destructive) {
                             Task {
                                 await deleteTask(id: selectedTask.id, all: selectedTask.rrule == nil ? nil : false)
                             }
                         }
 
                         if selectedTask.rrule != nil {
-                            Button("Delete all", role: .destructive) {
+                            Button("Delete All Future Tasks", role: .destructive) {
                                 Task {
                                     await deleteTask(id: selectedTask.id, all: true)
                                 }

@@ -1277,6 +1277,33 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
+    
+    /// Deletes multiple list items
+    ///
+    /// ### Throws:
+    /// - `IxApiClientError.MissingPermission` List editor permissions required
+    /// - `IxApiClientError.Unknown` Unknown error
+    @Sendable public func deleteListItems(listId: String, itemIds: [String]) async throws {
+        let url = Self.baseUrl.appendingPathComponent("/lists/\(listId)/items")
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try Self.encoder().encode(itemIds)
+
+        let (data, response) = try await urlSession.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+        
+        log.debug("received response: \(httpResponse) \(data)")
+
+        switch httpResponse.statusCode {
+        case 200:
+            break // Items successfully deleted
+        case 403:
+            throw IxApiClientError.missingPermission(.editor)
+        default:
+            throw IxApiClientError.unknown
+        }
+    }
 
     // MARK: - Tasks
 

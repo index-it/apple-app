@@ -85,7 +85,11 @@ enum IxSystemIntegration {
     }
 
     static func handleEntityDeletion<T: IndexedEntity>(_ id: T.ID, of _: T.Type) async throws {
-        try await CSSearchableIndex.default().deleteAppEntities(identifiedBy: [id], ofType: T.self)
+        try await handleEntitiesDeletion([id], of: T.self)
+    }
+    
+    static func handleEntitiesDeletion<T: IndexedEntity>(_ ids: [T.ID], of _: T.Type) async throws {
+        try await CSSearchableIndex.default().deleteAppEntities(identifiedBy: ids, ofType: T.self)
 
         if T.self == IxTaskEntity.self {
             WidgetCenter.shared.reloadTimelines(ofKind: IxKinds.todayTasksWidget)
