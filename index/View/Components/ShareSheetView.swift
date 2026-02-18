@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ShareSheetView: UIViewControllerRepresentable {
-    let item: URL
+    let item: Any
 
     func makeUIViewController(context _: Context) -> UIActivityViewController {
         UIActivityViewController(activityItems: [item], applicationActivities: nil)

@@ -15,7 +15,8 @@ struct ListExportSheet: View {
     var categories: [IxListCategory]
     var onExport: (ListExportConfig) -> Void
     
-//    @State private var format: ListExportFormat = .pdf
+    @State private var format: ListExportFormat = .pdf
+    @State private var useMarkdown: Bool = false
     @State private var filterByCategory = false
     @State private var categoryIdFilter: String? = nil
     @State private var includeCompletedItems = false
@@ -26,14 +27,24 @@ struct ListExportSheet: View {
     var body: some View {
         NavigationView {
             Form {
-//                Picker("Export Format", selection: $format) {
-//                    ForEach(ListExportFormat.allCases, id: \.self) { format in
-//                        Text(format.rawValue).tag(format)
-//                    }
-//                }
-//                .pickerStyle(.segmented)
-//                .listRowInsets(.init())
-//                .listRowBackground(Color.clear)
+                    Picker("Export Format", selection: $format) {
+                        ForEach([ListExportFormat.pdf, ListExportFormat.text], id: \.self) { format in
+                            Text(format.rawValue).tag(format)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .listRowInsets(.init())
+                    .listRowBackground(Color.clear)
+                    
+                if format == .text {
+                    Section {
+                        Toggle(isOn: $useMarkdown) {
+                            Text("Use Markdown format")
+                        }
+                    } footer: {
+                        Text("Markdown is a text format that allows a more readable representation of the list. It is also compatible with many other text editors.")
+                    }
+                }
                 
                 Section {
                     Toggle(isOn: $includeCompletedItems) {
@@ -80,7 +91,8 @@ struct ListExportSheet: View {
                     Button {
                         onExport(
                             ListExportConfig(
-                                format: .pdf,
+                                format: format,
+                                useMarkdown: useMarkdown,
                                 filterByCategory: filterByCategory,
                                 categoryIdFilter: categoryIdFilter,
                                 includeCompletedItems: includeCompletedItems,

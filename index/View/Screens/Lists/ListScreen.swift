@@ -55,6 +55,8 @@ struct ListScreen: View {
     private var anySelectedItemIncompleted: Bool {
         return items.contains { multiSelectedItems.contains($0.id) && !$0.completed }
     }
+    @State private var showMultiShareSheet = false
+    @State private var multiShareSheetItem = ""
     @State private var showMultiDeleteItemsAlert = false
 
     // MARK: Selected item
@@ -306,9 +308,12 @@ struct ListScreen: View {
     
     func moveItems(listId: String, itemIds: [String], toListId: String, toCategoryId: String?) async {
         do {
+            print("MOVING FROM \(listId) TO \(toListId)")
             let movedItems = try await ixApiClient.moveListItems(
                 listId: listId, itemIds: itemIds, moveListId: toListId, moveCategoryId: toCategoryId
             )
+            
+            print("moved items: \(movedItems.map(\.listId))")
             
             try context.transaction {
                 for item in movedItems {
@@ -519,17 +524,11 @@ struct ListScreen: View {
             }
             .sheet(isPresented: $showExportSheet) {
                 ListExportSheet(list: list, categories: categories) { exportConfig in
-                    guard let viewController = UIApplication.shared
-                        .connectedScenes
-                        .compactMap({ ($0 as? UIWindowScene)?.keyWindow })
-                        .first?
-                        .rootViewController else {
-                        showError(.customMessage(title: "Unknown error", message: "Something went terribly wrong, try restarting the app! The developers will be investigating this."))
-                        return
-                    }
-                    
                     var categoryToItemsMap: [IxListCategory?:[IxListItem]] = [:]
-                    let items = exportConfig.includeCompletedItems ? items.sorted(using: KeyPathComparator(\.completed)) : items.filter { item in !item.completed }
+                    let items = exportConfig.includeCompletedItems ?
+                        items.sorted(using: KeyPathComparator(\.completed))
+                        : items.filter { item in !item.completed }
+                    
                     if exportConfig.filterByCategory {
                         let category = categories.first { cat in cat.id == exportConfig.categoryIdFilter }
                         let items = items.filter { item in
@@ -555,12 +554,27 @@ struct ListScreen: View {
                         categoryToItemsMap = Dictionary(uniqueKeysWithValues: sortedCategoryToItems)
                     }
                     
-                    ExportHelper.exportListToPDF(
-                        list: list,
-                        categoryToItemsMap: categoryToItemsMap,
-                        config: exportConfig,
-                        from: viewController
-                    )
+                    if exportConfig.format == .pdf {
+                        guard let viewController = UIApplication.shared
+                            .connectedScenes
+                            .compactMap({ ($0 as? UIWindowScene)?.keyWindow })
+                            .first?
+                            .rootViewController else {
+                            showError(.customMessage(title: "Unknown error", message: "Something went terribly wrong, try restarting the app! The developers will be investigating this."))
+                            return
+                        }
+                        
+                        ExportHelper.exportListToPDF(
+                            list: list,
+                            categoryToItemsMap: categoryToItemsMap,
+                            config: exportConfig,
+                            from: viewController
+                        )
+                    } else {
+                        showExportSheet = false
+                        multiShareSheetItem = ExportHelper.exportListToText(list: list, categoryToItemsMap: categoryToItemsMap, config: exportConfig)
+                        showMultiShareSheet = true
+                    }
                 }
             }
             .sheet(
@@ -643,6 +657,10 @@ struct ListScreen: View {
                     }
                 }
             )
+            .sheet(isPresented: $showMultiShareSheet) {
+                ShareSheetView(item: multiShareSheetItem)
+                    .presentationDetents([.medium, .large])
+            }
             .alert(
                 "Confirm deletion",
                 isPresented: $showMultiDeleteItemsAlert
@@ -787,10 +805,11 @@ struct ListScreen: View {
         }
         
         ToolbarItem(placement: .bottomBar) {
-            Button {
-                
-            } label: {
-                Label("Move", systemImage: "tray.and.arrow.up")
+            ListSelectorMenu { list, category in
+                Task {
+                    await moveItems(listId: listId, itemIds: Array(multiSelectedItems), toListId: list.id, toCategoryId: category?.id)
+                    editMode?.wrappedValue = .inactive
+                }
             }
             .disabled(multiSelectedItems.isEmpty)
         }
@@ -864,7 +883,7 @@ struct ListScreen: View {
                         } label: {
                             Label(
                                 "Uncomplete all",
-                                systemImage: "checkmark.arrow.trianglehead.counterclockwise"
+                                systemImage: "arrow.trianglehead.counterclockwise"
                             )
                         }
                     }
@@ -987,7 +1006,7 @@ struct ListScreen: View {
         ToolbarItem(placement: .bottomBar) {
             Button {
                 let item = IxListItem.empty()
-                item.categoryId = selectedCategoryId
+                item.categoryId = selectedCategoryId.nonEmpty
 
                 editorConfig.present(
                     entity: item

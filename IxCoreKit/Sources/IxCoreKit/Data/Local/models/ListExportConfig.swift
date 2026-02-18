@@ -14,6 +14,7 @@ public enum ListExportFormat: String, CaseIterable {
 
 public struct ListExportConfig {
     public let format: ListExportFormat
+    public let useMarkdown: Bool
     public let filterByCategory: Bool
     public let categoryIdFilter: String?
     public let includeCompletedItems: Bool
@@ -23,6 +24,7 @@ public struct ListExportConfig {
     
     public init(
         format: ListExportFormat,
+        useMarkdown: Bool,
         filterByCategory: Bool,
         categoryIdFilter: String?,
         includeCompletedItems: Bool,
@@ -31,6 +33,7 @@ public struct ListExportConfig {
         itemNotesMaxLines: Int
     ) {
         self.format = format
+        self.useMarkdown = useMarkdown
         self.filterByCategory = filterByCategory
         self.categoryIdFilter = categoryIdFilter
         self.includeCompletedItems = includeCompletedItems
