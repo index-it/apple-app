@@ -44,6 +44,7 @@ struct ListsGridScreen: View {
     @AppStorage(AppStorageKeys.Lists.filter) private var filter = AppStorageKeys.Defaults.listsFilter
 
     // MARK: Search
+//    @State private var searchSyncLoading = false
     @State private var isSearching = false
     @State private var searchText = ""
     @State private var itemsSearchResults: [IxListItem] = []
@@ -154,6 +155,37 @@ struct ListsGridScreen: View {
             } catch {}
         } catch {
             showError(.localizedError(title: "Error leaving list", error: error))
+        }
+    }
+    
+    private func syncLists() async {
+        do {
+//            searchSyncLoading = true
+//            defer { searchSyncLoading = false }
+            let (lists, categories, items) = try await ixApiClient.syncLists()
+            
+            try context.transaction {
+                try context.delete(model: IxList.self)
+                for ixList in lists {
+                    context.insert(ixList)
+                }
+                
+                try context.delete(model: IxListCategory.self)
+                for ixCategory in categories {
+                    context.insert(ixCategory)
+                }
+                
+                try context.delete(model: IxListItem.self)
+                for ixItem in items {
+                    context.insert(ixItem)
+                }
+            }
+            
+            try? await IxSystemIntegration.handleNewEntities(lists.map(IxListEntity.init))
+            try? await IxSystemIntegration.handleNewEntities(categories.map(IxListCategoryEntity.init))
+            try? await IxSystemIntegration.handleNewEntities(items.map(IxListItemEntity.init))
+        } catch {
+            showError(.customMessageLocalizedError(title: "Failed syncing lists", message: "Something went south when trying to sync your lists, search results may not be 100% accurate!", error: error))
         }
     }
     
@@ -424,6 +456,15 @@ struct ListsGridScreen: View {
             .onChange(of: isSearching) { wasSearching, nowSearching in
                 if wasSearching && !nowSearching {
                     searchText = ""
+                    return
+                }
+                
+                if !wasSearching && nowSearching {
+                    Task {
+                        if await SyncRegister.shared.hasExpired(SyncResource.listsSync, threshold: 86_400_000) {
+                            await syncLists()
+                        }
+                    }
                 }
             }
             .onChange(of: searchText) { _, newText in

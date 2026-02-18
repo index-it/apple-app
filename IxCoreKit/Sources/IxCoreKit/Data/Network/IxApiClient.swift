@@ -478,6 +478,39 @@ public final class IxApiClient: Sendable {
     }
 
     // MARK: - Lists
+    /// Gets all user lists, categories and items
+    ///
+    /// ### Throws
+    /// - `IxApiClientError.Unknown`
+    public func syncLists(excludeItems: Bool = false, itemsCompletion: Bool? = nil) async throws -> ([IxList], [IxListCategory], [IxListItem]) {
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "exclude_items", value: "\(excludeItems)")
+        ]
+        
+        if let itemsCompletion {
+            queryItems.append(
+                URLQueryItem(name: "items_completion", value: "\(itemsCompletion)")
+            )
+        }
+        
+        let url = Self.baseUrl.appendingPathComponent("/lists/sync")
+            .appending(queryItems: queryItems)
+
+        let (data, urlRes) = try await urlSession.data(from: url)
+        let res = urlRes as! HTTPURLResponse
+
+        switch res.statusCode {
+        case 200:
+            let res = try Self.decoder().decode(ListsSyncResponse.self, from: data)
+            return (res.lists.map(IxList.init), res.categories.map(IxListCategory.init), res.items.map(IxListItem.init))
+        case 401:
+            handleAuthenticationStatus(.unauthenticated)
+            throw IxApiClientError.unauthenticated
+        default:
+            log.error("unexpected api response: \(res)")
+            throw IxApiClientError.unknown
+        }
+    }
 
     /// Gets all the user lists
     /// - Returns: an array of `IxList`

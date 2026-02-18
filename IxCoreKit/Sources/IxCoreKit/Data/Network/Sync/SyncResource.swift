@@ -7,6 +7,8 @@
 
 public enum SyncResource {
     public static let lists = "lists"
+    public static let listsSync = "lists-sync"
+    public static let listsExcludedItemsSync = "lists-sync-exclude-items"
     public static let tasks = "tasks"
     public static let tasksConnectedItems = "tasks-connected-items"
     public static let completedTasks = "completed-tasks"

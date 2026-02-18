@@ -20,39 +20,23 @@ struct ListSelectorMenu: View {
     
     @State private var category: IxListCategory? = nil
     
-    private func fetchLists() async {
+    private func syncLists() async {
         do {
-            let lists = try await ixApiClient.getLists()
+            let (lists, categories, _) = try await ixApiClient.syncLists(excludeItems: true)
             
             try context.transaction {
                 try context.delete(model: IxList.self)
-                
                 for ixList in lists {
                     context.insert(ixList)
+                }
+                
+                try context.delete(model: IxListCategory.self)
+                for ixCategory in categories {
+                    context.insert(ixCategory)
                 }
             }
             
             try? await IxSystemIntegration.handleNewEntities(lists.map(IxListEntity.init))
-        } catch {}
-    }
-    
-    private func fetchCategories(listId: String) async {
-        do {
-            let categories = try await ixApiClient.getListCategories(listId: listId)
-            
-            try context.transaction {
-                try context.delete(
-                    model: IxListCategory.self,
-                    where: #Predicate { category in
-                        category.listId == listId
-                    }
-                )
-                
-                for category in categories {
-                    context.insert(category)
-                }
-            }
-            
             try? await IxSystemIntegration.handleNewEntities(categories.map(IxListCategoryEntity.init))
         } catch {}
     }
@@ -83,17 +67,8 @@ struct ListSelectorMenu: View {
         }
         .onAppear {
             Task {
-                if await SyncRegister.shared.hasExpired(SyncResource.lists, threshold: 86_400_000) {
-                    await fetchLists()
-                }
-            }
-        }
-        .onChange(of: lists) { _, newValue in
-            for list in newValue {
-                Task {
-                    if await SyncRegister.shared.hasExpired(SyncResource.listCategories(list.id), threshold: 86_400_000) {
-                        await fetchCategories(listId: list.id)
-                    }
+                if await SyncRegister.shared.hasExpired(SyncResource.listsExcludedItemsSync, threshold: 86_400_000) {
+                    await syncLists()
                 }
             }
         }
