@@ -29,6 +29,15 @@ enum UniversalLinksHelper {
         switch section {
         case IxUniversalLinks.Sections.lists:
             navigator.navigateToTab(.lists)
+            
+            if let searchTerm = urlComponents?
+                .queryItems?
+                .first(where: { $0.name == "search" && $0.value != "nil" })?
+                .value {
+                navigator.navigateToTab(.lists)
+                navigator.searchTerm = searchTerm
+                return
+            }
 
             if let listId = pathComponents[safe: 1] {
                 if let categoryId = urlComponents?

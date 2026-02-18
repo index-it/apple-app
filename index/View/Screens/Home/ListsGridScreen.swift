@@ -447,6 +447,13 @@ struct ListsGridScreen: View {
                     navigator.itemCreatePresented = false
                 }
             }
+            .onChange(of: navigator.searchTerm, initial: true) { _, newSearchTerm in
+                if let newSearchTerm, !newSearchTerm.isEmpty {
+                    navigator.searchTerm = nil
+                    searchText = newSearchTerm
+                    isSearching = true
+                }
+            }
             .onChange(of: isAddingList) {
                 if isAddingList {
                     newListEmoji = EmojiHelper.randomEmojiForPickerInitial()

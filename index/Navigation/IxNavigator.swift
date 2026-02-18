@@ -33,7 +33,8 @@ class IxNavigator {
 
     var taskCreatePresented = false
     var taskId: String?
-
+    
+    var searchTerm: String? = nil
     var itemCreatePresented = false
     var categoryId: String?
     var itemId: String?

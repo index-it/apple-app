@@ -24,6 +24,10 @@ public enum IxUniversalLinks {
         case task
         case item
     }
+    
+    public static func search(_ query: String) -> String {
+        "https://\(host)/\(Sections.lists)?search=\(query)"
+    }
 
     public static var lists: String {
         "https://\(host)/\(Sections.lists)"

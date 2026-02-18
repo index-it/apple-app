@@ -40,6 +40,7 @@ struct TasksTabView: View {
 
     @State private var showDeleteConfirmationDialog = false
     @State private var showDeleteCompletedConfirmationDialog = false
+    @State private var showClearCompletedTasksDialog = false
 
     // MARK: Unplanned tasks
 
@@ -222,6 +223,18 @@ struct TasksTabView: View {
             try await saveTask(task)
         } catch {
             showError(.localizedError(title: "Error rescheduling task", error: error))
+        }
+    }
+    
+    func clearCompletedTasks() async {
+        do {
+            try await ixApiClient.clearCompletedTasks()
+
+            try context.transaction {
+                try context.delete(model: IxTask.self, where: #Predicate { $0.completed })
+            }
+        } catch {
+            showError(.localizedError(title: "Error clearing completed tasks", error: error))
         }
     }
 
@@ -602,7 +615,32 @@ struct TasksTabView: View {
                 } message: {
                     Text("Are you sure you want to delete the\(selectedTask?.rrule != nil ? " recurring" : "") task \(selectedTask?.name ?? "")?")
                 }
+                .alert(
+                    "Clear tasks?",
+                    isPresented: $showClearCompletedTasksDialog
+                ) {
+                    Button("Delete All Completed Tasks", role: .destructive) {
+                        Task {
+                            await clearCompletedTasks()
+                        }
+                    }
+
+                    Button("Keep", role: .cancel) {
+                        showClearCompletedTasksDialog = false
+                    }
+                } message: {
+                    Text("Are you sure you want to delete all completed tasks? This action is irreversible!")
+                }
                 .navigationTitle("Completed tasks")
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showClearCompletedTasksDialog = true
+                        } label: {
+                            Label("Clear Completed", systemImage: "windshield.front.and.wiper")
+                        }
+                    }
+                }
                 .onAppear {
                     Task {
                         let shouldSync = await SyncRegister.shared.hasExpired(SyncResource.completedTasks)

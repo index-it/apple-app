@@ -1501,6 +1501,22 @@ public final class IxApiClient: Sendable {
             throw IxApiClientError.unknown
         }
     }
+    
+    @Sendable public func clearCompletedTasks() async throws {
+        let url = Self.baseUrl.appendingPathComponent("/tasks/clear")
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        let (_, response) = try await urlSession.data(for: request)
+        let httpResponse = response as! HTTPURLResponse
+
+        switch httpResponse.statusCode {
+        case 200:
+            return
+        default:
+            throw IxApiClientError.unknown
+        }
+    }
 
     /// Sets the completion status of a task
     ///
