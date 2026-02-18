@@ -43,6 +43,15 @@ struct ListsGridScreen: View {
     @AppStorage(AppStorageKeys.Lists.sortOrder) private var sortOrder = AppStorageKeys.Defaults.listsSortOrder
     @AppStorage(AppStorageKeys.Lists.filter) private var filter = AppStorageKeys.Defaults.listsFilter
 
+    // MARK: Search
+    @State private var isSearching = false
+    @State private var searchText = ""
+    @State private var itemsSearchResults: [IxListItem] = []
+    @State private var categoriesSearchResults: [IxListCategory] = []
+    @State private var listsSearchResults: [IxList] = []
+    @State private var searchShowCompleted = false
+    @State private var searchCollapsedListIds: [String] = []
+    
     // MARK: Quick add sheet
 
     @State private var showQuickAddSheet: Bool = false
@@ -147,12 +156,52 @@ struct ListsGridScreen: View {
             showError(.localizedError(title: "Error leaving list", error: error))
         }
     }
+    
+    private func search(_ text: String) {
+        let categoryDescriptor = FetchDescriptor<IxListCategory>(
+            predicate: #Predicate { category in
+                category.name.localizedStandardContains(text)
+            }
+        )
+        categoriesSearchResults = (try? context.fetch(categoryDescriptor)) ?? []
+        let categoryIds: Set<String?> = Set(categoriesSearchResults.map(\.id))
+        
+        let itemDescriptor = FetchDescriptor<IxListItem>(
+            predicate: #Predicate { item in
+                item.name.localizedStandardContains(text)
+                || item.link?.localizedStandardContains(text) == true
+                || item.note?.localizedStandardContains(text) == true
+                || categoryIds.contains(item.categoryId)
+            },
+            sortBy: [SortDescriptor(\IxListItem.completed)]
+        )
+        
+        itemsSearchResults = (try? context.fetch(itemDescriptor)) ?? []
+        let missingCategoryIds = Set(itemsSearchResults.compactMap { $0.categoryId }).subtracting(Set(categoriesSearchResults.compactMap(\.id)))
+        let missingCategoriesDescriptor = FetchDescriptor<IxListCategory>(
+            predicate: #Predicate { c in
+                missingCategoryIds.contains(c.id)
+            }
+        )
+        if let missingCategories = try? context.fetch(missingCategoriesDescriptor),
+           !missingCategories.isEmpty {
+            categoriesSearchResults += missingCategories
+        }
+        
+        let listIds = Set(categoriesSearchResults.map(\.listId) + itemsSearchResults.map(\.listId))
+        let listDescriptor = FetchDescriptor<IxList>(
+            predicate: #Predicate { list in
+                listIds.contains(list.id)
+            }
+        )
+        listsSearchResults = (try? context.fetch(listDescriptor)) ?? []
+    }
 
     var body: some View {
         ListsDisplayerView
             .navigationTitle(archived ? "Archived lists" : "Your lists")
             .navigationBarTitleDisplayMode(archived ? .inline : .large)
-            .if(!lists.isEmpty) { view in
+            .if(!lists.isEmpty && !isSearching) { view in
                 view.floatingActionButton(
                     "plus",
                     action: {
@@ -164,7 +213,25 @@ struct ListsGridScreen: View {
                     }
                 )
             }
+            .if(isSearching) { view in
+                view.searchable(
+                    text: $searchText,
+                    isPresented: $isSearching,
+                    placement: .navigationBarDrawer,
+                    prompt: "Search Items"
+                )
+                .toolbar(.hidden, for: .tabBar)
+            }
             .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        isSearching = true
+                    } label: {
+                        Image(systemName: "magnifyingglass")
+                    }
+                    .accessibilityLabel("Search")
+                }
+                
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         navigator.push(.settings)
@@ -354,54 +421,164 @@ struct ListsGridScreen: View {
                     newListColor = ColorHelper.randomIxColor()
                 }
             }
-    }
-
-    private var ListsDisplayerView: some View {
-        ListsGrid(
-            userId: user?.id ?? "",
-            filter: filter,
-            archived: archived,
-            sorting: sorting,
-            sortOrder: sortOrder,
-            onFilterClear: {
-                filter = .all
-            },
-            onAdd: {
-                isAddingList = true
-            },
-            onListCardTap: { list in
-                navigator.push(.listRoute(listId: list.id))
-
-                Task {
-                    await IxSystemIntegration.donateIntent(.openList(list))
+            .onChange(of: isSearching) { wasSearching, nowSearching in
+                if wasSearching && !nowSearching {
+                    searchText = ""
                 }
-            },
-            onShare: { list in
-                selectedList = list
-                if list.userId == user?.id {
-                    showShareSheet = true
+            }
+            .onChange(of: searchText) { _, newText in
+                if newText.isEmpty {
+                    itemsSearchResults = []
+                    categoriesSearchResults = []
+                    listsSearchResults = []
+                    searchCollapsedListIds = []
                 } else {
+                    Task {
+                        search(newText)
+                    }
+                }
+            }
+            .scrollContentBackground(.hidden)
+    }
+    
+    @ViewBuilder
+    private var ListsDisplayerView: some View {
+        if isSearching {
+            if searchText.isEmpty {
+                ContentUnavailableView(
+                    "Lost something?",
+                    systemImage: "binoculars",
+                    description: Text("Type to search across lists, categories, items, links, and notes.")
+                )
+            } else {
+                List {
+                    let completedItemsCount = itemsSearchResults.count(where: { $0.completed })
+                    
+                    if completedItemsCount > 0 {
+                        Section {
+                            HStack {
+                                Text("\(completedItemsCount) Completed")
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Button {
+                                    searchShowCompleted = !searchShowCompleted
+                                } label: {
+                                    Text(searchShowCompleted ? "Hide" : "Show")
+                                }
+                                .foregroundStyle(Color.accentColor)
+                            }
+                            .listRowInsets([.top, .bottom], 0)
+                        }
+                    }
+                    
+                    ForEach(listsSearchResults) { list in
+                        let items = itemsSearchResults.filter { $0.listId == list.id && (searchShowCompleted ? true : !$0.completed) }
+                        if !items.isEmpty {
+                            SearchResultListSection(
+                                list: list,
+                                items: items,
+                                categories: categoriesSearchResults
+                            )
+                        }
+                    }
+                }
+                .environment(\.defaultMinListRowHeight, 0)
+            }
+        } else {
+            ListsGrid(
+                userId: user?.id ?? "",
+                filter: filter,
+                archived: archived,
+                sorting: sorting,
+                sortOrder: sortOrder,
+                onFilterClear: {
+                    filter = .all
+                },
+                onAdd: {
+                    isAddingList = true
+                },
+                onListCardTap: { list in
+                    navigator.push(.listRoute(listId: list.id))
+                    
+                    Task {
+                        await IxSystemIntegration.donateIntent(.openList(list))
+                    }
+                },
+                onShare: { list in
+                    selectedList = list
+                    if list.userId == user?.id {
+                        showShareSheet = true
+                    } else {
+                        showLeaveListConfirmation = true
+                    }
+                    
+                },
+                onEdit: { list in
+                    selectedList = list
+                    isEditingList = true
+                },
+                onArchiveToggle: { list in
+                    Task {
+                        await editList(id: list.id, name: list.name, color: list.color, emoji: list.icon, archived: !list.archived, isPublic: list.isPublic)
+                    }
+                },
+                onDelete: { list in
+                    selectedList = list
+                    showDeleteConfirmationDialog = true
+                },
+                onLeave: { list in
+                    selectedList = list
                     showLeaveListConfirmation = true
                 }
+            )
+        }
+    }
+}
 
-            },
-            onEdit: { list in
-                selectedList = list
-                isEditingList = true
-            },
-            onArchiveToggle: { list in
-                Task {
-                    await editList(id: list.id, name: list.name, color: list.color, emoji: list.icon, archived: !list.archived, isPublic: list.isPublic)
+struct SearchResultListSection: View {
+    @Environment(IxNavigator.self) private var navigator
+    
+    @State private var isExpanded = true
+    
+    var list: IxList
+    var items: [IxListItem]
+    var categories: [IxListCategory]
+    
+    var bgColor: Color {
+        list.color.toColor()
+    }
+    
+    var fgColor: Color {
+        bgColor.contrastColor()
+    }
+    
+    var body: some View {
+        Section(isExpanded: $isExpanded) {
+            ForEach(items) { item in
+                Button {
+                    navigator.push(.listRoute(listId: list.id))
+                    navigator.itemId = item.id
+                } label: {
+                    HStack {
+                        if item.completed {
+                            Image(systemName: "checkmark")
+                        }
+                        VStack(alignment: .leading) {
+                            Text(item.name)
+                            if let categoryId = item.categoryId {
+                                Text(categories.first { $0.id == categoryId }?.name ?? "")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
                 }
-            },
-            onDelete: { list in
-                selectedList = list
-                showDeleteConfirmationDialog = true
-            },
-            onLeave: { list in
-                selectedList = list
-                showLeaveListConfirmation = true
+                .foregroundStyle(fgColor)
+                .listRowBackground(bgColor)
             }
-        )
+        } header: {
+            Text(list.name)
+                .foregroundStyle(list.color.toColor())
+        }
+        .headerProminence(.increased)
     }
 }

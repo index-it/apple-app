@@ -62,6 +62,6 @@ struct IxListItemEntity: IndexedEntity {
 @available(iOS 26.0, *)
 extension IxListItemEntity: URLRepresentableEntity {
     static var urlRepresentation: URLRepresentation {
-        "https://web.index-it.app/lists/\(\.$listId)?categoryId=\(\.$categoryId)"
+        "https://web.index-it.app/lists/\(\.$listId)?itemId=\(.id)"
     }
 }

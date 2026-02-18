@@ -308,12 +308,9 @@ struct ListScreen: View {
     
     func moveItems(listId: String, itemIds: [String], toListId: String, toCategoryId: String?) async {
         do {
-            print("MOVING FROM \(listId) TO \(toListId)")
             let movedItems = try await ixApiClient.moveListItems(
                 listId: listId, itemIds: itemIds, moveListId: toListId, moveCategoryId: toCategoryId
             )
-            
-            print("moved items: \(movedItems.map(\.listId))")
             
             try context.transaction {
                 for item in movedItems {
@@ -707,9 +704,6 @@ struct ListScreen: View {
                     navigator.categoryId = nil
                 }
             }
-            .onChange(of: navigator.itemId, initial: true) { _, _ in
-                // TODO: Decide how to highlight item
-            }
             .onChange(of: lists, initial: true) { _, newLists in
                 guard let newList = newLists.first else {
                     navigator.pop()
@@ -721,56 +715,77 @@ struct ListScreen: View {
     }
 
     var ScreenContent: some View {
-        ItemsList(
-            listId: listId,
-            listColor: contentColor,
-            category: selectedCategory,
-            categories: categories,
-            showCompleted: showCompletedItems,
-            sorting: itemSorting,
-            sortOrder: itemsSortOrder,
-            multiSelectedItems: $multiSelectedItems
-        ) {
-            showCompletedItems = false
-        } onCreateItem: {
-            editorConfig.present()
-        } onOpenNotes: { item in
-            selectedItem = item
-            showItemNotePopover = true
-        } onOpenLink: { item in
-            guard let link = item.link else { return }
-
-            var urlString = link
-            if !urlString.starts(with: "http") {
-                urlString = "https://\(urlString)"
+        ScrollViewReader { proxy in
+            ItemsList(
+                listId: listId,
+                listColor: contentColor,
+                category: selectedCategory,
+                categories: categories,
+                showCompleted: showCompletedItems,
+                sorting: itemSorting,
+                sortOrder: itemsSortOrder,
+                multiSelectedItems: $multiSelectedItems
+            ) {
+                showCompletedItems = false
+            } onCreateItem: {
+                editorConfig.present()
+            } onOpenNotes: { item in
+                selectedItem = item
+                showItemNotePopover = true
+            } onOpenLink: { item in
+                guard let link = item.link else { return }
+                
+                var urlString = link
+                if !urlString.starts(with: "http") {
+                    urlString = "https://\(urlString)"
+                }
+                if let url = URL(string: urlString) {
+                    openURL(url)
+                }
+            } onCompletionToggle: { item in
+                Task {
+                    await setItemCompletion(
+                        listId: item.listId, itemId: item.id, completed: !item.completed
+                    )
+                }
+            } onCategorize: { item, category in
+                Task {
+                    await categorizeItem(item: item, category: category)
+                }
+            } onCreateCategory: {
+                categoryEditorConfig.present()
+            } onCreateTask: { item in
+                let task = IxTask.empty()
+                task.itemId = item.id
+                task.name = item.name
+                task.taskDescription = item.note
+                
+                taskEditorConfig.present(entity: task)
+            } onEdit: { item in
+                editorConfig.present(entity: item, mode: .edit)
+            } onDelete: { item in
+                Task {
+                    await deleteItem(listId: listId, itemId: item.id)
+                }
             }
-            if let url = URL(string: urlString) {
-                openURL(url)
-            }
-        } onCompletionToggle: { item in
-            Task {
-                await setItemCompletion(
-                    listId: item.listId, itemId: item.id, completed: !item.completed
-                )
-            }
-        } onCategorize: { item, category in
-            Task {
-                await categorizeItem(item: item, category: category)
-            }
-        } onCreateCategory: {
-            categoryEditorConfig.present()
-        } onCreateTask: { item in
-            let task = IxTask.empty()
-            task.itemId = item.id
-            task.name = item.name
-            task.taskDescription = item.note
-
-            taskEditorConfig.present(entity: task)
-        } onEdit: { item in
-            editorConfig.present(entity: item, mode: .edit)
-        } onDelete: { item in
-            Task {
-                await deleteItem(listId: listId, itemId: item.id)
+            .onChange(of: navigator.itemId, initial: true) { _, itemId in
+                if let itemId {
+                    navigator.itemId = nil
+                    
+                    guard let item = items.first(where: { $0.id == itemId }) else {
+                        return
+                    }
+                    
+                    if item.completed {
+                        showCompletedItems = true
+                    }
+                    
+                    if selectedCategoryId != item.categoryId {
+                        selectedCategoryId = item.categoryId ?? ""
+                    }
+                    
+                    proxy.scrollTo(itemId, anchor: .top)
+                }
             }
         }
     }

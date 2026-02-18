@@ -118,6 +118,7 @@ struct ItemsList: View {
                 onEdit: onEdit,
                 onDelete: onDelete
             )
+            .id(item.id)
             .listRowBackground(Color.systemSecondaryGroupedBackground) // disables single tap selection background color
             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                 Button(role: .destructive) {
