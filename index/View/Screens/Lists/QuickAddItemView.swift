@@ -287,6 +287,7 @@ struct QuickAddItemView: View {
                             }
 
                             Button("Create Category", systemImage: "plus") {
+                                categoryEditorConfig.entity.listId = itemEditorConfig.entity.listId
                                 categoryEditorConfig.present()
                             }
                             .disabled(itemEditorConfig.entity.listId.isEmpty)

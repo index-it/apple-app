@@ -56,6 +56,7 @@ struct IxApp: App {
     @StateObject private var authNavigationManager = AuthNavigationManager()
     @StateObject var notificationManager = NotificationManager()
     @StateObject var siriManager = SiriManager()
+    @State private var calendarManager = CalendarManager()
     @StateObject private var errorService = ErrorStateService()
     @StateObject private var toastService = ToastStateService()
     @StateObject private var paywallService = PaywallStateService()
@@ -181,6 +182,9 @@ struct IxApp: App {
                 .task {
                     siriManager.checkForPermissions()
                 }
+                .task {
+                    await calendarManager.checkForPermissions()
+                }
                 .onChange(of: authenticationHelper.backendAuthStatus, initial: true) { _, newBackendAuthStatus in
                     onBackendAuthStatusChange(newBackendAuthStatus)
                 }
@@ -198,6 +202,7 @@ struct IxApp: App {
                 .environment(ixNavigator)
                 .environmentObject(notificationManager)
                 .environmentObject(siriManager)
+                .environment(calendarManager)
                 .environmentObject(errorService)
                 .environmentObject(toastService)
                 .environmentObject(paywallService)

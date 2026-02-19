@@ -11,6 +11,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(IxNavigator.self) private var navigator
+    @Environment(CalendarManager.self) private var calendarManager
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) var openURL
     @Environment(\.showPaywall) private var showPaywall
@@ -18,6 +19,7 @@ struct SettingsView: View {
     @Environment(\.showError) private var showError
 
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
+    @AppStorage(AppStorageKeys.Tasks.showCalendarEvents) var showCalendarEvents: Bool = AppStorageKeys.Defaults.showCalendarEvents
 
     @State private var showOnboarding = false
 
@@ -46,6 +48,28 @@ struct SettingsView: View {
             .fullScreenCover(isPresented: $showOnboarding) {
                 OnboardingView {
                     showOnboarding = false
+                }
+            }
+            .onChange(of: showCalendarEvents) { _, newValue in
+                if newValue && !calendarManager.permitted {
+                    Task {
+                        let accepted = await calendarManager.requestPermissions()
+                        if !accepted {
+                            showCalendarEvents = false
+                            showError(
+                                .customMessage(
+                                    title: "Enable Calendar access",
+                                    message: "Go into Settings > Apps > Index and enable calendar access to show calendar events in the Tasks list.",
+                                    buttons: [.init(title: "Open settings", isDestructive: false, action: {
+                                        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                                        if UIApplication.shared.canOpenURL(url) {
+                                            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                                        }
+                                    })]
+                                )
+                            )
+                        }
+                    }
                 }
             }
     }
@@ -100,6 +124,36 @@ struct SettingsView: View {
                             Label("Show onboarding", systemImage: "signpost.right.fill")
                                 .labelStyle(ListLabelStyle(color: .green))
                         }.tint(.primary)
+                    }
+                    
+                    Section {
+                        Toggle(isOn: $showCalendarEvents) {
+                            Label("Show calendar events", systemImage: "calendar")
+                                .labelStyle(ListLabelStyle(color: .red))
+                        }
+                        
+                        if showCalendarEvents {
+                            Button {
+                                navigator.push(.calendarSettings)
+                            } label: {
+                                HStack {
+                                    Label("Configure Calendars", systemImage: "filemenu.and.selection")
+                                        .labelStyle(ListLabelStyle(color: .red))
+
+                                    Spacer()
+
+                                    Image(systemName: "chevron.forward")
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                    } header: {
+                        Text("Tasks Behaviour")
+                    } footer: {
+                        Text(showCalendarEvents ?
+                             "Calendar Events will be displayed in the Tasks list." :
+                        "Enable to display Calendar Events in the Tasks list.")
                     }
 
                     Section(header: Text("SUPPORT AND FEEDBACK")) {

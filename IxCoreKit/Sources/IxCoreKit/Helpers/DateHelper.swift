@@ -32,6 +32,8 @@ public enum DateHelper {
         public static let taskSectionSubheading = makeFormatter(format: "d MMMM")
 
         public static let dateTime = makeFormatter(format: "EEE d MMM at HH:mm")
+        
+        public static let calendarEventTime = makeFormatter(format: "HH:mm")
     }
 
     /// Returns a calendar instance that uses the local timezone

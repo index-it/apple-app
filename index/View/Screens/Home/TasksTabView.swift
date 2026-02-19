@@ -6,12 +6,15 @@
 //
 
 import IxCoreKit
+import EventKit
 import SwiftData
 import SwiftUI
 import WidgetKit
+import DynamicColor
 
 struct TasksTabView: View {
     @Environment(IxNavigator.self) private var navigator
+    @Environment(CalendarManager.self) private var calendarManager
     @Environment(\.modelContext) private var context
     @Environment(\.showPaywall) private var showPaywall
     @Environment(\.showError) private var showError
@@ -25,6 +28,12 @@ struct TasksTabView: View {
     // we take the utc date and convert it to local date using calendar with the local timezone
     @State private var todayDate: Date = DateHelper.localCalendar().startOfDay(for: Date())
     let calendar = DateHelper.localCalendar()
+    
+    // MARK: Calendar events
+    
+    @AppStorage(AppStorageKeys.Tasks.showCalendarEvents) var showCalendarEvents: Bool = AppStorageKeys.Defaults.showCalendarEvents
+    @AppStorage(AppStorageKeys.Tasks.enabledCalendars) private var enabledCalendarIds = AppStorageKeys.Defaults.enabledCalendars
+    @State private var calendarEvents: [EKEvent] = []
 
     // MARK: Task creation
 
@@ -52,6 +61,14 @@ struct TasksTabView: View {
 
     @AppStorage(AppStorageKeys.Tasks.sorting) private var sorting = AppStorageKeys.Defaults.tasksSorting
     @AppStorage(AppStorageKeys.Tasks.sortOrder) private var sortOrder = AppStorageKeys.Defaults.tasksSortOrder
+    
+    private func fetchCalendarEvents() {
+        let start = todayDate
+        let end = calendar.date(byAdding: .day, value: 6, to: start)!
+        let calendars = calendarManager.store.calendars(for: .event).filter { enabledCalendarIds.contains($0.calendarIdentifier) }
+        let predicate = calendarManager.store.predicateForEvents(withStart: start, end: end, calendars: calendars)
+        calendarEvents = calendarManager.store.events(matching: predicate)
+    }
 
     private func saveTask(_ task: IxTask) async throws {
         try context.transaction {
@@ -396,6 +413,11 @@ struct TasksTabView: View {
                 }
             }
         }
+        .onAppear {
+            if calendarManager.permitted && showCalendarEvents {
+                fetchCalendarEvents()
+            }
+        }
         .onChange(of: navigator.taskCreatePresented, initial: true) { _, newValue in
             if newValue {
                 editorConfig.present(multi: false)
@@ -408,6 +430,7 @@ struct TasksTabView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name.NSCalendarDayChanged).receive(on: DispatchQueue.main)) { _ in
             todayDate = DateHelper.localCalendar().startOfDay(for: Date.now)
+            fetchCalendarEvents()
         }
     }
 
@@ -418,6 +441,7 @@ struct TasksTabView: View {
                     title: "Anyday",
                     subtitle: "\(unplannedTasks.count) unplanned tasks",
                     dateFilter: nil,
+                    isToday: false,
                     noDateFilter: true,
                     earlierThan: false,
                     laterThan: false,
@@ -430,6 +454,7 @@ struct TasksTabView: View {
             tasksListSection(
                 title: "Today",
                 dateFilter: todayDate,
+                isToday: true,
                 noDateFilter: false,
                 earlierThan: true,
                 laterThan: false
@@ -446,6 +471,7 @@ struct TasksTabView: View {
                     title: offset == 1 ? "Tomorrow" : DateHelper.Formatters.taskSectionHeading.string(from: date),
                     subtitle: DateHelper.Formatters.taskSectionSubheading.string(from: date),
                     dateFilter: date,
+                    isToday: false,
                     noDateFilter: false,
                     earlierThan: false,
                     laterThan: false
@@ -459,6 +485,7 @@ struct TasksTabView: View {
             tasksListSection(
                 title: "Later",
                 dateFilter: calendar.date(byAdding: .day, value: 7, to: todayDate),
+                isToday: false,
                 noDateFilter: false,
                 earlierThan: false,
                 laterThan: true
@@ -475,6 +502,7 @@ struct TasksTabView: View {
         title: String,
         subtitle: String? = nil,
         dateFilter: Date?,
+        isToday: Bool,
         noDateFilter: Bool,
         earlierThan: Bool,
         laterThan: Bool,
@@ -501,7 +529,13 @@ struct TasksTabView: View {
                     laterThan: laterThan
                 )
             } header: {
-                tasksListSectionHeader(title: title, subtitle: subtitle, onTap: onHeaderTap)
+                VStack(alignment: .leading) {
+                    tasksListSectionHeader(title: title, subtitle: subtitle, onTap: onHeaderTap)
+                    
+                    if let dateFilter, showCalendarEvents, calendarManager.permitted {
+                        tasksListSectionCalendarEvents(date: dateFilter, isToday: isToday)
+                    }
+                }
             }
         }
     }
@@ -526,7 +560,51 @@ struct TasksTabView: View {
         }
         .onTapGesture(perform: onTap)
     }
+    
+    @ViewBuilder
+    private func tasksListSectionCalendarEvents(
+        date: Date,
+        isToday: Bool,
+    ) -> some View {
+        let filteredEvents = calendarEvents.filter { calendar.isDate($0.startDate, inSameDayAs: date) }
+        
+        if !filteredEvents.isEmpty {
+            VStack(alignment: .leading, spacing: 2) {
+                ForEach(filteredEvents, id: \.eventIdentifier) { event in
+                    HStack(alignment: .center, spacing: 0) {
+//                        Circle()
+//                            .fill(event.calendar.cgColor.toColor())
+//                            .frame(
+//                                width: UIFont.preferredFont(forTextStyle: .callout).lineHeight * 0.5,
+//                                height: UIFont.preferredFont(forTextStyle: .callout).lineHeight * 0.5
+//                            )
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(event.calendar.cgColor.toColor())
+                            .frame(
+                                width: 3,
+                                height: UIFont.preferredFont(forTextStyle: .callout).lineHeight * 0.7
+                            )
+                            .padding(.trailing, 6)
+                        
+                        if !event.isAllDay {
+                            Text(DateHelper.Formatters.calendarEventTime.string(from: event.startDate))
+                                .padding(.trailing, 6)
+                        }
+                        
+                        Text(event.title)
+                    }
+                    .font(.callout)
+                    .foregroundStyle(DynamicColor(Color.systemLabel).lighter(amount: 0.3).toColor())
+                }
+            }
+            .padding(.top, isToday ? 0 : 4)
+            .padding(.bottom, 4)
+        } else {
+            EmptyView()
+        }
+    }
 
+    @ViewBuilder
     private func tasksListContent(
         dateFilter: Date?,
         noDateFilter: Bool,

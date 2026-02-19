@@ -265,6 +265,12 @@ public extension UIColor {
     }
 }
 
+public extension CGColor {
+    func toColor() -> Color {
+        return Color(self)
+    }
+}
+
 public extension String {
     func toColor() -> Color {
         return .init(hexString: self)

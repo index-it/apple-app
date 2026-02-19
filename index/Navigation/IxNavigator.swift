@@ -22,6 +22,7 @@ enum IxNavRoute: Hashable {
     case settings
     case accountSettings
     case proSettings
+    case calendarSettings
     case about
 }
 

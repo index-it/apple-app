@@ -824,6 +824,7 @@
 				INFOPLIST_FILE = index/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Index;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Show your calendar events on the Tasks page.";
 				INFOPLIST_KEY_NSSiriUsageDescription = "Create tasks and add items to your lists with Siri.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -868,6 +869,7 @@
 				INFOPLIST_FILE = index/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Index;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Show your calendar events on the Tasks page.";
 				INFOPLIST_KEY_NSSiriUsageDescription = "Create tasks and add items to your lists with Siri.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
