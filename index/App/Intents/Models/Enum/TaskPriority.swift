@@ -8,7 +8,7 @@
  import AppIntents
 
 
-enum TaskPriorityEnum: Int, AppEnum {
+enum TaskPriorityEnum: Int, AppEnum, CaseIterable {
     case none = 0
     case veryLow = 1
     case low = 2

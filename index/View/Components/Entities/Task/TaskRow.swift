@@ -17,6 +17,10 @@ struct TaskRow: View {
 
     var onOpen: (IxTask) -> Void
     var onCompletionToggle: (IxTask) -> Void
+    var onPrioritize: (_ priority: Int?, IxTask) -> Void
+    var onReschedule: (_ nextDay: Bool, IxTask) -> Void
+    var onMoveToCalendar: (IxTask) -> Void
+    var onOpenConnectedItem: (_ listId: String, _ itemId: String, IxTask) -> Void
     var onDelete: (IxTask) -> Void
 
     @Query var taskItem: [IxListItem]
@@ -28,6 +32,10 @@ struct TaskRow: View {
         subtasksMaxWidth: CGFloat,
         onOpen: @escaping (IxTask) -> Void,
         onCompletionToggle: @escaping (IxTask) -> Void,
+        onPrioritize: @escaping (_ priority: Int?, IxTask) -> Void,
+        onReschedule: @escaping (_ nextDay: Bool, IxTask) -> Void,
+        onMoveToCalendar: @escaping (IxTask) -> Void,
+        onOpenConnectedItem: @escaping (_ listId: String, _ itemId: String, IxTask) -> Void,
         onDelete: @escaping (IxTask) -> Void
     ) {
         self.task = task
@@ -37,15 +45,19 @@ struct TaskRow: View {
 
         self.onOpen = onOpen
         self.onCompletionToggle = onCompletionToggle
+        self.onPrioritize = onPrioritize
+        self.onReschedule = onReschedule
+        self.onMoveToCalendar = onMoveToCalendar
+        self.onOpenConnectedItem = onOpenConnectedItem
         self.onDelete = onDelete
 
         let itemId = task.itemId
         var itemDescriptor: FetchDescriptor<IxListItem>
 
-        if itemId != nil {
+        if let itemId {
             itemDescriptor = FetchDescriptor<IxListItem>(
                 predicate: #Predicate { item in
-                    item.id == itemId!
+                    item.id == itemId
                 }
             )
         } else {
@@ -66,6 +78,10 @@ struct TaskRow: View {
             subtasksMaxWidth: subtasksMaxWidth,
             onOpen: onOpen,
             onCompletionToggle: onCompletionToggle,
+            onPrioritize: onPrioritize,
+            onReschedule: onReschedule,
+            onMoveToCalendar: onMoveToCalendar,
+            onOpenConnectedItem: onOpenConnectedItem,
             onDelete: onDelete
         )
     }
@@ -80,6 +96,10 @@ struct TaskRowContentView: View {
 
     var onOpen: (IxTask) -> Void
     var onCompletionToggle: (IxTask) -> Void
+    var onPrioritize: (Int?, IxTask) -> Void
+    var onReschedule: (Bool, IxTask) -> Void
+    var onMoveToCalendar: (IxTask) -> Void
+    var onOpenConnectedItem: (_ listId: String, _ itemId: String, IxTask) -> Void
     var onDelete: (IxTask) -> Void
 
     @Query var taskItemCategory: [IxListCategory]
@@ -93,15 +113,24 @@ struct TaskRowContentView: View {
         subtasksMaxWidth: CGFloat,
         onOpen: @escaping (IxTask) -> Void,
         onCompletionToggle: @escaping (IxTask) -> Void,
+        onPrioritize: @escaping (Int?, IxTask) -> Void,
+        onReschedule: @escaping (Bool, IxTask) -> Void,
+        onMoveToCalendar: @escaping (IxTask) -> Void,
+        onOpenConnectedItem: @escaping (_ listId: String, _ itemId: String, IxTask) -> Void,
         onDelete: @escaping (IxTask) -> Void
     ) {
         self.task = task
+        self.item = item
         self.showDate = showDate
         self.redDate = redDate
         self.subtasksMaxWidth = subtasksMaxWidth
 
         self.onOpen = onOpen
         self.onCompletionToggle = onCompletionToggle
+        self.onPrioritize = onPrioritize
+        self.onReschedule = onReschedule
+        self.onMoveToCalendar = onMoveToCalendar
+        self.onOpenConnectedItem = onOpenConnectedItem
         self.onDelete = onDelete
 
         let listId = item?.listId
@@ -210,5 +239,81 @@ struct TaskRowContentView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .foregroundStyle(taskItemList.first?.color.toColorOrNil()?.contrastColor() ?? UIColor.label.toColor())
+        .contextMenu {
+            Section {
+                Button {
+                    onCompletionToggle(task)
+                } label: {
+                    Label("Complete", systemImage: "checkmark")
+                }
+                
+                Menu {
+                    ForEach(TaskPriorityEnum.allCases, id: \.rawValue) { priority in
+                        Button {
+                            onPrioritize(priority.rawValue == 0 ? nil : priority.rawValue, task)
+                        } label: {
+                            if priority.rawValue == 0 {
+                                Text("No Priority")
+                            } else {
+                                Text(priority.localizedStringResource)
+                                
+                                Image(systemName: "flag.fill")
+                                    .tint(IxTask.priorityColor(priority.rawValue))
+                            }
+                        }
+                    }
+                } label: {
+                    Label("Prioritize", systemImage: "flag")
+                }
+            }
+            
+            Section {
+                Menu {
+                    Button {
+                        onReschedule(true, task)
+                    } label: {
+                        Label("Next Day", systemImage: "arrow.uturn.down")
+                    }
+                    
+                    Button {
+                        onReschedule(false, task)
+                    } label: {
+                        Label("Choose Date", systemImage: "calendar")
+                    }
+                } label: {
+                    Label("Reschedule", systemImage: "arrow.uturn.down")
+                }
+                
+                Button {
+                    onMoveToCalendar(task)
+                } label: {
+                    Label("Move to Calendar", systemImage: "calendar.badge.plus")
+                }
+            }
+            
+            if let item {
+                Section {
+                    Button {
+                        onOpenConnectedItem(item.listId, item.id, task)
+                    } label: {
+                        Label("Open connected Item", systemImage: "app.connected.to.app.below.fill")
+                    }
+                }
+            }
+            
+            Section {
+                Button {
+                    onOpen(task)
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                }
+                
+                Button(role: .destructive) {
+                    onDelete(task)
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+            }
+        }
     }
 }

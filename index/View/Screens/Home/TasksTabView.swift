@@ -34,6 +34,7 @@ struct TasksTabView: View {
     @AppStorage(AppStorageKeys.Tasks.showCalendarEvents) var showCalendarEvents: Bool = AppStorageKeys.Defaults.showCalendarEvents
     @AppStorage(AppStorageKeys.Tasks.enabledCalendars) private var enabledCalendarIds = AppStorageKeys.Defaults.enabledCalendars
     @State private var calendarEvents: [EKEvent] = []
+    @State private var showCalendarCreateEventSheet: IxTask? = nil
 
     // MARK: Task creation
 
@@ -223,7 +224,7 @@ struct TasksTabView: View {
         do {
             let addedOneDay = task.dueDate
                 .flatMap { calendar.date(byAdding: .day, value: 1, to: $0) }
-
+            
             let nextDueDate = max(addedOneDay ?? Date(), Date())
 
             let task = try await ixApiClient.editTask(
@@ -265,6 +266,19 @@ struct TasksTabView: View {
             try await saveTask(task)
         } catch {
             showError(.localizedError(title: "Error \(completed ? "completing" : "uncompleting") task", error: error))
+        }
+    }
+    
+    func setTaskPriority(
+        task: IxTask,
+        priority: Int?
+    ) async {
+        do {
+            let task = try await ixApiClient.editTask(taskId: task.id, name: task.name, description: task.taskDescription, dueDate: task.dueDate, rrule: task.rrule, reminders: task.reminders, subtasks: task.subtasks, priority: priority, itemId: task.itemId)
+
+            try await saveTask(task)
+        } catch {
+            showError(.localizedError(title: "Error setting task priority", error: error))
         }
     }
 
@@ -395,6 +409,20 @@ struct TasksTabView: View {
                         }
                     }
                 )
+                .sheet(
+                    item: $showCalendarCreateEventSheet,
+                    onDismiss: {
+                        showCalendarCreateEventSheet = nil
+                    }
+                ) { task in
+                    CalendarEventSheet(task: task, eventStore: calendarManager.store) {
+                        Task {
+                            await deleteTask(id: task.id)
+                            showToast("Moved Task to Calendar", systemImage: "calendar.badge.checkmark")
+                            fetchCalendarEvents()
+                        }
+                    }
+                }
         }
         .onAppear {
             Task {
@@ -417,6 +445,9 @@ struct TasksTabView: View {
             if calendarManager.permitted && showCalendarEvents {
                 fetchCalendarEvents()
             }
+        }
+        .onChange(of: enabledCalendarIds) { _, _ in
+            fetchCalendarEvents()
         }
         .onChange(of: navigator.taskCreatePresented, initial: true) { _, newValue in
             if newValue {
@@ -625,6 +656,10 @@ struct TasksTabView: View {
             Task {
                 await setTaskCompletion(id: task.id, completed: !task.completed)
             }
+        } onPrioritize: { priority, task in
+            Task {
+                await setTaskPriority(task: task, priority: priority)
+            }
         } onReschedule: { task in
             editorConfig.reset()
             editorConfig.entity = task
@@ -639,6 +674,11 @@ struct TasksTabView: View {
             Task {
                 await rescheduleToNextDay(task: task)
             }
+        } onMoveToCalendar: { task in
+            showCalendarCreateEventSheet = task
+        } onOpenConnectedItem: { listId, itemId, task in
+            navigator.push(.listRoute(listId: listId))
+            navigator.itemId = itemId
         } onDelete: { task in
             selectedTask = task
             showDeleteConfirmationDialog = true
@@ -663,9 +703,48 @@ struct TasksTabView: View {
                     Task {
                         await setTaskCompletion(id: task.id, completed: !task.completed)
                     }
+                } onPrioritize: { priority, task in
+                    Task {
+                        await setTaskPriority(task: task, priority: priority)
+                    }
+                } onReschedule: { tomorrow, task in
+                    if tomorrow {
+                        Task {
+                            await rescheduleToNextDay(task: task)
+                        }
+                    } else {
+                        editorConfig.reset()
+                        editorConfig.entity = task
+                        editorConfig.mode = .edit
+
+                        DispatchQueue.global(qos: .userInitiated).async {
+                            reschedulingRecurrenceState.parseRRule(editorConfig.entity.rrule)
+                        }
+
+                        isReschedulingTask = true
+                    }
+                } onMoveToCalendar: { task in
+                    showCalendarCreateEventSheet = task
+                } onOpenConnectedItem: { listId, itemId, task in
+                    navigator.push(.listRoute(listId: listId))
+                    navigator.itemId = itemId
                 } onDelete: { task in
                     selectedTask = task
                     showDeleteCompletedConfirmationDialog = true
+                }
+                .sheet(
+                    item: $showCalendarCreateEventSheet,
+                    onDismiss: {
+                        showCalendarCreateEventSheet = nil
+                    }
+                ) { task in
+                    CalendarEventSheet(task: task, eventStore: calendarManager.store) {
+                        Task {
+                            await deleteTask(id: task.id)
+                            showToast("Moved Task to Calendar", systemImage: "calendar.badge.checkmark")
+                            fetchCalendarEvents()
+                        }
+                    }
                 }
                 .alert(
                     "Confirm deletion",

@@ -17,8 +17,11 @@ struct TasksList: View {
 
     private var onOpen: (_ task: IxTask) -> Void
     private var onCompletionToggle: (_ task: IxTask) -> Void
+    private var onPrioritize: (_ priority: Int?, IxTask) -> Void
     private var onReschedule: (_ task: IxTask) -> Void
     private var onRescheduleNextDay: (_ task: IxTask) -> Void
+    private var onMoveToCalendar: (IxTask) -> Void
+    private var onOpenConnectedItem: (_ listId: String, _ itemId: String, IxTask) -> Void
     private var onDelete: (_ task: IxTask) -> Void
 
     @Query private var tasks: [IxTask]
@@ -33,8 +36,11 @@ struct TasksList: View {
         sortOrder: SortOrder,
         onOpen: @escaping (_: IxTask) -> Void,
         onCompletionToggle: @escaping (_: IxTask) -> Void,
+        onPrioritize: @escaping (_ priority: Int?, IxTask) -> Void,
         onReschedule: @escaping (_: IxTask) -> Void,
         onRescheduleNextDay: @escaping (_: IxTask) -> Void,
+        onMoveToCalendar: @escaping (IxTask) -> Void,
+        onOpenConnectedItem: @escaping (_ listId: String, _ itemId: String, IxTask) -> Void,
         onDelete: @escaping (_: IxTask) -> Void
     ) {
         self.dateFilter = dateFilter
@@ -44,8 +50,11 @@ struct TasksList: View {
 
         self.onOpen = onOpen
         self.onCompletionToggle = onCompletionToggle
+        self.onPrioritize = onPrioritize
         self.onReschedule = onReschedule
         self.onRescheduleNextDay = onRescheduleNextDay
+        self.onMoveToCalendar = onMoveToCalendar
+        self.onOpenConnectedItem = onOpenConnectedItem
         self.onDelete = onDelete
 
         let completedFilter = taskFilter == .completed
@@ -127,6 +136,16 @@ struct TasksList: View {
                 subtasksMaxWidth: subtasksMaxWidth,
                 onOpen: onOpen,
                 onCompletionToggle: onCompletionToggle,
+                onPrioritize: onPrioritize,
+                onReschedule: { tomorrow, task in
+                    if tomorrow {
+                        onRescheduleNextDay(task)
+                    } else {
+                        onReschedule(task)
+                    }
+                },
+                onMoveToCalendar: onMoveToCalendar,
+                onOpenConnectedItem: onOpenConnectedItem,
                 onDelete: onDelete
             ).swipeActions(edge: .trailing, allowsFullSwipe: true) {
                 Button {
