@@ -20,9 +20,6 @@ struct CompleteItemByIdIntent: AppIntent {
     @Parameter(title: "List id")
     var listId: String
 
-    @Dependency var modelContainer: ModelContainer
-    @Dependency var ixApiClient: IxApiClient
-
     init() {}
 
     init(itemId: String, listId: String) {
@@ -32,9 +29,12 @@ struct CompleteItemByIdIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<IxListItemEntity> {
+        // @Dependency doesn't work if the app has been in background for too long
+        let ixApiClient = IxApiClient { _ in }
+        let modelContext = ModelContainerProvider.shared.mainContext
+        
         let item = try await ixApiClient.setListItemCompletion(listId: listId, itemId: itemId, completed: true)
 
-        let modelContext = modelContainer.mainContext
         try modelContext.transaction {
             modelContext.insert(item)
         }

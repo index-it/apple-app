@@ -20,7 +20,7 @@ struct FloatingActionButton: ViewModifier {
 
             if let tip {
                 buttonView
-                    .popoverTip(tip)
+                    .popoverTip(tip, arrowEdge: .bottom)
             } else {
                 buttonView
             }

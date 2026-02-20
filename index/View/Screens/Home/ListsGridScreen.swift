@@ -386,12 +386,12 @@ struct ListsGridScreen: View {
                     }
                 }.presentationDetents([.large])
             }
-            .sheet(isPresented: $showQuickAddSheet) {
+            .sheet(isPresented: $showQuickAddSheet) { [quickAddSheetMultiMode] in
                 QuickAddItemView(
                     multi: quickAddSheetMultiMode,
                     onFinish: { _ in
                         showQuickAddSheet = false
-                        quickAddSheetMultiMode = false
+                        self.quickAddSheetMultiMode = false
                     }
                 )
             }

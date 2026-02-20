@@ -18,9 +18,6 @@ struct CompleteTaskByIdIntent: AppIntent {
     @Parameter(title: "Task id")
     var taskId: String
 
-    @Dependency var modelContainer: ModelContainer
-    @Dependency var ixApiClient: IxApiClient
-
     init() {}
 
     init(taskId: String) {
@@ -29,9 +26,10 @@ struct CompleteTaskByIdIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<IxTaskEntity> {
+        let ixApiClient = IxApiClient { _ in }
+        let modelContext = ModelContainerProvider.shared.mainContext
+        
         let task = try await ixApiClient.setTaskCompletion(taskId: taskId, completed: true)
-
-        let modelContext = modelContainer.mainContext
         try modelContext.transaction {
             modelContext.insert(task)
         }

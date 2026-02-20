@@ -46,9 +46,9 @@ struct ListsWidgetView: View {
     var body: some View {
         tasksView
             .containerBackground(.background, for: .widget)
-            .task {
-                await IxWidgetDependencies.setup()
-            }
+//            .task {
+//                await IxWidgetDependencies.setup()
+//            }
     }
     
     @ViewBuilder

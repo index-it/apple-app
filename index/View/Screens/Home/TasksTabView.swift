@@ -25,7 +25,7 @@ struct TasksTabView: View {
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
     
     @State
-    var tips = TipGroup(.firstAvailable) {
+    var tips = TipGroup(.ordered) {
        TaskSwipeOrLongPressTip()
        LongPressToCreateMultipleTasksTip()
    }

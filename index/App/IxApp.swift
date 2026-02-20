@@ -93,8 +93,7 @@ struct IxApp: App {
         
         
         do {
-            try Tips.configure()
-            try Tips.resetDatastore()
+            try Tips.configure([.displayFrequency(.immediate)])
         }
         catch {
             log.error("Error initializing tips: \(error)")

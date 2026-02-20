@@ -29,6 +29,7 @@ struct ListScreen: View {
     @State
     var tips = TipGroup(.firstAvailable) {
         ItemSwipeOrPressTip()
+        LongPressToCreateMultipleItemsTip()
     }
 
     // MARK: List
@@ -728,9 +729,18 @@ struct ListScreen: View {
 
                 list = newList
             }
-            .onChange(of: items, initial: true) { _, newItems in
-                if newItems.first(where: { !$0.completed && $0.categoryId == selectedCategoryId.nonEmpty }) != nil {
-                    ItemSwipeOrPressTip.atLeastOneUncompletedItem = true
+            .onChange(of: items) { _, newItems in
+                if !ItemSwipeOrPressTip.atLeastOneUncompletedItem {
+                    if newItems.first(where: { !$0.completed && $0.categoryId == selectedCategoryId.nonEmpty }) != nil {
+                        ItemSwipeOrPressTip.atLeastOneUncompletedItem = true
+                    }
+                }
+            }
+            .onChange(of: selectedCategoryId) { _, newSelectedCategoryId in
+                if !ItemSwipeOrPressTip.atLeastOneUncompletedItem {
+                    if items.first(where: { !$0.completed && $0.categoryId == newSelectedCategoryId.nonEmpty }) != nil {
+                        ItemSwipeOrPressTip.atLeastOneUncompletedItem = true
+                    }
                 }
             }
     }
