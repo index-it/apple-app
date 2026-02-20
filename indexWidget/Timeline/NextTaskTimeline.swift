@@ -59,11 +59,18 @@ struct NextTaskTimelineProvider: AppIntentTimelineProvider {
                 if !configuration.allowNonScheduled {
                     tasks = tasks.filter { $0.dueDate != nil }
                 }
+                let calendar = DateHelper.calendar()
                 tasks = tasks.filter {
                     if let dueDate = $0.dueDate {
-                        (DateHelper.calendar().dateComponents([.day], from: .now, to: dueDate).day ?? 0) <= configuration.maxDaysAhead
+                        return (
+                            calendar.dateComponents(
+                                [.day],
+                                from: calendar.startOfDay(for: .now),
+                                to: calendar.startOfDay(for: dueDate)
+                            ).day ?? 0
+                        ) <= configuration.maxDaysAhead
                     } else {
-                        false
+                        return false
                     }
                 }
             } catch {
