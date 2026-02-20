@@ -24,11 +24,11 @@ struct OnboardingPage {
 
 struct OnboardingView: View {
     private static var pages: [OnboardingPage] = [
-        .init(title: "Create the lists you need", description: "You can create as many lists as you need to organize your thoughts.\nYou can also share them with your friends and family or make it public!", id: .lists),
+        .init(title: "Drop your thoughts in Lists", description: "You can create as many lists as you need to organize your thoughts.\nYou can also share them with your friends and family or make them public!", id: .lists),
         .init(title: "Completion, links and notes", description: "When inside a list, swipe on a list item to complete it, you can also assign it a link or add some notes!", id: .items),
         .init(title: "Use tasks to stay organized", description: "Create tasks with priorities, reminders, recurrence and more options to organize your day, then swipe to complete or delete them!", id: .tasks),
         .init(title: "Seamlessly integrated", description: "Add anything to a list simply by hitting the share button from any app, drop a widget on your home or add quick buttons to your control center and lock screen!", id: .integrations),
-        .init(title: "Enjoy the app!", description: "Hey, my name is Giulio. I'm a spaghetti coder from Italy and currently it's just me developing this app :>\n\nIf you like the idea of the app and wanna support the development, feel free to purchase the pro version!\n\nThank you for reading this ❤️\nEnjoy using Index!", id: .thanks),
+        .init(title: "Enjoy the app!", description: "Hey, my name is Giulio. I'm a spaghetti coder from Italy and currently it's just me developing this app :>\n\nIf you like the idea of the app and wanna support the development, feel free to share it with your friends!\n\nThank you for reading this ❤️\nEnjoy using Index!", id: .thanks),
     ]
     private static var lists: [IxList] = [
         IxList.mock(name: "Travel ideas", emoji: "🌋", color: "#000000"),
@@ -77,10 +77,8 @@ struct OnboardingView: View {
                     Button {
                         onClose()
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.gray)
+                        Image(systemName: "xmark")
+                            .fontWeight(.semibold)
                     }
                 }
             }
