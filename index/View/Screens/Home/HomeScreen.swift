@@ -10,9 +10,13 @@ import SwiftUI
 
 struct HomeScreen: View {
     @Environment(IxNavigator.self) var navigator
+    @Environment(CalendarManager.self) var calendarManager
     @EnvironmentObject var notificationManager: NotificationManager
     @EnvironmentObject var siriManager: SiriManager
+    
     @AppStorage(AppStorageKeys.onboardingShowed) private var onboardingShowed: Bool = false
+    @AppStorage(AppStorageKeys.Tasks.showCalendarEvents) private var showCalendarEvents = AppStorageKeys.Defaults.showCalendarEvents
+    @AppStorage(AppStorageKeys.Tasks.enabledCalendars) private var enabledCalendarIds = AppStorageKeys.Defaults.enabledCalendars
 
     func onOnboardingEnded() {
         onboardingShowed = true
@@ -20,6 +24,15 @@ struct HomeScreen: View {
         Task {
             _ = await notificationManager.requestPermissions()
             siriManager.requestPermissions()
+            
+            // TODO: Move to onboarding button
+            if !calendarManager.permitted {
+                let calendarPermitted = await calendarManager.requestPermissions()
+                if calendarPermitted {
+                    showCalendarEvents = true
+                    enabledCalendarIds = calendarManager.store.calendars(for: .event).map(\.calendarIdentifier)
+                }
+            }
         }
     }
 

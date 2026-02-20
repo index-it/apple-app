@@ -167,9 +167,7 @@ struct TaskRemindersView: View {
     }
 
     func addReminder() {
-        if !reminders.isEmpty, user?.has_pro != true {
-            showPaywall()
-        } else {
+        if reminders.isEmpty || user?.has_pro == true || !IxFlags.Pro.enabled {
             let timeOffset = DateHelper.getUtcReminderTimeOffset(createReminderTime)
 
             reminders.append(
@@ -178,6 +176,8 @@ struct TaskRemindersView: View {
                     timeOffset: timeOffset
                 )
             )
+        } else {
+            showPaywall()
         }
     }
 }

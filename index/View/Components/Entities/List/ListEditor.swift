@@ -123,7 +123,7 @@ struct ListEditor: View {
                             set: { newValue in
                                 let hasPro = user?.has_pro == true
 
-                                if hasPro {
+                                if hasPro || !IxFlags.Pro.enabled {
                                     isPublic = newValue
                                 } else {
                                     showPaywall()

@@ -11,6 +11,7 @@ import SwiftData
 import SwiftUI
 import WidgetKit
 import DynamicColor
+import TipKit
 
 struct TasksTabView: View {
     @Environment(IxNavigator.self) private var navigator
@@ -22,6 +23,12 @@ struct TasksTabView: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
 
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
+    
+    @State
+    var tips = TipGroup(.firstAvailable) {
+       TaskSwipeOrLongPressTip()
+       LongPressToCreateMultipleTasksTip()
+   }
 
     // MARK: Date
 
@@ -51,6 +58,8 @@ struct TasksTabView: View {
     @State private var showDeleteConfirmationDialog = false
     @State private var showDeleteCompletedConfirmationDialog = false
     @State private var showClearCompletedTasksDialog = false
+    
+    @State private var showConvertToItemSheet: IxTask? = nil
 
     // MARK: Unplanned tasks
 
@@ -312,8 +321,20 @@ struct TasksTabView: View {
                     },
                     longPressAction: {
                         editorConfig.present(multi: true)
-                    }
+                    },
+                    tip: tips.currentTip as? LongPressToCreateMultipleTasksTip
                 )
+                .overlay {
+                    ZStack(alignment: .bottom) {
+                        VStack {
+                            Spacer()
+                            TipView(tips.currentTip as? TaskSwipeOrLongPressTip)
+                                .padding(.horizontal)
+                                .padding(.bottom, 100)
+                                .tipBackground(.background)
+                        }
+                    }
+                }
                 .toolbar {
                     ToolbarContentView
                 }
@@ -422,6 +443,29 @@ struct TasksTabView: View {
                             fetchCalendarEvents()
                         }
                     }
+                }
+                .sheet(
+                    item: $showConvertToItemSheet,
+                    onDismiss: {
+                        showConvertToItemSheet = nil
+                    }
+                ) { task in
+                    QuickAddItemView(
+                        name: task.name,
+                        link: nil,
+                        note: task.taskDescription,
+                        selectedListId: nil,
+                        selectedCategoryId: nil,
+                        multi: false,
+                        onFinish: { added in
+                            showConvertToItemSheet = nil
+                            if added {
+                                Task {
+                                    await deleteTask(id: task.id)
+                                }
+                            }
+                        }
+                    )
                 }
         }
         .onAppear {
@@ -543,6 +587,7 @@ struct TasksTabView: View {
         if let isExpanded {
             Section(isExpanded: isExpanded) {
                 tasksListContent(
+                    isToday: isToday,
                     dateFilter: dateFilter,
                     noDateFilter: noDateFilter,
                     earlierThan: earlierThan,
@@ -554,6 +599,7 @@ struct TasksTabView: View {
         } else {
             Section {
                 tasksListContent(
+                    isToday: isToday,
                     dateFilter: dateFilter,
                     noDateFilter: noDateFilter,
                     earlierThan: earlierThan,
@@ -637,12 +683,14 @@ struct TasksTabView: View {
 
     @ViewBuilder
     private func tasksListContent(
+        isToday: Bool,
         dateFilter: Date?,
         noDateFilter: Bool,
         earlierThan: Bool,
         laterThan: Bool
     ) -> some View {
         TasksList(
+            isToday: isToday,
             dateFilter: dateFilter,
             noDateFilter: noDateFilter,
             earlierThanDateFilter: earlierThan,
@@ -676,6 +724,8 @@ struct TasksTabView: View {
             }
         } onMoveToCalendar: { task in
             showCalendarCreateEventSheet = task
+        } onConvertToItem: { task in
+            showConvertToItemSheet = task
         } onOpenConnectedItem: { listId, itemId, task in
             navigator.push(.listRoute(listId: listId))
             navigator.itemId = itemId
@@ -725,6 +775,8 @@ struct TasksTabView: View {
                     }
                 } onMoveToCalendar: { task in
                     showCalendarCreateEventSheet = task
+                } onConvertToItem: { task in
+                    showConvertToItemSheet = task
                 } onOpenConnectedItem: { listId, itemId, task in
                     navigator.push(.listRoute(listId: listId))
                     navigator.itemId = itemId

@@ -15,6 +15,7 @@ struct CompletedTasksList: View {
     var onPrioritize: (_ priority: Int?, IxTask) -> Void
     var onReschedule: (_ nextDay: Bool, IxTask) -> Void
     var onMoveToCalendar: (IxTask) -> Void
+    var onConvertToItem: (IxTask) -> Void
     var onOpenConnectedItem: (_ listId: String, _ itemId: String, IxTask) -> Void
     private var onDelete: (_ task: IxTask) -> Void
 
@@ -26,6 +27,7 @@ struct CompletedTasksList: View {
         onPrioritize: @escaping (_ priority: Int?, IxTask) -> Void,
         onReschedule: @escaping (_ nextDay: Bool, IxTask) -> Void,
         onMoveToCalendar: @escaping (IxTask) -> Void,
+        onConvertToItem: @escaping (IxTask) -> Void,
         onOpenConnectedItem: @escaping (_ listId: String, _ itemId: String, IxTask) -> Void,
         onDelete: @escaping (_: IxTask) -> Void
     ) {
@@ -34,6 +36,7 @@ struct CompletedTasksList: View {
         self.onPrioritize = onPrioritize
         self.onReschedule = onReschedule
         self.onMoveToCalendar = onMoveToCalendar
+        self.onConvertToItem = onConvertToItem
         self.onOpenConnectedItem = onOpenConnectedItem
         self.onDelete = onDelete
 
@@ -58,6 +61,7 @@ struct CompletedTasksList: View {
                 onPrioritize: onPrioritize,
                 onReschedule: onReschedule,
                 onMoveToCalendar: onMoveToCalendar,
+                onConvertToItem: onConvertToItem,
                 onOpenConnectedItem: onOpenConnectedItem,
                 onDelete: onDelete
             ).swipeActions(edge: .trailing) {
@@ -93,6 +97,7 @@ struct CompletedTasksList: View {
     } onPrioritize: {_, _ in
     } onReschedule: {_, _ in
     } onMoveToCalendar: { _ in
+    } onConvertToItem: { _ in
     } onOpenConnectedItem: { _, _, _ in
     } onDelete: { _ in
     }

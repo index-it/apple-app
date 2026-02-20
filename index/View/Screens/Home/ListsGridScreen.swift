@@ -22,6 +22,8 @@ struct ListsGridScreen: View {
 
     @Query private var lists: [IxList]
     private var archived: Bool
+    
+    private let longPressCreateTip = LongPressToQuickAddItemsTip()
 
     // MARK: List creation
 
@@ -242,7 +244,8 @@ struct ListsGridScreen: View {
                     longPressAction: {
                         quickAddSheetMultiMode = true
                         showQuickAddSheet = true
-                    }
+                    },
+                    tip: longPressCreateTip
                 )
             }
             .if(isSearching) { view in
@@ -275,10 +278,10 @@ struct ListsGridScreen: View {
                 if !archived {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
-                            if let user = user, !user.has_pro && lists.count >= 7 {
-                                showPaywall()
-                            } else {
+                            if user?.has_pro == true || lists.count < IxFlags.Pro.listsLimit || !IxFlags.Pro.enabled {
                                 isAddingList = true
+                            } else {
+                                showPaywall()
                             }
                         } label: {
                             Image(systemName: "text.pad.header.badge.plus")
@@ -386,7 +389,7 @@ struct ListsGridScreen: View {
             .sheet(isPresented: $showQuickAddSheet) {
                 QuickAddItemView(
                     multi: quickAddSheetMultiMode,
-                    onCancel: {
+                    onFinish: { _ in
                         showQuickAddSheet = false
                         quickAddSheetMultiMode = false
                     }

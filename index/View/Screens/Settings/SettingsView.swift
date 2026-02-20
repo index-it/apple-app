@@ -8,6 +8,7 @@
 import IxCoreKit
 import RevenueCat
 import SwiftUI
+import DynamicColor
 
 struct SettingsView: View {
     @Environment(IxNavigator.self) private var navigator
@@ -17,24 +18,24 @@ struct SettingsView: View {
     @Environment(\.showPaywall) private var showPaywall
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
     @Environment(\.showError) private var showError
-
+    
     @AppStorage(AppStorageKeys.loggedInUser) var user: User?
     @AppStorage(AppStorageKeys.Tasks.showCalendarEvents) var showCalendarEvents: Bool = AppStorageKeys.Defaults.showCalendarEvents
-
+    
     @State private var showOnboarding = false
-
+    
     @State private var manageSubscriptionLoading: Bool = false
-
+    
     private func manageSubscriptions() {
         manageSubscriptionLoading = true
-
+        
         Purchases.shared.getCustomerInfo { customer, error in
             manageSubscriptionLoading = false
             if let error = error {
                 showError(.localizedError(title: "Couldn't open subscriptions page", error: error))
                 return
             }
-
+            
             if let customer = customer {
                 if let url = customer.managementURL {
                     openURL(url)
@@ -42,7 +43,7 @@ struct SettingsView: View {
             }
         }
     }
-
+    
     var body: some View {
         Settings
             .fullScreenCover(isPresented: $showOnboarding) {
@@ -73,63 +74,59 @@ struct SettingsView: View {
                 }
             }
     }
-
+    
     private var Settings: some View {
         NavigationView {
             VStack(spacing: 0) {
                 List {
-                    if let user = user, !user.has_pro {
+                    if let user = user, !user.has_pro, IxFlags.Pro.enabled {
                         getProView
                             .listRowInsets(EdgeInsets())
                             .listRowBackground(Color.clear)
                             .padding(.top, 12)
                     }
-
+                    
                     Section {
                         Button {
                             navigator.push(.accountSettings)
                         } label: {
                             HStack {
                                 Label("Account", systemImage: "person.fill")
-                                    .labelStyle(ListLabelStyle(color: .accentColor))
-
+                                    .labelStyle(ListLabelStyle(color: .indigo))
+                                
                                 Spacer()
-
+                                
                                 Image(systemName: "chevron.forward")
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
                             }
                         }
-
-                        if let user = user, user.has_pro {
-                            Button {
-                                navigator.push(.proSettings)
-                            } label: {
-                                HStack {
-                                    Label("Pro", systemImage: "crown.fill")
-                                        .labelStyle(ListLabelStyle(color: .purple))
-
-                                    Spacer()
-
-                                    Image(systemName: "chevron.forward")
-                                        .font(.footnote)
-                                        .foregroundStyle(.secondary)
-                                }
+                        
+                        // TODO: Add when Pro is back
+                        //                        if let user = user, user.has_pro {
+                        //
+                        //                        }
+                        
+                        Button {
+                            navigator.push(.proSettings)
+                        } label: {
+                            HStack {
+                                Label("Pro", systemImage: "crown.fill")
+                                    .labelStyle(ListLabelStyle(color: .purple))
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.forward")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
                             }
                         }
-
-                        Button(action: {
-                            showOnboarding = true
-                        }) {
-                            Label("Show onboarding", systemImage: "signpost.right.fill")
-                                .labelStyle(ListLabelStyle(color: .green))
-                        }.tint(.primary)
                     }
                     
                     Section {
                         Toggle(isOn: $showCalendarEvents) {
                             Label("Show calendar events", systemImage: "calendar")
-                                .labelStyle(ListLabelStyle(color: .red))
+                                .labelStyle(ListLabelStyle(color: .black))
                         }
                         
                         if showCalendarEvents {
@@ -138,10 +135,10 @@ struct SettingsView: View {
                             } label: {
                                 HStack {
                                     Label("Configure Calendars", systemImage: "filemenu.and.selection")
-                                        .labelStyle(ListLabelStyle(color: .red))
-
+                                        .labelStyle(ListLabelStyle(color: .black))
+                                    
                                     Spacer()
-
+                                    
                                     Image(systemName: "chevron.forward")
                                         .font(.footnote)
                                         .foregroundStyle(.secondary)
@@ -151,66 +148,117 @@ struct SettingsView: View {
                     } header: {
                         Text("Tasks Behaviour")
                     } footer: {
-                        Text(showCalendarEvents ?
-                             "Calendar Events will be displayed in the Tasks list." :
-                        "Enable to display Calendar Events in the Tasks list.")
+                        if showCalendarEvents {
+                            Text("Calendar Events will be displayed in the Tasks list.")
+                        }
                     }
-
-                    Section(header: Text("SUPPORT AND FEEDBACK")) {
-                        Link(destination: URL(string: "https://index-it.app/support")!) {
-                            Label("Support", systemImage: "lifepreserver.fill")
-                                .labelStyle(ListLabelStyle(color: .red))
+                    
+                    Section(header: Text("Support and Feedback")) {
+                        Button(action: {
+                            showOnboarding = true
+                        }) {
+                            Label("Show Guide", systemImage: "book.closed.fill")
+                                .labelStyle(ListLabelStyle(color: .pink))
                         }.tint(.primary)
-
+                        
+                        Button {
+                            EmailHelper.promptEmail()
+                        } label: {
+                            Label(title: {
+                                Text("Contact")
+                                    .foregroundStyle(Color.primary)
+                            }, icon: {
+                                Image(systemName: "envelope.fill")
+                                    .foregroundStyle(Color.white)
+                            })
+                            .labelStyle(ListLabelStyle(color: .cyan))
+                        }
+                        
                         Button {
                             navigator.push(.about)
                         } label: {
                             HStack {
                                 Label("About & Feedback", systemImage: "heart.fill")
-                                    .labelStyle(ListLabelStyle(color: .orange))
-
+                                    .labelStyle(ListLabelStyle(color: .yellow))
+                                
                                 Spacer()
-
+                                
                                 Image(systemName: "chevron.forward")
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
                             }
                         }
                     }
-
-                    Section(header: Text("ABOUT")) {
-                        Link(destination: URL(string: "https://index-it.app/privacy")!) {
-                            Label(title: {
-                                Text("Privacy")
-                            }, icon: {
-                                Image(systemName: "arrow.up.right")
-                                    .foregroundStyle(.gray)
-                            })
-                        }.tint(.primary)
-                        Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
-                            Label(title: {
-                                Text("Terms of service")
-                            }, icon: {
-                                Image(systemName: "arrow.up.right")
-                                    .foregroundStyle(.gray)
-                            })
-                        }.tint(.primary)
-                        Link(destination: URL(string: "https://giuliopime.dev")!) {
-                            Label(title: {
-                                Text("About the developer")
-                            }, icon: {
-                                Image(systemName: "arrow.up.right")
-                                    .foregroundStyle(.gray)
-                            })
-                        }.tint(.primary)
-                    }
+                    
+                    aboutSection
                 }
             }
         }
         .navigationBarTitleDisplayMode(.automatic)
         .navigationTitle("Settings")
     }
-
+    
+    private var aboutSection: some View {
+        Section {
+            Link(destination: URL(string: "https://giuliopime.dev")!) {
+                HStack {
+                    Label(title: {
+                        Text("Craftsman")
+                            .foregroundStyle(Color.primary)
+                    }, icon: {
+                        Image(systemName: "hammer.fill")
+                            .foregroundStyle(Color.primary)
+                    })
+                    .labelStyle(ListLabelStyle(color: Color.systemBackgroundSecondary))
+                    
+                    Spacer()
+                    
+                    Image(systemName: "arrow.up.right")
+                        .foregroundStyle(.gray)
+                }
+            }
+            
+            Link(destination: URL(string: "https://index-it.app/privacy")!) {
+                HStack {
+                    Label(title: {
+                        Text("Privacy Policy")
+                            .foregroundStyle(Color.primary)
+                    }, icon: {
+                        Image(systemName: "lock.fill")
+                            .foregroundStyle(Color.primary)
+                    })
+                    .labelStyle(ListLabelStyle(color: Color.systemBackgroundSecondary))
+                    
+                    Spacer()
+                    
+                    Image(systemName: "arrow.up.right")
+                        .foregroundStyle(.gray)
+                }
+            }
+            
+            Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula")!) {
+                HStack {
+                    Label(title: {
+                        Text("Terms Of Use")
+                            .foregroundStyle(Color.primary)
+                    }, icon: {
+                        Image(systemName: "signature")
+                            .font(.system(size: 10))
+                            .foregroundStyle(Color.primary)
+                    })
+                    .labelStyle(ListLabelStyle(color: Color.systemBackgroundSecondary))
+                    
+                    Spacer()
+                    
+                    Image(systemName: "arrow.up.right")
+                        .foregroundStyle(.gray)
+                }
+            }
+        } header: {
+            Text("About")
+        }
+    }
+    
     var getProView: some View {
         Button {
             showPaywall()
@@ -221,21 +269,21 @@ struct SettingsView: View {
                         Image(systemName: "bolt.circle.fill")
                             .scaleEffect(1.75)
                             .opacity(0.8)
-
+                        
                         VStack(alignment: .leading) {
                             Text("Index Pro")
                                 .font(.title2)
                                 .fontWeight(.bold)
-
+                            
                             Text("Unlock all features")
                                 .foregroundStyle(.secondary)
                                 .font(.footnote)
                                 .fontWeight(.semibold)
                         }
                     }
-
+                    
                     Spacer()
-
+                    
                     Button {
                         showPaywall()
                     } label: {
@@ -250,7 +298,7 @@ struct SettingsView: View {
                                     .saturation(0.7)
                             }
                             .clipShape(RoundedRectangle(cornerRadius: 32))
-
+                        
                     }.buttonStyle(.plain)
                 }
                 .padding(.horizontal, 32)
@@ -273,7 +321,7 @@ struct SettingsView: View {
         .buttonStyle(.plain)
         .foregroundStyle(.white)
     }
-
+    
     var currentlySubscribedCardView: some View {
         ZStack {
             HStack {
@@ -281,19 +329,19 @@ struct SettingsView: View {
                     Image(systemName: "bolt.circle.fill")
                         .scaleEffect(1.75)
                         .opacity(0.8)
-
+                    
                     VStack(alignment: .leading) {
                         Text("Pro enabled")
                             .font(.title2)
                             .fontWeight(.bold)
-
+                        
                         Text("Thank you for supporting the app :)")
                             .foregroundStyle(.secondary)
                             .font(.footnote)
                             .fontWeight(.semibold)
                     }
                 }
-
+                
                 Spacer()
             }
             .padding(.horizontal, 32)
@@ -316,5 +364,14 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView()
+    @Previewable @State var navigator = IxNavigator()
+    @Previewable @State var calendarManager = CalendarManager()
+    @Previewable @State var ixApiClient = IxApiClient { _ in }
+    
+    NavigationView {
+        SettingsView()
+            .environment(navigator)
+            .environment(calendarManager)
+            .environment(\.ixApiClient, ixApiClient)
+    }
 }

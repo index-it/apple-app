@@ -21,7 +21,7 @@ struct QuickAddItemView: View {
 
     @AppStorage(AppStorageKeys.QuickAdd.recentListId) var recentListId: String = ""
 
-    private var onCancel: () -> Void
+    private var onFinish: (_ added: Bool) -> Void
     private var syncThreeshold: Int64
 
     @State private var itemEditorConfig = EditorConfig<IxListItem>()
@@ -45,10 +45,10 @@ struct QuickAddItemView: View {
         selectedListId: String? = nil,
         selectedCategoryId: String? = nil,
         multi: Bool = false,
-        onCancel: @escaping () -> Void,
+        onFinish: @escaping (_ added: Bool) -> Void,
         syncThreeshold: Int64 = 3_600_000
     ) {
-        self.onCancel = onCancel
+        self.onFinish = onFinish
         self.syncThreeshold = syncThreeshold
 
         let item = IxListItem.empty()
@@ -155,6 +155,7 @@ struct QuickAddItemView: View {
 
             try? await IxSystemIntegration.handleNewEntity(IxListCategoryEntity(category: category))
             itemEditorConfig.entity.categoryId = category.id
+            categoryEditorConfig.isPresented = false
         } catch {
             showError(.localizedError(title: "Error creating category", error: error))
         }
@@ -187,10 +188,10 @@ struct QuickAddItemView: View {
                 showToast("Item created", systemImage: "checkmark.circle", tint: .green, placement: .top)
                 itemEditorConfig.reset()
             } else {
-                onCancel()
+                onFinish(true)
             }
         } catch {
-            onCancel()
+            onFinish(false)
         }
     }
 
@@ -287,8 +288,9 @@ struct QuickAddItemView: View {
                             }
 
                             Button("Create Category", systemImage: "plus") {
-                                categoryEditorConfig.entity.listId = itemEditorConfig.entity.listId
-                                categoryEditorConfig.present()
+                                let category = IxListCategory.empty()
+                                category.listId = itemEditorConfig.entity.listId
+                                categoryEditorConfig.present(entity: category)
                             }
                             .disabled(itemEditorConfig.entity.listId.isEmpty)
                         } label: {
@@ -342,7 +344,7 @@ struct QuickAddItemView: View {
     private var ToolbarViewContent: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
             Button("Cancel", systemImage: "xmark") {
-                onCancel()
+                onFinish(false)
             }
             .labelStyle(.iconOnly)
         }
@@ -377,7 +379,7 @@ struct QuickAddItemView: View {
         note: nil,
         selectedListId: nil,
         selectedCategoryId: nil,
-        onCancel: {}
+        onFinish: { _ in }
     )
     .environment(\.ixApiClient, IxApiClient(authChangeCallback: { _ in
     }))

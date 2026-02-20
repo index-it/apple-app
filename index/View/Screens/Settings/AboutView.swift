@@ -33,22 +33,27 @@ struct AboutView: View {
                     Text("Ciao!")
                         .font(.largeTitle)
                         .fontWeight(.bold)
+                        .padding(.bottom, 1)
 
-                    Text("I created this app to be more organized and intentional in my everyday life.")
+                    Text("I created this app to have a minimal yet functional place where I can store my ideas and avoid forgetting them.")
                         .multilineTextAlignment(.leading)
 
                     Text("I'd love to hear your feedback. I can't promise that I'll implement every change, but I'll listen and do what I can.")
                         .multilineTextAlignment(.leading)
                         .padding(.top, 1)
 
-                    Text("How can I support Index development?")
+                    Text("How can I support the development of the App?")
                         .font(.title2)
                         .fontWeight(.semibold)
                         .multilineTextAlignment(.leading)
-                        .padding(.top, 16)
-                    Text("You can buy the Pro version or share the app with the people in your life, and give feedback. A nice review on the App Store doesn't hurt, either :)")
+                        .padding(.top, 32)
+                        .padding(.bottom, 1)
+                    Text("Share the app with the people you think would benefit from it!")
+                        .multilineTextAlignment(.leading)
+                    Text("A nice review on the App Store doesn't hurt, either :)")
                         .multilineTextAlignment(.leading)
                         .padding(.top, 1)
+                        .padding(.bottom)
 
                     Button {
                         requestReview()
@@ -72,34 +77,17 @@ struct AboutView: View {
                             .foregroundColor(Color.primary.opacity(0.7))
                     }.padding(.top, 4)
 
-                    if user?.has_pro != true {
-                        Button {
-                            showPaywall()
-                        } label: {
-                            Label("Get Pro", systemImage: "crown")
-                                .frame(maxWidth: .infinity)
-                        }.buttonStyle(AboutButtonStyle())
-                            .padding(.top, 4)
-                    }
-
                     Text("How can I share feedback?")
                         .font(.title2)
                         .fontWeight(.semibold)
                         .multilineTextAlignment(.leading)
-                        .padding(.top, 16)
+                        .padding(.top, 32)
+                        .padding(.bottom, 1)
                     Text("I will definitely read all the feedback and try to improve the app!")
                         .multilineTextAlignment(.leading)
-                        .padding(.top, 1)
 
                     Button {
-                        let email = "support@index-it.app"
-                        let subject = "iOS Feedback"
-                        let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-                        let mailtoURL = URL(string: "mailto:\(email)?subject=\(encodedSubject)")!
-
-                        if UIApplication.shared.canOpenURL(mailtoURL) {
-                            UIApplication.shared.open(mailtoURL)
-                        }
+                        EmailHelper.promptEmail(subject: "iOS Feedback")
                     } label: {
                         Label("Send me an email", systemImage: "paperplane")
                             .frame(maxWidth: .infinity)
@@ -107,7 +95,7 @@ struct AboutView: View {
                         .padding(.top, 4)
 
                     Button {
-                        UIPasteboard.general.string = "support@index-it.app"
+                        UIPasteboard.general.string = "contact@index-it.app"
                     } label: {
                         Label("Copy email address", systemImage: "document.on.document")
                             .frame(maxWidth: .infinity)
@@ -118,10 +106,10 @@ struct AboutView: View {
                         .font(.title2)
                         .fontWeight(.semibold)
                         .multilineTextAlignment(.leading)
-                        .padding(.top, 16)
-                    Text("Hey! I'm a computer science student from Italy with a passion for sports. You can find more about me at my website ^^")
+                        .padding(.top, 32)
+                        .padding(.bottom, 1)
+                    Text("Hey! I'm a computer science student from Italy with a passion for sports. You can find more about me on my website ^^")
                         .multilineTextAlignment(.leading)
-                        .padding(.top, 1)
 
                     Button {
                         openURL(URL(string: "https://giuliopime.dev")!)
@@ -134,10 +122,8 @@ struct AboutView: View {
                 }
             }
             .ignoresSafeArea(edges: .bottom)
-            .padding(.horizontal, 32)
+            .padding(.horizontal, 24)
         }
-        .toolbarBackground(UIColor.systemGray6.toColor(), for: .navigationBar)
-        .toolbarBackgroundVisibility(.visible, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 ShareLink(item: URL(string: "https://index-it.app")!)
@@ -147,5 +133,7 @@ struct AboutView: View {
 }
 
 #Preview {
-    AboutView()
+    NavigationStack {
+        AboutView()
+    }
 }

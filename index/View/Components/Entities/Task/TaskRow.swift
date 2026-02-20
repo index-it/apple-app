@@ -20,6 +20,7 @@ struct TaskRow: View {
     var onPrioritize: (_ priority: Int?, IxTask) -> Void
     var onReschedule: (_ nextDay: Bool, IxTask) -> Void
     var onMoveToCalendar: (IxTask) -> Void
+    var onConvertToItem: (IxTask) -> Void
     var onOpenConnectedItem: (_ listId: String, _ itemId: String, IxTask) -> Void
     var onDelete: (IxTask) -> Void
 
@@ -35,6 +36,7 @@ struct TaskRow: View {
         onPrioritize: @escaping (_ priority: Int?, IxTask) -> Void,
         onReschedule: @escaping (_ nextDay: Bool, IxTask) -> Void,
         onMoveToCalendar: @escaping (IxTask) -> Void,
+        onConvertToItem: @escaping (IxTask) -> Void,
         onOpenConnectedItem: @escaping (_ listId: String, _ itemId: String, IxTask) -> Void,
         onDelete: @escaping (IxTask) -> Void
     ) {
@@ -48,6 +50,7 @@ struct TaskRow: View {
         self.onPrioritize = onPrioritize
         self.onReschedule = onReschedule
         self.onMoveToCalendar = onMoveToCalendar
+        self.onConvertToItem = onConvertToItem
         self.onOpenConnectedItem = onOpenConnectedItem
         self.onDelete = onDelete
 
@@ -81,6 +84,7 @@ struct TaskRow: View {
             onPrioritize: onPrioritize,
             onReschedule: onReschedule,
             onMoveToCalendar: onMoveToCalendar,
+            onConvertToItem: onConvertToItem,
             onOpenConnectedItem: onOpenConnectedItem,
             onDelete: onDelete
         )
@@ -88,6 +92,8 @@ struct TaskRow: View {
 }
 
 struct TaskRowContentView: View {
+    @Environment(\.showToast) private var showToast
+    
     var task: IxTask
     var item: IxListItem?
     var showDate: Bool
@@ -99,6 +105,7 @@ struct TaskRowContentView: View {
     var onPrioritize: (Int?, IxTask) -> Void
     var onReschedule: (Bool, IxTask) -> Void
     var onMoveToCalendar: (IxTask) -> Void
+    var onConvertToItem: (IxTask) -> Void
     var onOpenConnectedItem: (_ listId: String, _ itemId: String, IxTask) -> Void
     var onDelete: (IxTask) -> Void
 
@@ -116,6 +123,7 @@ struct TaskRowContentView: View {
         onPrioritize: @escaping (Int?, IxTask) -> Void,
         onReschedule: @escaping (Bool, IxTask) -> Void,
         onMoveToCalendar: @escaping (IxTask) -> Void,
+        onConvertToItem: @escaping (IxTask) -> Void,
         onOpenConnectedItem: @escaping (_ listId: String, _ itemId: String, IxTask) -> Void,
         onDelete: @escaping (IxTask) -> Void
     ) {
@@ -130,6 +138,7 @@ struct TaskRowContentView: View {
         self.onPrioritize = onPrioritize
         self.onReschedule = onReschedule
         self.onMoveToCalendar = onMoveToCalendar
+        self.onConvertToItem = onConvertToItem
         self.onOpenConnectedItem = onOpenConnectedItem
         self.onDelete = onDelete
 
@@ -241,6 +250,32 @@ struct TaskRowContentView: View {
         .foregroundStyle(taskItemList.first?.color.toColorOrNil()?.contrastColor() ?? UIColor.label.toColor())
         .contextMenu {
             Section {
+                if task.taskDescription == nil {
+                    Button("Copy", systemImage: "document.on.document") {
+                        UIPasteboard.general.string = task.name
+                        showToast("Task copied", systemImage: "document.on.document")
+                    }
+                } else {
+                    Menu {
+                        Button("Name", systemImage: "textformat") {
+                            UIPasteboard.general.string = task.name
+                            showToast("Task copied", systemImage: "document.on.document")
+                        }
+
+                        if let description = task.taskDescription {
+                            Button("Note", systemImage: "note.text") {
+                                UIPasteboard.general.string = description
+                                showToast("Description copied", systemImage: "document.on.document")
+                            }
+                        }
+                    } label: {
+                        Label("Copy", systemImage: "document.on.document")
+                    }
+                }
+
+            }
+            
+            Section {
                 Button {
                     onCompletionToggle(task)
                 } label: {
@@ -291,12 +326,18 @@ struct TaskRowContentView: View {
                 }
             }
             
-            if let item {
-                Section {
+            Section {
+                if let item {
                     Button {
                         onOpenConnectedItem(item.listId, item.id, task)
                     } label: {
                         Label("Open connected Item", systemImage: "app.connected.to.app.below.fill")
+                    }
+                } else {
+                    Button {
+                        onConvertToItem(task)
+                    } label: {
+                        Label("Move to List", systemImage: "arrow.forward.folder")
                     }
                 }
             }

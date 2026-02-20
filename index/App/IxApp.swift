@@ -14,6 +14,7 @@ import os
 import RevenueCat
 import SwiftData
 import SwiftUI
+import TipKit
 
 private let log = Logger.appLogger
 
@@ -89,6 +90,15 @@ struct IxApp: App {
         let websocketEventHandler = IxWebsocketEventHandler(ixApiClient: ixApiClient, modelContext: modelContainer.mainContext)
         let websocketClient = IxWebsocketClient(ixWebsocketEventHandler: websocketEventHandler)
         ixWebsocketClient = websocketClient
+        
+        
+        do {
+            try Tips.configure()
+            try Tips.resetDatastore()
+        }
+        catch {
+            log.error("Error initializing tips: \(error)")
+        }
 
         AppDependencyManager.shared.add(dependency: modelContainer)
         AppDependencyManager.shared.add(dependency: ixApiClient)

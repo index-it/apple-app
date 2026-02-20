@@ -282,7 +282,7 @@ struct ListSharingSheetView: View {
                             Task { @MainActor in
                                 let hasPro = user?.has_pro == true
                                 
-                                if hasPro {
+                                if hasPro || !IxFlags.Pro.enabled {
                                     if !list.isPublic {
                                         await editListPublic(isPublic: true)
                                     }
@@ -369,7 +369,7 @@ struct ListSharingSheetView: View {
                             set: { newValue in
                                 let hasPro = user?.has_pro == true
                                 
-                                if hasPro {
+                                if hasPro || !IxFlags.Pro.enabled {
                                     Task { await editListPublic(isPublic: newValue) }
                                 } else {
                                     showPaywall()

@@ -9,94 +9,116 @@ import RevenueCat
 import SwiftUI
 
 struct ProSettingsView: View {
-    @Environment(\.showError) private var showError
-    @Environment(\.openURL) var openURL
-
-    @State private var manageSubscriptionLoading: Bool = false
-
-    private func manageSubscriptions() {
-        manageSubscriptionLoading = true
-
-        Purchases.shared.getCustomerInfo { customer, error in
-            manageSubscriptionLoading = false
-            if let error = error {
-                showError(.localizedError(title: "Couldn't open subscriptions page", error: error))
-                return
-            }
-
-            if let customer = customer {
-                if let url = customer.managementURL {
+    @Environment(\.openURL) private var openURL
+    
+    var body: some View {
+        ContentUnavailableView {
+            Label("Index is Free!", systemImage: "app.gift.fill")
+        } description: {
+            Text("\nHey, I'm Giulio the developer of this app!\n\nIndex will continue to be free until I'm satisfied enough with the state of the app.\n\nDon't worry though, when I choose to publish a Premium plan for the app, all existing users will automatically get lifetime access to it for free.\n\nThanks for using Index, enjoy :)")
+                .foregroundStyle(Color.systemLabel)
+        } actions: {
+            Button {
+                if let url = URL(string: "https://index-it.app/contact") {
                     openURL(url)
                 }
+            } label: {
+                Label("Shoot me a message!", systemImage: "envelope")
             }
+            .buttonStyle(.glassProminent)
         }
-    }
-
-    var body: some View {
-        List {
-            currentlySubscribedCardView
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
-
-            Section {
-                Button {
-                    manageSubscriptions()
-                } label: {
-                    HStack {
-                        if manageSubscriptionLoading {
-                            ProgressView()
-                                .controlSize(.regular)
-                        }
-
-                        Text("Manage subscription")
-                    }
-                }.disabled(manageSubscriptionLoading)
-            }
-        }
-        .navigationTitle("Pro")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    var currentlySubscribedCardView: some View {
-        ZStack {
-            HStack {
-                HStack(spacing: 24) {
-                    Image(systemName: "bolt.circle.fill")
-                        .scaleEffect(1.75)
-                        .opacity(0.8)
-
-                    VStack(alignment: .leading) {
-                        Text("Pro enabled")
-                            .font(.title2)
-                            .fontWeight(.bold)
-
-                        Text("Thank you for supporting the app :)")
-                            .foregroundStyle(.secondary)
-                            .font(.footnote)
-                            .fontWeight(.semibold)
-                    }
-                }
-
-                Spacer()
-            }
-            .padding(.horizontal, 32)
-            .padding(.vertical, 24)
-            .background {
-                LinearGradient(
-                    gradient: Gradient(
-                        colors: [
-                            Color(red: 15 / 255, green: 40 / 255, blue: 25 / 255), // Darker green
-                            Color(red: 25 / 255, green: 65 / 255, blue: 45 / 255), // Lighter green
-                        ]
-                    ),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-        }.foregroundStyle(.white)
     }
 }
+
+//struct ProSettingsView: View {
+//    @Environment(\.showError) private var showError
+//    @Environment(\.openURL) var openURL
+//
+//    @State private var manageSubscriptionLoading: Bool = false
+//
+//    private func manageSubscriptions() {
+//        manageSubscriptionLoading = true
+//
+//        Purchases.shared.getCustomerInfo { customer, error in
+//            manageSubscriptionLoading = false
+//            if let error = error {
+//                showError(.localizedError(title: "Couldn't open subscriptions page", error: error))
+//                return
+//            }
+//
+//            if let customer = customer {
+//                if let url = customer.managementURL {
+//                    openURL(url)
+//                }
+//            }
+//        }
+//    }
+//
+//    var body: some View {
+//        List {
+//            currentlySubscribedCardView
+//                .listRowInsets(EdgeInsets())
+//                .listRowBackground(Color.clear)
+//
+//            Section {
+//                Button {
+//                    manageSubscriptions()
+//                } label: {
+//                    HStack {
+//                        if manageSubscriptionLoading {
+//                            ProgressView()
+//                                .controlSize(.regular)
+//                        }
+//
+//                        Text("Manage subscription")
+//                    }
+//                }.disabled(manageSubscriptionLoading)
+//            }
+//        }
+//        .navigationTitle("Pro")
+//        .navigationBarTitleDisplayMode(.inline)
+//    }
+//
+//    var currentlySubscribedCardView: some View {
+//        ZStack {
+//            HStack {
+//                HStack(spacing: 24) {
+//                    Image(systemName: "bolt.circle.fill")
+//                        .scaleEffect(1.75)
+//                        .opacity(0.8)
+//
+//                    VStack(alignment: .leading) {
+//                        Text("Pro enabled")
+//                            .font(.title2)
+//                            .fontWeight(.bold)
+//
+//                        Text("Thank you for supporting the app :)")
+//                            .foregroundStyle(.secondary)
+//                            .font(.footnote)
+//                            .fontWeight(.semibold)
+//                    }
+//                }
+//
+//                Spacer()
+//            }
+//            .padding(.horizontal, 32)
+//            .padding(.vertical, 24)
+//            .background {
+//                LinearGradient(
+//                    gradient: Gradient(
+//                        colors: [
+//                            Color(red: 15 / 255, green: 40 / 255, blue: 25 / 255), // Darker green
+//                            Color(red: 25 / 255, green: 65 / 255, blue: 45 / 255), // Lighter green
+//                        ]
+//                    ),
+//                    startPoint: .top,
+//                    endPoint: .bottom
+//                )
+//            }
+//            .clipShape(RoundedRectangle(cornerRadius: 24))
+//        }.foregroundStyle(.white)
+//    }
+//}
 
 #Preview {
     NavigationView {

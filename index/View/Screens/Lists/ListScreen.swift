@@ -10,6 +10,7 @@ import SwiftData
 import SwiftUI
 import WidgetKit
 import OSLog
+import TipKit
 
 private let log = Logger.uiLogger
 
@@ -24,6 +25,11 @@ struct ListScreen: View {
     @ForcedEnvironment(\.ixApiClient) private var ixApiClient
 
     private var listId: String
+    
+    @State
+    var tips = TipGroup(.firstAvailable) {
+        ItemSwipeOrPressTip()
+    }
 
     // MARK: List
 
@@ -514,6 +520,16 @@ struct ListScreen: View {
 
     var body: some View {
         ScreenContent
+            .overlay {
+                ZStack(alignment: .bottom) {
+                    VStack {
+                        Spacer()
+                        TipView(tips.currentTip as? ItemSwipeOrPressTip)
+                            .padding(.horizontal)
+                            .padding(.bottom, 40)
+                    }
+                }
+            }
             .sheet(isPresented: $showShareSheet) {
                 ListSharingSheet(listId: listId) {
                     showShareSheet = false
@@ -711,6 +727,11 @@ struct ListScreen: View {
                 }
 
                 list = newList
+            }
+            .onChange(of: items, initial: true) { _, newItems in
+                if newItems.first(where: { !$0.completed && $0.categoryId == selectedCategoryId.nonEmpty }) != nil {
+                    ItemSwipeOrPressTip.atLeastOneUncompletedItem = true
+                }
             }
     }
 
@@ -1030,6 +1051,7 @@ struct ListScreen: View {
                 Label("Create item", systemImage: "plus")
                     .fontWeight(.semibold)
             }
+            .popoverTip(tips.currentTip as? LongPressToCreateMultipleItemsTip)
             .supportsLongPress {
                 editorConfig.present(multi: true)
             }

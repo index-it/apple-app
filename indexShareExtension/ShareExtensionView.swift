@@ -24,7 +24,7 @@ struct ShareExtensionView: View {
             note: nil,
             selectedListId: nil,
             selectedCategoryId: nil,
-            onCancel: close
+            onFinish: { _ in close() }
         )
         .environment(\.ixApiClient, IxApiClient { _ in })
         .environmentObject(ErrorStateService())

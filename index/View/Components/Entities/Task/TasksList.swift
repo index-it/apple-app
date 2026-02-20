@@ -10,6 +10,7 @@ import SwiftData
 import SwiftUI
 
 struct TasksList: View {
+    private var isToday: Bool
     private var dateFilter: Date?
     private var noDateFilter: Bool
     private var earlierThanDateFilter: Bool
@@ -21,12 +22,24 @@ struct TasksList: View {
     private var onReschedule: (_ task: IxTask) -> Void
     private var onRescheduleNextDay: (_ task: IxTask) -> Void
     private var onMoveToCalendar: (IxTask) -> Void
+    private var onConvertToItem: (IxTask) -> Void
     private var onOpenConnectedItem: (_ listId: String, _ itemId: String, IxTask) -> Void
     private var onDelete: (_ task: IxTask) -> Void
 
     @Query private var tasks: [IxTask]
+    
+    private let calendar = DateHelper.localCalendar()
+    private var filteredTasks: [IxTask] {
+        tasks.filter {
+            (dateFilter != nil && $0.dueDate != nil && calendar.isDate($0.dueDate!, inSameDayAs: dateFilter!)) ||
+                (noDateFilter && $0.dueDate == nil) ||
+                (earlierThanDateFilter && $0.dueDate != nil && dateFilter != nil && calendar.compare($0.dueDate!, to: dateFilter!, toGranularity: .day) == .orderedAscending) ||
+                (laterThanDateFilter && $0.dueDate != nil && dateFilter != nil && calendar.compare($0.dueDate!, to: dateFilter!, toGranularity: .day) == .orderedDescending)
+        }
+    }
 
     init(
+        isToday: Bool,
         dateFilter: Date?,
         noDateFilter: Bool,
         earlierThanDateFilter: Bool,
@@ -40,9 +53,11 @@ struct TasksList: View {
         onReschedule: @escaping (_: IxTask) -> Void,
         onRescheduleNextDay: @escaping (_: IxTask) -> Void,
         onMoveToCalendar: @escaping (IxTask) -> Void,
+        onConvertToItem: @escaping (IxTask) -> Void,
         onOpenConnectedItem: @escaping (_ listId: String, _ itemId: String, IxTask) -> Void,
         onDelete: @escaping (_: IxTask) -> Void
     ) {
+        self.isToday = isToday
         self.dateFilter = dateFilter
         self.noDateFilter = noDateFilter
         self.earlierThanDateFilter = earlierThanDateFilter
@@ -54,6 +69,7 @@ struct TasksList: View {
         self.onReschedule = onReschedule
         self.onRescheduleNextDay = onRescheduleNextDay
         self.onMoveToCalendar = onMoveToCalendar
+        self.onConvertToItem = onConvertToItem
         self.onOpenConnectedItem = onOpenConnectedItem
         self.onDelete = onDelete
 
@@ -118,15 +134,21 @@ struct TasksList: View {
     }
 
     var body: some View {
+        bodyContent
+            .if(isToday) { view in
+                view.onChange(of: filteredTasks) { _, newTasks in
+                    if !newTasks.isEmpty {
+                        TaskSwipeOrLongPressTip.atLeastOneTodayTask = true
+                    }
+                }
+            }
+    }
+    
+    @ViewBuilder
+    var bodyContent: some View {
         let subtasksMaxWidth = UIScreen.main.bounds.width / 3
-        let calendar = DateHelper.localCalendar()
-
-        ForEach(tasks.filter {
-            (dateFilter != nil && $0.dueDate != nil && calendar.isDate($0.dueDate!, inSameDayAs: dateFilter!)) ||
-                (noDateFilter && $0.dueDate == nil) ||
-                (earlierThanDateFilter && $0.dueDate != nil && dateFilter != nil && calendar.compare($0.dueDate!, to: dateFilter!, toGranularity: .day) == .orderedAscending) ||
-                (laterThanDateFilter && $0.dueDate != nil && dateFilter != nil && calendar.compare($0.dueDate!, to: dateFilter!, toGranularity: .day) == .orderedDescending)
-        }) { task in
+        
+        ForEach(filteredTasks) { task in
             let dateComparison = task.dueDate != nil ? calendar.compare(task.dueDate!, to: dateFilter!, toGranularity: .day) : ComparisonResult.orderedSame
 
             TaskRow(
@@ -145,6 +167,7 @@ struct TasksList: View {
                     }
                 },
                 onMoveToCalendar: onMoveToCalendar,
+                onConvertToItem: onConvertToItem,
                 onOpenConnectedItem: onOpenConnectedItem,
                 onDelete: onDelete
             ).swipeActions(edge: .trailing, allowsFullSwipe: true) {
