@@ -669,6 +669,7 @@ struct TasksTabView: View {
                         }
                         
                         Text(event.title)
+                            .lineLimit(1)
                     }
                     .font(.callout)
                     .foregroundStyle(DynamicColor(Color.systemLabel).lighter(amount: 0.3).toColor())

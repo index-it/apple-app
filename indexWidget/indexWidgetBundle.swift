@@ -7,12 +7,19 @@
 
 import SwiftUI
 import WidgetKit
+import AppIntents
+import IxCoreKit
 
 // if we decide to load from network instead of swiftdata
 // https://developer.apple.com/documentation/widgetkit/making-network-requests-in-a-widget-extension
 
 @main
 struct indexWidgetBundle: WidgetBundle {
+    init() {
+        AppDependencyManager.shared.add(dependency: ModelContainerProvider.shared)
+        AppDependencyManager.shared.add(dependency: IxApiClient(authChangeCallback: { _ in }))
+    }
+    
     var body: some Widget {
         AddItemWidget()
         AddTaskWidget()

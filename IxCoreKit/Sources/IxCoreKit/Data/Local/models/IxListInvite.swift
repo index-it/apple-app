@@ -56,7 +56,7 @@ public struct IxListInvite: Encodable, Decodable, Equatable, Sendable, Sanitizab
     public var sanitized: IxListInvite {
         var copy = self
 
-        copy.description = description?.sanitized
+        copy.description = description?.sanitizedNonEmpty
 
         return copy
     }

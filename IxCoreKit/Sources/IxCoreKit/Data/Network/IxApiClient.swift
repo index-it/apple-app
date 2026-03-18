@@ -1448,7 +1448,7 @@ public final class IxApiClient: Sendable {
 
         let (data, response) = try await urlSession.data(for: request)
         let httpResponse = response as! HTTPURLResponse
-
+        
         switch httpResponse.statusCode {
         case 200:
             return try IxTask(networkTask: Self.decoder().decode(NetworkTask.self, from: data))

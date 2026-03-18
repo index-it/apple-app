@@ -151,7 +151,7 @@ public final class IxTask: Sanitizable, Validatable, EmptyInitializable {
         let copy = self
 
         copy.name = name.sanitized
-        copy.taskDescription = taskDescription?.sanitized
+        copy.taskDescription = taskDescription?.sanitizedNonEmpty
 
         return copy
     }

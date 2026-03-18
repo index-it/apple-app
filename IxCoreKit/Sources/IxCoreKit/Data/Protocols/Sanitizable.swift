@@ -13,4 +13,8 @@ extension String {
     var sanitized: String {
         trimmingCharacters(in: .whitespacesAndNewlines)
     }
+    
+    var sanitizedNonEmpty: String? {
+        sanitized.nonEmpty
+    }
 }
