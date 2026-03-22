@@ -84,9 +84,6 @@ struct ListWidgetView: View {
     var body: some View {
         listView
             .containerBackground(.background, for: .widget)
-//            .task {
-//                await IxWidgetDependencies.setup()
-//            }
     }
     
     @ViewBuilder
@@ -178,7 +175,7 @@ struct ListWidgetView: View {
                     .fontWeight(.semibold)
                     .lineLimit(1)
                     .if(renderingMode == .fullColor, transform: { view in
-                        view.foregroundStyle(entry.list.color.toColor().contrastColor())
+                        view.foregroundStyle(entry.list.color.toColor())
                     })
                     .if(renderingMode != .fullColor, transform: { view in
                         view.foregroundStyle(Color.accentColor)
@@ -220,7 +217,7 @@ struct ListWidgetView: View {
                     Text(listName)
                         .fontWeight(.semibold)
                         .if(renderingMode == .fullColor, transform: { view in
-                            view.foregroundStyle(entry.list.color.toColor().contrastColor())
+                            view.foregroundStyle(entry.list.color.toColor())
                         })
                         .if(renderingMode != .fullColor, transform: { view in
                             view.foregroundStyle(Color.accentColor)
@@ -254,7 +251,7 @@ struct ListWidgetView: View {
                     Text(listName)
                         .fontWeight(.semibold)
                         .if(renderingMode == .fullColor, transform: { view in
-                            view.foregroundStyle(entry.list.color.toColor().contrastColor())
+                            view.foregroundStyle(entry.list.color.toColor())
                         })
                         .if(renderingMode != .fullColor, transform: { view in
                             view.foregroundStyle(Color.accentColor)
