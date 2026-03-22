@@ -68,6 +68,7 @@ struct HomeScreen: View {
             OnboardingView {
                 onOnboardingEnded()
             }
+            .presentationBackground(.background)
         }
     }
 }
