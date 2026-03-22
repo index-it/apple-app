@@ -65,10 +65,14 @@ struct HomeScreen: View {
                 }
             )
         ) {
-            OnboardingView {
-                onOnboardingEnded()
+            ZStack {
+                Color.systemBackground
+                    .ignoresSafeArea()
+                
+                OnboardingView {
+                    onOnboardingEnded()
+                }
             }
-            .presentationBackground(.background)
         }
     }
 }
