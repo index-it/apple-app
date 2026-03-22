@@ -11,10 +11,17 @@ import SwiftUI
 
 struct MainView: View {
     @Environment(IxNavigator.self) var navigator
+    @Environment(\.colorScheme) var colorScheme
 
     let authStatus: AuthStatus
 
     var body: some View {
+        navView
+            .accentColor(colorScheme == .dark ? IxColorEnum.skyBlue.color : Color(hexString: "#5DA7E4"))
+    }
+    
+    @ViewBuilder
+    private var navView: some View {
         @Bindable var navigator = navigator
 
         NavigationStack(path: $navigator.path) {

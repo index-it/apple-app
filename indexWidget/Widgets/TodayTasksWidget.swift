@@ -187,11 +187,8 @@ struct TodayTasksWidgetView: View {
             if entry.tasks.isEmpty {
                 HStack {
                     Spacer()
-                    VStack(alignment: .center) {
-                        Image(systemName: "figure.mind.and.body")
-                        Text("No Tasks")
-                            .foregroundStyle(.secondary)
-                    }
+                    Text("No Tasks")
+                        .foregroundStyle(.secondary)
                     Spacer()
                 }
             } else {
