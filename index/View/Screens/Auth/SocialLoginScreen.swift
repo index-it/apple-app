@@ -20,6 +20,7 @@ struct SocialLoginScreen: View {
     @EnvironmentObject private var authNavigationManager: AuthNavigationManager
     @EnvironmentObject private var errorService: ErrorStateService
     @Environment(\.showError) private var showError
+    @Environment(\.colorScheme) var colorScheme
 
     @State private var signInWithAppleController = SignInWithAppleController()
 
@@ -62,6 +63,12 @@ struct SocialLoginScreen: View {
     var body: some View {
         ZStack {
             VStack {
+                Image(uiImage: UIImage(named: "logo") ?? UIImage())
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 64, height: 64)
+                    .padding(.bottom, 6)
+                
                 Text("be intentional.")
                     .multilineTextAlignment(.center)
                     .font(.title)
@@ -104,7 +111,7 @@ struct SocialLoginScreen: View {
                         Label {
                             Text("Continue with email")
                         } icon: {
-                            Image(systemName: "envelope")
+                            Image(systemName: colorScheme == .dark ? "envelope.fill" : "envelope")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(height: 16)
@@ -119,7 +126,7 @@ struct SocialLoginScreen: View {
                     .controlSize(.large)
                     .padding()
 
-                Text("By continuing you agree to our \(Text("[Terms of Service](https://www.apple.com/legal/internet-services/itunes/dev/stdeula/)").fontWeight(.semibold)) and \(Text("[Privacy Policy](https://index-it.app/privacy)").fontWeight(.semibold))")
+                Text("By continuing you agree to the \(Text("[Terms of Service](https://www.apple.com/legal/internet-services/itunes/dev/stdeula/)").fontWeight(.semibold)) and \(Text("[Privacy Policy](https://index-it.app/privacy)").fontWeight(.semibold))")
                     .tint(.primary)
                     .multilineTextAlignment(.center)
                     .font(.caption)
@@ -214,5 +221,12 @@ extension SignInWithAppleController: ASAuthorizationControllerPresentationContex
 }
 
 #Preview {
+    @Previewable @State var authNavigationManager = AuthNavigationManager()
+    @Previewable @State var errorService = ErrorStateService()
+    @Previewable @State var ixApiClient = IxApiClient { _ in }
+    
     SocialLoginScreen()
+        .environmentObject(authNavigationManager)
+        .environmentObject(errorService)
+        .environment(\.ixApiClient, ixApiClient)
 }

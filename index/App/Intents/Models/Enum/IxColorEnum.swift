@@ -10,7 +10,7 @@ import IxCoreKit
 import SwiftUI
 
 enum IxColorEnum: String, Hashable, Identifiable, CaseIterable, AppEnum {
-    case darkGreen
+    case skyBlue
     case red
     case orange
     case yellow
@@ -36,7 +36,7 @@ enum IxColorEnum: String, Hashable, Identifiable, CaseIterable, AppEnum {
     }
 
     static var caseDisplayRepresentations: [IxColorEnum: DisplayRepresentation] = [
-        .darkGreen: DisplayRepresentation(title: "Dark Green", image: nil),
+        .skyBlue: DisplayRepresentation(title: "Sky Blue", image: nil),
         .red: DisplayRepresentation(title: "Red", image: nil),
         .orange: DisplayRepresentation(title: "Orange", image: nil),
         .yellow: DisplayRepresentation(title: "Yellow", image: nil),
@@ -61,7 +61,7 @@ enum IxColorEnum: String, Hashable, Identifiable, CaseIterable, AppEnum {
 
     var color: Color {
         switch self {
-        case .darkGreen: return Color(hexString: "#14704A")
+        case .skyBlue: return Color(hexString: "#88CCFA")
         case .red: return Color(hexString: "#FF3D2F")
         case .orange: return Color(hexString: "#FE9500")
         case .yellow: return Color(hexString: "#FFCC02")

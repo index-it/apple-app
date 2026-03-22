@@ -643,7 +643,11 @@ struct TasksTabView: View {
         date: Date,
         isToday: Bool,
     ) -> some View {
-        let filteredEvents = calendarEvents.filter { calendar.isDate($0.startDate, inSameDayAs: date) }
+        let now = Date()
+        let filteredEvents = calendarEvents.filter {
+            calendar.isDate($0.startDate, inSameDayAs: date) &&
+            (!isToday || $0.endDate >= now)
+        }
         
         if !filteredEvents.isEmpty {
             VStack(alignment: .leading, spacing: 2) {

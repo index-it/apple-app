@@ -27,7 +27,7 @@ struct ListTimelineProvider: AppIntentTimelineProvider {
     func placeholder(in _: Context) -> ListEntry {
         ListEntry(
             date: .now,
-            list: IxList.mock(name: "Loading...", emoji: "🔄", color: IxColorEnum.darkGreen.color.hexString),
+            list: IxList.mock(name: "Loading...", emoji: "🔄", color: IxColorEnum.skyBlue.color.hexString),
             filteredByCategory: false,
             categoryFilter: nil,
             categories: [],

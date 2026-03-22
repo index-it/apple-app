@@ -17,10 +17,5 @@
 	<string>367062845885-0f6o9fj6cbebggmkbbrmseagbln33m2c.apps.googleusercontent.com</string>
 	<key>GIDServerClientID</key>
 	<string>367062845885-cgcm7a1g40phj89t1vr08e50altuo7kn.apps.googleusercontent.com</string>
-	<key>INIntentsSupported</key>
-	<array>
-		<string>INAddTasksIntent</string>
-		<string>INCreateNoteIntent</string>
-	</array>
 </dict>
 </plist>

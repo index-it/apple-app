@@ -20,9 +20,7 @@ struct AboutView: View {
         NavigationView {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading) {
-                    Image(uiImage: UIApplication.shared.alternateIconName == nil
-                        ? UIImage(named: "AppIcon60x60") ?? UIImage()
-                        : UIImage(named: UIApplication.shared.alternateIconName!) ?? UIImage())
+                    Image(uiImage: UIImage(named: "logo") ?? UIImage())
                         .resizable()
                         .scaledToFit()
                         .frame(width: 100, height: 100)

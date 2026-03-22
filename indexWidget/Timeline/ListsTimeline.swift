@@ -25,7 +25,7 @@ struct ListsTimelineProvider: TimelineProvider {
         let entry = ListsEntry(
             date: Date.now,
             lists: [
-                IxList.mock(name: "Ideas", emoji: "💡", color: IxColorEnum.darkGreen.color.hexString),
+                IxList.mock(name: "Ideas", emoji: "💡", color: IxColorEnum.skyBlue.color.hexString),
                 IxList.mock(name: "Articles to read", emoji: "📚", color: IxColorEnum.orange.color.hexString),
                 IxList.mock(name: "Sailing destinations", emoji: "⛵", color: IxColorEnum.lightBlue.color.hexString)
             ]

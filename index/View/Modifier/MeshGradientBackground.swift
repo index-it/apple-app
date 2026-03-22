@@ -15,25 +15,25 @@ struct MeshGradientBackground: ViewModifier {
 
     private var colors: [Color] {
         currentScheme == .light ? [
-            Color(red: 237 / 255, green: 255 / 255, blue: 242 / 255), // Light mint green
-            Color(red: 185 / 255, green: 250 / 255, blue: 194 / 255), // Pale green
-            Color(red: 235 / 255, green: 252 / 255, blue: 237 / 255), // Soft green
-            Color(red: 210 / 255, green: 245 / 255, blue: 200 / 255), // Additional soft green
-            Color(red: 240 / 255, green: 245 / 255, blue: 240 / 255), // Soft grey-green for extra blending
-            Color(red: 200 / 255, green: 240 / 255, blue: 210 / 255), // Extra green tone for variety
-            Color(red: 220 / 255, green: 250 / 255, blue: 230 / 255), // Light blending tone
-            Color(red: 215 / 255, green: 255 / 255, blue: 235 / 255), // Soft minty finish
-            Color(red: 195 / 255, green: 235 / 255, blue: 210 / 255), // Deep soft green
+            Color(red: 220 / 255, green: 240 / 255, blue: 255 / 255), // Very light blue
+            Color(red: 190 / 255, green: 225 / 255, blue: 252 / 255), // Soft light blue
+            Color(red: 160 / 255, green: 215 / 255, blue: 251 / 255), // Light sky blue
+            Color(red: 136 / 255, green: 204 / 255, blue: 250 / 255), // Base color
+            Color(red: 150 / 255, green: 210 / 255, blue: 245 / 255), // Slight variation
+            Color(red: 175 / 255, green: 220 / 255, blue: 248 / 255), // Blending tone
+            Color(red: 200 / 255, green: 230 / 255, blue: 252 / 255), // Soft highlight
+            Color(red: 210 / 255, green: 235 / 255, blue: 255 / 255), // Almost white blue
+            Color(red: 170 / 255, green: 215 / 255, blue: 245 / 255), // Mid tone
         ] : [
-            Color(red: 10 / 255, green: 30 / 255, blue: 20 / 255), // Darker mint green
-            Color(red: 5 / 255, green: 50 / 255, blue: 25 / 255), // Dark green
-            Color(red: 15 / 255, green: 60 / 255, blue: 30 / 255), // Deep forest green
-            Color(red: 20 / 255, green: 55 / 255, blue: 45 / 255), // Muted dark green
-            Color(red: 10 / 255, green: 25 / 255, blue: 15 / 255), // Dark olive green
-            Color(red: 15 / 255, green: 40 / 255, blue: 25 / 255), // Deep moss green
-            Color(red: 20 / 255, green: 50 / 255, blue: 35 / 255), // Dark teal
-            Color(red: 25 / 255, green: 65 / 255, blue: 45 / 255), // Muted dark teal
-            Color(red: 5 / 255, green: 20 / 255, blue: 15 / 255), // Very dark green
+            Color(red: 10 / 255, green: 25 / 255, blue: 40 / 255),  // Deep navy
+            Color(red: 15 / 255, green: 40 / 255, blue: 70 / 255),  // Dark blue
+            Color(red: 20 / 255, green: 55 / 255, blue: 90 / 255),  // Muted blue
+            Color(red: 30 / 255, green: 80 / 255, blue: 120 / 255), // Desaturated blue
+            Color(red: 40 / 255, green: 100 / 255, blue: 150 / 255), // Darker base tone
+            Color(red: 25 / 255, green: 70 / 255, blue: 110 / 255), // Blend tone
+            Color(red: 35 / 255, green: 90 / 255, blue: 140 / 255), // Soft dark blue
+            Color(red: 20 / 255, green: 60 / 255, blue: 100 / 255), // Depth tone
+            Color(red: 10 / 255, green: 35 / 255, blue: 60 / 255),  // Very dark blue
         ]
     }
 

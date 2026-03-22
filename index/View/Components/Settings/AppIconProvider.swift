@@ -23,6 +23,6 @@ enum AppIconProvider {
 
 struct AppIcon: View {
     var body: some View {
-        Image(uiImage: UIImage(named: AppIconProvider.appIcon()) ?? UIImage())
+        Image(uiImage: UIImage(named: "logo") ?? UIImage())
     }
 }

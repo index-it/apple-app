@@ -9,6 +9,7 @@ import SwiftUI
 
 public enum ColorHelper {
     public static let ixColors = [
+        Color(hexString: "#88CCFA"),
         Color(hexString: "#14704A"),
         Color(hexString: "#FF3D2F"),
         Color(hexString: "#FE9500"),
